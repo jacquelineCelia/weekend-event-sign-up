@@ -1,8 +1,9 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { activityForDay } from '@/lib/queries';
+import { activityForDay, getBooking } from '@/lib/queries';
 import { EVENT, addMinutes, dayByKey, dayOf, fmtDuration, fmtTime, isLow, requestTime } from '@/lib/event';
 import { getPool } from '@/lib/db';
+import { currentPersonId } from '@/lib/session';
 import { Back, Leaf } from '@/components/icons';
 import SlotPicker, { type PickerSlot } from './SlotPicker';
 
@@ -13,7 +14,7 @@ export default async function ActivityPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ day?: string; slot?: string }>;
+  searchParams: Promise<{ day?: string; slot?: string; change?: string }>;
 }) {
   const { id } = await params;
   const sp = await searchParams;
@@ -29,25 +30,43 @@ export default async function ActivityPage({
   const a = await activityForDay(id, day.date);
   if (!a) notFound();
 
+  // "Change time" mode: moving an existing booking (only the owner's own).
+  let change: { bookingId: string; partySize: number; currentSlotId: string } | null = null;
+  if (sp.change) {
+    const me = await currentPersonId();
+    const b = await getBooking(sp.change);
+    if (me && b && b.personId === me && b.status === 'confirmed' && b.activityId === a.id) {
+      change = { bookingId: b.id, partySize: b.partySize, currentSlotId: b.slotId };
+    }
+  }
+
   const now = requestTime();
   const slots: PickerSlot[] = a.slots.map((s) => {
     const past = s.startsAt.getTime() <= now;
+    const current = change?.currentSlotId === s.id;
     return {
       id: s.id,
       range: `${fmtTime(s.startsAt)} – ${fmtTime(addMinutes(s.startsAt, a.durationMin))}`,
       short: fmtTime(s.startsAt),
-      remaining: past ? 0 : s.remaining,
-      low: !past && isLow(s.remaining, s.capacity),
+      remaining: past || current ? 0 : s.remaining,
+      low: !past && !current && isLow(s.remaining, s.capacity),
       past,
+      current,
+      tooSmall: !!change && !current && s.remaining > 0 && s.remaining < change.partySize,
     };
   });
-  const firstOpen = slots.find((s) => s.remaining > 0)?.id ?? null;
-  const preselected = slots.find((s) => s.id === sp.slot && s.remaining > 0)?.id ?? firstOpen;
+  const canPick = (s: PickerSlot) => s.remaining > 0 && !s.tooSmall;
+  const firstOpen = slots.find(canPick)?.id ?? null;
+  const preselected = change ? firstOpen : slots.find((s) => s.id === sp.slot && canPick(s))?.id ?? firstOpen;
 
   return (
     <div className="phone">
       <div className="topbar">
-        <Link className="back" href={`/?day=${day.key}`}><Back /> All activities</Link>
+        {change ? (
+          <Link className="back" href="/me"><Back /> My sign-ups</Link>
+        ) : (
+          <Link className="back" href={`/?day=${day.key}`}><Back /> All activities</Link>
+        )}
       </div>
       <section className="pad stack" style={{ gap: 12, padding: '8px 20px 22px' }}>
         <span className="eyebrow"><Leaf /> {day.long}</span>
@@ -57,12 +76,12 @@ export default async function ActivityPage({
         {EVENT.days.length > 1 ? (
           <p className="muted" style={{ margin: 0, fontSize: 13.5 }}>
             Also on {EVENT.days.filter((d) => d.key !== day.key).map((d) => (
-              <Link key={d.key} href={`/activity/${a.id}?day=${d.key}`}>{d.long}</Link>
+              <Link key={d.key} href={`/activity/${a.id}?day=${d.key}${change ? `&change=${change.bookingId}` : ''}`}>{d.long}</Link>
             ))}
           </p>
         ) : null}
       </section>
-      <SlotPicker slots={slots} preselected={preselected} />
+      <SlotPicker slots={slots} preselected={preselected} change={change ? { bookingId: change.bookingId, partySize: change.partySize } : null} />
     </div>
   );
 }

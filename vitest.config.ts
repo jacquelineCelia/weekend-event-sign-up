@@ -9,6 +9,8 @@ export default defineConfig({
     env: {
       DATABASE_URL: process.env.TEST_DATABASE_URL ?? 'postgres://postgres@localhost:5433/signup_test?host=/tmp',
       DATABASE_POOL_MAX: '25',
+      MESSAGING_CAPTURE: '1',
+      SESSION_SECRET: 'test-secret-test-secret-test-secret-123',
     },
     fileParallelism: false,
   },
