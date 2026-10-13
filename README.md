@@ -1,36 +1,39 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Mindfulness Weekend — activity sign-up
 
-## Getting Started
+Attendees pick an activity and time, say how many guests they're bringing, and get a check-in code
+and a reminder 15 minutes before. Staff check people in and manage times and capacity.
 
-First, run the development server:
+Built with Next.js 16 and Postgres (runs on Supabase as is).
+
+## Status
+
+| Area | State |
+| --- | --- |
+| Database, capacity-safe booking (holds, confirm, cancel, change time, walk-ins) | Done, tested |
+| Attendee flow: browse → pick a time and party size → details → confirmation, calendar file | Done |
+| My sign-ups (this device), cancel | Done |
+| Sign in from another device with a texted/emailed code | Next |
+| Confirmation and 15-minute reminders (email via Resend, text via Twilio) | Next |
+| Staff screens: check-in, walk-in, schedule and capacity, staff login | Next |
+| Post-activity rating | Next |
+
+## Run it locally
 
 ```bash
+cp .env.example .env.local        # then set SESSION_SECRET to a long random string
+npm install
+DATABASE_URL=... node scripts/migrate.mjs --seed   # creates tables + the placeholder schedule
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Tests run against a real Postgres database (set `TEST_DATABASE_URL`, it is wiped on each run):
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm test
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## How double-booking is prevented
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Every hold or booking locks its time slot's row, counts confirmed bookings plus unexpired holds,
+and only then inserts. Concurrent requests for the last spots queue on that lock, so capacity can't
+be exceeded. A hold lasts 10 minutes; if it lapses, confirming re-checks capacity first.
