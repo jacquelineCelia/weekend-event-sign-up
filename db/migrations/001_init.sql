@@ -19,7 +19,7 @@ create table slots (
   starts_at    timestamptz not null,
   capacity     int not null check (capacity >= 0),
   created_at   timestamptz not null default now(),
-  unique (activity_id, starts_at)
+  unique (activity_id, starts_at) deferrable initially deferred
 );
 create index slots_starts_at_idx on slots (starts_at);
 
