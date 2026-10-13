@@ -55,14 +55,21 @@ describe('15-minute reminders', () => {
 
   it('retries next run if sending fails', async () => {
     await bookAt(10);
-    process.env.RESEND_API_KEY = 'bad';
+    process.env.SENDGRID_API_KEY = 'bad';
     process.env.EMAIL_FROM = 'x@example.com';
+    process.env.MESSAGING_CAPTURE = '0';
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('nope', { status: 500 }));
     const [failed] = await runReminders();
     expect(failed.error).toMatch(/Email failed/);
+    const [url, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe('https://api.sendgrid.com/v3/mail/send');
+    const body = JSON.parse(String(init.body));
+    expect(body.personalizations[0].to[0].email).toBe('jordan@example.com');
+    expect(body.from).toEqual({ email: 'x@example.com' });
     fetchSpy.mockRestore();
-    delete process.env.RESEND_API_KEY;
+    delete process.env.SENDGRID_API_KEY;
     delete process.env.EMAIL_FROM;
+    process.env.MESSAGING_CAPTURE = '1';
     expect(await runReminders()).toHaveLength(1);
   });
 });

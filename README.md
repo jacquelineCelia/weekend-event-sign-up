@@ -34,7 +34,7 @@ node --env-file=.env.local scripts/migrate.mjs --seed   # tables + the placehold
 npm run dev
 ```
 
-Without Resend/Twilio keys, every email and text is printed to the server log instead — handy for
+Without Twilio/SendGrid keys, every email and text is printed to the server log instead — handy for
 testing (sign-in codes included).
 
 Tests run against a real Postgres database (set `TEST_DATABASE_URL`; it is wiped on each run):
@@ -50,9 +50,17 @@ npm test     # 30 tests: capacity under concurrency, holds, login codes, reminde
    `node --env-file=.env.production scripts/migrate.mjs --seed` once from your machine.
 2. **App** — import the repo in Vercel and set the environment variables from `.env.example`:
    `DATABASE_URL`, `DATABASE_SSL`, `SESSION_SECRET` (32+ random chars), `STAFF_PASSCODE`,
-   `APP_URL` (your public URL), `CRON_SECRET`, `RESEND_API_KEY`, `EMAIL_FROM`, and optionally the
-   three `TWILIO_*` values for texts.
-3. **Email** — in Resend, verify the domain you send from and use it in `EMAIL_FROM`.
+   `APP_URL` (your public URL), `CRON_SECRET`, `SENDGRID_API_KEY`, `EMAIL_FROM`, and the three
+   `TWILIO_*` values for texts.
+3. **Twilio (email and texts)**
+   - *Email:* in SendGrid (Twilio's email service), authenticate your sending domain under
+     Settings → Sender Authentication (add the DNS records it shows), then create an API key with
+     "Mail Send" permission → `SENDGRID_API_KEY`. Use an address on that domain in `EMAIL_FROM`.
+   - *Texts:* in the Twilio console, copy the Account SID and Auth Token, and buy a phone number
+     (or create a Messaging Service) → `TWILIO_FROM`. US numbers need A2P 10DLC registration
+     before carriers deliver texts reliably, which can take a few days to a couple of weeks —
+     start it early. Until it's approved, leave the `TWILIO_*` values unset so everything goes by
+     email — Twilio accepts texts from unregistered numbers but carriers silently drop them.
 4. **Reminders** — something must call `/api/cron/reminders` every minute with
    `Authorization: Bearer $CRON_SECRET`. Vercel's free plan only runs cron once a day, so use
    Supabase's scheduler (SQL editor):
