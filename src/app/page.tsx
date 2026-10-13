@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { activitiesForDay } from '@/lib/queries';
-import { EVENT, dayByKey, fmtDuration, fmtTime, isLow } from '@/lib/event';
+import { EVENT, dayByKey, fmtDuration, fmtTime, isLow, requestTime } from '@/lib/event';
 import { Calendar, Hills, Leaf, Check } from '@/components/icons';
 
 export const dynamic = 'force-dynamic';
@@ -10,7 +10,7 @@ export default async function Browse({ searchParams }: { searchParams: Promise<{
   const day = dayByKey(sp.day);
   const onlyOpen = sp.open === '1';
   const all = await activitiesForDay(day.date);
-  const now = Date.now();
+  const now = requestTime();
 
   const acts = all
     .map((a) => {

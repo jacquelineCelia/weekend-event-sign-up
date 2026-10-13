@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { activityForDay } from '@/lib/queries';
-import { EVENT, addMinutes, dayByKey, dayOf, fmtDuration, fmtTime, isLow } from '@/lib/event';
+import { EVENT, addMinutes, dayByKey, dayOf, fmtDuration, fmtTime, isLow, requestTime } from '@/lib/event';
 import { getPool } from '@/lib/db';
 import { Back, Leaf } from '@/components/icons';
 import SlotPicker, { type PickerSlot } from './SlotPicker';
@@ -29,7 +29,7 @@ export default async function ActivityPage({
   const a = await activityForDay(id, day.date);
   if (!a) notFound();
 
-  const now = Date.now();
+  const now = requestTime();
   const slots: PickerSlot[] = a.slots.map((s) => {
     const past = s.startsAt.getTime() <= now;
     return {

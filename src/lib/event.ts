@@ -39,3 +39,6 @@ export function fmtDuration(min: number) {
 
 /** Few enough left to warn about: 2 or fewer, or a quarter of capacity. */
 export const isLow = (remaining: number, capacity: number) => remaining > 0 && remaining <= Math.max(2, Math.ceil(capacity * 0.25));
+
+/** Current time, read once per request on the server. */
+export const requestTime = () => Date.now();

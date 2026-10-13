@@ -4,7 +4,7 @@ import { getPool } from '@/lib/db';
 import { getPerson } from '@/lib/queries';
 import { cancelBooking } from '@/lib/booking';
 import { currentPersonId } from '@/lib/session';
-import { EVENT, dayOf, fmtTime } from '@/lib/event';
+import { EVENT, dayOf, fmtTime, requestTime } from '@/lib/event';
 import { Back, Leaf } from '@/components/icons';
 
 export const dynamic = 'force-dynamic';
@@ -47,7 +47,7 @@ export default async function MySignups() {
       order by s.starts_at`,
     [person.id],
   );
-  const now = Date.now();
+  const now = requestTime();
   const byDay = EVENT.days.map((d) => ({ d, items: rows.filter((r) => dayOf(r.starts_at)?.key === d.key) })).filter((g) => g.items.length);
 
   return (
