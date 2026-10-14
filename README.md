@@ -26,7 +26,7 @@ Built with Next.js 16 and Postgres (runs on Supabase as is).
   notices come in it.
 
 **Staff** (`/staff`, behind a shared passcode)
-- **Check-in**: sessions by day, live roster with search by name, last 4 of phone or code;
+- **Check-in**: sessions by day (with a search box above the list), live roster with search by name, last 4 of phone or code;
   check in a whole party or some of it. Refreshes every 20 seconds.
 - **Walk-in sign-up**: any activity and time, over-capacity only with an explicit lead approval,
   optional "check in now".

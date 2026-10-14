@@ -5,13 +5,13 @@ import { sendTimeChange } from './notify';
 // ---------- Check-in ----------
 
 export type StaffSession = {
-  slotId: string; startsAt: Date; durationMin: number; activityName: string; place: string;
+  slotId: string; startsAt: Date; durationMin: number; activityName: string; activityNameZh: string; place: string;
   capacity: number; booked: number; arrived: number;
 };
 
 export async function sessionsForDay(date: string): Promise<StaffSession[]> {
   const { rows } = await getPool().query(
-    `select s.id, s.starts_at, a.duration_min, a.name, a.place, s.capacity,
+    `select s.id, s.starts_at, a.duration_min, a.name, a.name_zh, a.place, s.capacity,
             coalesce(sum(b.party_size) filter (where b.status = 'confirmed'), 0)::int as booked,
             coalesce(sum(b.checked_in) filter (where b.status = 'confirmed'), 0)::int as arrived
        from slots s join activities a on a.id = s.activity_id
@@ -22,7 +22,7 @@ export async function sessionsForDay(date: string): Promise<StaffSession[]> {
     [EVENT.timeZone, date],
   );
   return rows.map((r) => ({
-    slotId: r.id, startsAt: r.starts_at, durationMin: r.duration_min, activityName: r.name, place: r.place,
+    slotId: r.id, startsAt: r.starts_at, durationMin: r.duration_min, activityName: r.name, activityNameZh: r.name_zh, place: r.place,
     capacity: r.capacity, booked: r.booked, arrived: r.arrived,
   }));
 }

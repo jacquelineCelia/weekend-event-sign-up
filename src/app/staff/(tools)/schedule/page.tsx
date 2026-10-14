@@ -4,6 +4,7 @@ import { EVENT, dayByKey } from '@/lib/event';
 import { Plus } from '@/components/icons';
 import SlotEditor from './SlotEditor';
 import ActivityForm from './ActivityForm';
+import FilterList from '../FilterList';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,8 +21,12 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
     <div className="staffbody">
       <aside className="staffside" aria-label="Activities" style={{ maxWidth: 360 }}>
         <h2 className="h2" style={{ fontSize: 18, color: 'var(--ink-2)' }}>Activities</h2>
-        {acts.map((a) => (
-          <Link key={a.id} className="session" href={href({ a: a.id })} aria-current={a.id === cur?.id ? 'true' : undefined} style={{ padding: '13px 18px', borderRadius: 18 }}>
+        <FilterList label="Search activities" placeholder="Search activity or place" noun={['activity', 'activities']}
+          items={acts.map((a) => ({
+            key: a.id,
+            search: `${a.name} ${a.name_zh} ${a.place} ${a.place_zh}`,
+            node: (
+          <Link className="session" href={href({ a: a.id })} aria-current={a.id === cur?.id ? 'true' : undefined} style={{ padding: '13px 18px', borderRadius: 18 }}>
             <span className="serif" style={{ fontSize: 16 }}>{a.name}</span>
             <span className="meta">
               {a.slots} {a.slots === 1 ? 'time' : 'times'} · {a.spots} spots on {day.label}
@@ -33,7 +38,8 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
               ) : null}
             </span>
           </Link>
-        ))}
+            ),
+          }))} />
         <Link className="btn ghost" href={`/staff/schedule?day=${day.key}&a=new`} style={{ border: '1.5px dashed #8c9688', color: 'var(--moss-dark)' }} aria-current={isNew ? 'true' : undefined}>
           <Plus size={18} /> Add an activity
         </Link>

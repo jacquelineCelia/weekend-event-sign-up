@@ -4,6 +4,7 @@ import { EVENT, addMinutes, dayByKey, dayOf, fmtTime, requestTime } from '@/lib/
 import { Plus } from '@/components/icons';
 import Roster from './Roster';
 import AutoRefresh from './AutoRefresh';
+import FilterList from './FilterList';
 
 export const dynamic = 'force-dynamic';
 
@@ -47,19 +48,24 @@ export default async function CheckIn({ searchParams }: { searchParams: Promise<
           ))}
         </nav>
         <h2 className="h2" style={{ fontSize: 18, color: 'var(--ink-2)', margin: '8px 0 0' }}>Sessions</h2>
-        {sessions.map((s) => {
-          const t = tag(s);
-          return (
-            <Link key={s.slotId} className="session" href={href({ slot: s.slotId })} aria-current={s.slotId === sel?.slotId ? 'true' : undefined}>
-              <span style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{fmtTime(s.startsAt)}</span>
-                {t ? <span className={`stag ${t.now ? 'now' : ''}`}>{t.text}</span> : null}
-              </span>
-              <span className="serif" style={{ fontSize: 17 }}>{s.activityName}</span>
-              <span className="meta">{s.place} · {s.booked}/{s.capacity} booked · {s.arrived} here</span>
-            </Link>
-          );
-        })}
+        <FilterList label="Search sessions" placeholder="Search activity, place or time" noun={['session', 'sessions']}
+          items={sessions.map((s) => {
+            const t = tag(s);
+            return {
+              key: s.slotId,
+              search: `${s.activityName} ${s.activityNameZh} ${s.place} ${fmtTime(s.startsAt)} ${fmtTime(s.startsAt).replace(/\s?[AP]M$/, '')} ${t?.text ?? ''}`,
+              node: (
+                <Link className="session" href={href({ slot: s.slotId })} aria-current={s.slotId === sel?.slotId ? 'true' : undefined}>
+                  <span style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{fmtTime(s.startsAt)}</span>
+                    {t ? <span className={`stag ${t.now ? 'now' : ''}`}>{t.text}</span> : null}
+                  </span>
+                  <span className="serif" style={{ fontSize: 17 }}>{s.activityName}</span>
+                  <span className="meta">{s.place} · {s.booked}/{s.capacity} booked · {s.arrived} here</span>
+                </Link>
+              ),
+            };
+          })} />
         {sessions.length === 0 ? <p className="muted">No sessions on this day.</p> : null}
       </aside>
 
