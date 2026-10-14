@@ -38,11 +38,9 @@ export default async function Browse({ searchParams }: { searchParams: Promise<{
     <div className="phone">
       <header className="hero">
         <div className="meta">
-          <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Leaf /> {dateRangeL(lang)}</span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <LangToggle lang={lang} onDark />
-            <Link href="/me"><Calendar /> {t.mySignups}</Link>
-          </span>
+          <span className="side"><span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><span className="ico-opt"><Leaf /></span>{dateRangeL(lang)}</span></span>
+          <LangToggle lang={lang} onDark />
+          <span className="side end"><Link href="/me"><span className="ico-m"><Calendar /></span><span className="lbl-m">{t.mySignups}</span></Link></span>
         </div>
         <h1>{title1}<br />{title2}</h1>
         <p>{t.heroLede}</p>
