@@ -2,7 +2,11 @@ import type { BookingView } from './queries';
 import { EVENT, addMinutes, dayOf, fmtTime } from './event';
 import { sendEmail, sendSms, smsEnabled } from './messaging';
 
-const appUrl = () => (process.env.APP_URL ?? 'http://localhost:3000').replace(/\/$/, '');
+// APP_URL wins (set it for production). On Vercel previews, fall back to the branch's own URL so
+// links in test emails open the preview, not localhost.
+const vercelHost = () => process.env.VERCEL_BRANCH_URL || process.env.VERCEL_URL;
+const appUrl = () =>
+  (process.env.APP_URL || (vercelHost() ? `https://${vercelHost()}` : 'http://localhost:3000')).replace(/\/$/, '');
 const spots = (n: number) => `${n} ${n === 1 ? 'spot' : 'spots'}`;
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 

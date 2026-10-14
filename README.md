@@ -78,7 +78,13 @@ npm test     # 30 tests: capacity under concurrency, holds, login codes, reminde
 
    Each run sends reminders for activities starting in the next 15 minutes. Runs can overlap
    safely — a booking is claimed before sending, so nobody gets two reminders.
-5. **Real activities** — replace the placeholders in **Staff → Schedule & capacity**
+5. **Preview site (optional)** — push a `dev` branch and Vercel deploys it at a stable address like
+   `<project>-git-dev-<you>.vercel.app`. Give Vercel's **Preview** environment the dev database's
+   `DATABASE_URL`, its own `SESSION_SECRET` / `STAFF_PASSCODE`, and leave out `APP_URL`,
+   `SENDGRID_API_KEY` and `TWILIO_*` (messages then go to the Vercel logs, and links point at the
+   preview). Previews require a Vercel login by default — turn that off under Settings →
+   Deployment Protection if testers without Vercel accounts need in.
+6. **Real activities** — replace the placeholders in **Staff → Schedule & capacity**
    (or edit `db/seed.sql` before seeding).
 
 ## How double-booking is prevented
