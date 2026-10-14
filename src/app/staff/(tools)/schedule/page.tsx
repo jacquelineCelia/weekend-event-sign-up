@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { activitiesWithCounts, scheduleFor } from '@/lib/staff';
-import { EVENT, dayByKey } from '@/lib/event';
+import { EVENT, addMinutes, dayByKey, requestTime } from '@/lib/event';
 import { Plus } from '@/components/icons';
 import SlotEditor from './SlotEditor';
 import ActivityForm from './ActivityForm';
@@ -8,14 +8,22 @@ import FilterList from '../FilterList';
 
 export const dynamic = 'force-dynamic';
 
-export default async function Schedule({ searchParams }: { searchParams: Promise<{ day?: string; a?: string; saved?: string }> }) {
+export default async function Schedule({ searchParams }: { searchParams: Promise<{ day?: string; a?: string; saved?: string; past?: string }> }) {
   const sp = await searchParams;
   const day = dayByKey(sp.day);
-  const acts = await activitiesWithCounts(day.date);
+  const now = requestTime();
+  const allActs = await activitiesWithCounts(day.date);
+  // An activity is finished for this day once its last time that day has ended.
+  // Activities with no times that day stay listed, so times can be added.
+  const done = (a: (typeof allActs)[number]) => !!a.last_start && addMinutes(a.last_start, a.duration_min).getTime() <= now;
+  const showPast = sp.past === '1';
+  const finished = allActs.filter(done).length;
+  const acts = showPast ? allActs : allActs.filter((a) => !done(a));
   const isNew = sp.a === 'new';
-  const cur = isNew ? null : acts.find((a) => a.id === sp.a) ?? acts[0] ?? null;
+  const cur = isNew ? null : allActs.find((a) => a.id === sp.a) ?? acts[0] ?? null;
   const slots = cur ? await scheduleFor(cur.id, day.date) : [];
-  const href = (q: { day?: string; a?: string }) => `/staff/schedule?day=${q.day ?? day.key}&a=${q.a ?? cur?.id ?? ''}`;
+  const href = (q: { day?: string; a?: string; past?: boolean }) =>
+    `/staff/schedule?day=${q.day ?? day.key}&a=${q.a ?? cur?.id ?? ''}${(q.past ?? showPast) ? '&past=1' : ''}`;
 
   return (
     <div className="staffbody">
@@ -40,6 +48,12 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
           </Link>
             ),
           }))} />
+        {acts.length === 0 && allActs.length > 0 ? <p className="muted" style={{ margin: 4 }}>All of {day.label}’s activities have finished.</p> : null}
+        {finished > 0 ? (
+          <Link href={href({ a: cur && !done(cur) ? cur.id : '', past: !showPast })} style={{ fontSize: 14, fontWeight: 600, color: 'var(--moss)', padding: '0 4px' }}>
+            {showPast ? 'Hide finished activities' : `Show ${finished} finished ${finished === 1 ? 'activity' : 'activities'}`}
+          </Link>
+        ) : null}
         <Link className="btn ghost" href={`/staff/schedule?day=${day.key}&a=new`} style={{ border: '1.5px dashed #8c9688', color: 'var(--moss-dark)' }} aria-current={isNew ? 'true' : undefined}>
           <Plus size={18} /> Add an activity
         </Link>

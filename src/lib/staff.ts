@@ -57,10 +57,10 @@ export type ScheduleSlot = { id: string; time: string; capacity: number; booked:
 export async function activitiesWithCounts(date: string) {
   const { rows } = await getPool().query<{
     id: string; name: string; place: string; description: string; duration_min: number; slots: number; spots: number;
-    name_zh: string; place_zh: string; description_zh: string;
+    name_zh: string; place_zh: string; description_zh: string; last_start: Date | null;
   }>(
     `select a.id, a.name, a.place, a.description, a.duration_min, a.name_zh, a.place_zh, a.description_zh,
-            count(s.id)::int as slots, coalesce(sum(s.capacity), 0)::int as spots
+            count(s.id)::int as slots, coalesce(sum(s.capacity), 0)::int as spots, max(s.starts_at) as last_start
        from activities a
        left join slots s on s.activity_id = a.id and (s.starts_at at time zone $1)::date = $2::date
       group by a.id order by a.sort_order, a.name`,

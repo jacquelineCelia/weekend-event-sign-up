@@ -8,14 +8,18 @@ import FilterList from './FilterList';
 
 export const dynamic = 'force-dynamic';
 
-export default async function CheckIn({ searchParams }: { searchParams: Promise<{ day?: string; slot?: string }> }) {
+export default async function CheckIn({ searchParams }: { searchParams: Promise<{ day?: string; slot?: string; past?: string }> }) {
   const sp = await searchParams;
   const now = requestTime();
   const today = dayOf(new Date(now));
   const day = sp.day ? dayByKey(sp.day) : today ?? EVENT.days[0];
-  const sessions = await sessionsForDay(day.date);
-  const ends = (s: (typeof sessions)[number]) => addMinutes(s.startsAt, s.durationMin).getTime();
-  const sel = sessions.find((s) => s.slotId === sp.slot) ?? sessions.find((s) => ends(s) > now) ?? sessions[0];
+  const all = await sessionsForDay(day.date);
+  const ends = (s: (typeof all)[number]) => addMinutes(s.startsAt, s.durationMin).getTime();
+  // Finished sessions are hidden unless staff ask to see them (e.g. to look up who came).
+  const showPast = sp.past === '1';
+  const finished = all.filter((s) => ends(s) <= now).length;
+  const sessions = showPast ? all : all.filter((s) => ends(s) > now);
+  const sel = all.find((s) => s.slotId === sp.slot) ?? sessions[0] ?? (showPast ? all[0] : undefined);
   const people = sel ? await roster(sel.slotId) : [];
 
   const tag = (s: (typeof sessions)[number]) => {
@@ -26,7 +30,8 @@ export default async function CheckIn({ searchParams }: { searchParams: Promise<
     if (mins <= 60) return { text: `Starts in ${mins} min`, now: true };
     return null;
   };
-  const href = (q: { day?: string; slot?: string }) => `/staff?day=${q.day ?? day.key}${q.slot ? `&slot=${q.slot}` : ''}`;
+  const href = (q: { day?: string; slot?: string; past?: boolean }) =>
+    `/staff?day=${q.day ?? day.key}${q.slot ? `&slot=${q.slot}` : ''}${(q.past ?? (showPast && !q.day)) ? '&past=1' : ''}`;
 
   let note = '';
   if (sel) {
@@ -66,7 +71,14 @@ export default async function CheckIn({ searchParams }: { searchParams: Promise<
               ),
             };
           })} />
-        {sessions.length === 0 ? <p className="muted">No sessions on this day.</p> : null}
+        {all.length === 0 ? <p className="muted">No sessions on this day.</p>
+          : sessions.length === 0 ? <p className="muted">All of {day.label}’s sessions have finished.</p> : null}
+        {finished > 0 ? (
+          <Link href={href({ slot: sel && (showPast ? ends(sel) > now : true) ? sel.slotId : undefined, past: !showPast })}
+            style={{ fontSize: 14, fontWeight: 600, color: 'var(--moss)', padding: '4px' }}>
+            {showPast ? `Hide finished sessions` : `Show ${finished} finished ${finished === 1 ? 'session' : 'sessions'}`}
+          </Link>
+        ) : null}
       </aside>
 
       {sel ? (

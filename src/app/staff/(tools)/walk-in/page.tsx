@@ -11,6 +11,8 @@ export default async function WalkIn({ searchParams }: { searchParams: Promise<{
   for (const d of EVENT.days) {
     for (const a of await activitiesForDay(d.date)) {
       if (!a.slots.length) continue;
+      // Leave out activities whose times have all ended.
+      if (a.slots.every((s) => s.startsAt.getTime() + a.durationMin * 60000 <= now)) continue;
       options.push({
         key: `${d.key}:${a.id}`,
         label: `${d.short} · ${a.name}`,
