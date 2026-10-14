@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { activityForDay, getBooking } from '@/lib/queries';
 import { EVENT, addMinutes, dayByKey, dayOf, fmtDuration, fmtTime, isLow, requestTime } from '@/lib/event';
 import { getPool } from '@/lib/db';
-import { currentPersonId } from '@/lib/session';
+import { currentOwners } from '@/lib/viewer';
 import { Back, Leaf } from '@/components/icons';
 import SlotPicker, { type PickerSlot } from './SlotPicker';
 
@@ -33,9 +33,9 @@ export default async function ActivityPage({
   // "Change time" mode: moving an existing booking (only the owner's own).
   let change: { bookingId: string; partySize: number; currentSlotId: string } | null = null;
   if (sp.change) {
-    const me = await currentPersonId();
+    const { ids } = await currentOwners();
     const b = await getBooking(sp.change);
-    if (me && b && b.personId === me && b.status === 'confirmed' && b.activityId === a.id) {
+    if (b?.personId && ids.includes(b.personId) && b.status === 'confirmed' && b.activityId === a.id) {
       change = { bookingId: b.id, partySize: b.partySize, currentSlotId: b.slotId };
     }
   }

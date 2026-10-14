@@ -24,6 +24,8 @@ ${cta ? `<a href="${esc(cta.href)}" style="display:inline-block;margin-top:6px;b
 </div></div></body></html>`;
 }
 
+const first = (name: string | null) => (name ?? '').trim().split(/\s+/)[0] || 'You';
+
 /** Sent right after booking: email when we have one, otherwise a text. */
 export async function sendConfirmation(b: BookingView) {
   const day = dayOf(b.startsAt);
@@ -43,7 +45,7 @@ export async function sendConfirmation(b: BookingView) {
       emailHtml(`You're in: ${b.activityName}`, lines, b.code, { href: `${appUrl()}/me`, label: 'My sign-ups' }),
     );
   } else if (b.personPhone && smsEnabled()) {
-    await sendSms(b.personPhone, `${EVENT.name}: you're in for ${b.activityName}, ${when}, ${b.place}. ${spots(b.partySize)}, code ${b.code}. ${reminder}`);
+    await sendSms(b.personPhone, `${EVENT.name}: ${first(b.personName)} is in for ${b.activityName}, ${when}, ${b.place}. ${spots(b.partySize)}, code ${b.code}. ${reminder}`);
   }
 }
 
@@ -56,7 +58,7 @@ export async function sendReminder(b: BookingView) {
   if (wantSms) {
     await sendSms(
       b.personPhone!,
-      `Starting in 15 min: ${b.activityName} at ${start}, ${b.place}. ${spots(b.partySize)} for ${b.personName?.split(' ')[0]}, code ${b.code}.\n\nCan't make it? Let us know so someone else can take your spots: ${cancel}`,
+      `${first(b.personName)}: ${b.activityName} starts in 15 min (${start}, ${b.place}). ${spots(b.partySize)}, code ${b.code}.\n\nCan't make it? Let us know so someone else can take your spots: ${cancel}`,
     );
     sent.push('sms');
   }

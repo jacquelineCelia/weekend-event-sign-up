@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getBooking } from '@/lib/queries';
 import { addMinutes, dayOf, fmtTime } from '@/lib/event';
-import { currentPersonId } from '@/lib/session';
+import { currentOwners } from '@/lib/viewer';
 import { Bell, Sprout } from '@/components/icons';
 
 export const dynamic = 'force-dynamic';
@@ -10,9 +10,9 @@ export const dynamic = 'force-dynamic';
 export default async function Booked({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const b = await getBooking(id);
-  const me = await currentPersonId();
+  const { ids } = await currentOwners();
   // Only the person who booked can see the ticket (it holds their code).
-  if (!b || b.status !== 'confirmed' || !me || b.personId !== me) notFound();
+  if (!b || b.status !== 'confirmed' || !b.personId || !ids.includes(b.personId)) notFound();
 
   const day = dayOf(b.startsAt);
   const channels = [b.remindSms ? 'text' : null, b.remindEmail ? 'email' : null].filter(Boolean).join(' and ');

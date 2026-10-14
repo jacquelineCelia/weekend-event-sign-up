@@ -69,25 +69,42 @@ async function uniqueCode(c: PoolClient) {
   throw new Error('Could not generate a unique check-in code');
 }
 
-/** Finds the attendee by phone, then email, creating them if new; keeps their details current. */
+/**
+ * Finds or creates the person behind a sign-up. People are told apart by email; a phone number
+ * can be shared (a family, a couple), so it only identifies someone together with their name.
+ *  - With an email: that email's person (name and phone kept current), else a walk-in record with
+ *    the same phone and name but no email yet (the email is added to it), else a new person.
+ *  - Without an email (walk-ins): someone with the same phone and the same name, else a new person.
+ */
 export async function upsertPerson(c: PoolClient, contact: Contact): Promise<string> {
-  let existing = null as null | { id: string };
-  if (contact.phone) {
-    existing = (await c.query<{ id: string }>('select id from people where phone = $1', [contact.phone])).rows[0] ?? null;
-  }
-  if (!existing && contact.email) {
-    existing = (await c.query<{ id: string }>('select id from people where lower(email) = $1', [contact.email])).rows[0] ?? null;
-  }
-  if (existing) {
-    // Only fill in contact details that are not already used by someone else.
-    await c.query(
-      `update people p set name = $2,
-              phone = coalesce((select $3::text where not exists (select 1 from people o where o.phone = $3 and o.id <> p.id)), p.phone),
-              email = coalesce((select $4::text where not exists (select 1 from people o where lower(o.email) = $4 and o.id <> p.id)), p.email)
-        where p.id = $1`,
-      [existing.id, contact.name, contact.phone, contact.email],
-    );
-    return existing.id;
+  const sameNameOnPhone = async (onlyWithoutEmail: boolean) =>
+    contact.phone
+      ? (await c.query<{ id: string }>(
+          `select id from people where phone = $1 and lower(trim(name)) = lower(trim($2))
+             ${onlyWithoutEmail ? 'and email is null' : ''} order by created_at limit 1`,
+          [contact.phone, contact.name],
+        )).rows[0]?.id ?? null
+      : null;
+
+  // Serialise sign-ups for the same email (or, without one, the same phone) so two at once
+  // can't both create a new person.
+  const key = contact.email ?? contact.phone;
+  if (key) await c.query('select pg_advisory_xact_lock(hashtext($1))', [key]);
+
+  if (contact.email) {
+    const byEmail = (await c.query<{ id: string }>('select id from people where lower(email) = $1', [contact.email])).rows[0]?.id;
+    if (byEmail) {
+      await c.query('update people set name = $2, phone = coalesce($3, phone) where id = $1', [byEmail, contact.name, contact.phone]);
+      return byEmail;
+    }
+    const walkIn = await sameNameOnPhone(true);
+    if (walkIn) {
+      await c.query('update people set email = $2, name = $3 where id = $1', [walkIn, contact.email, contact.name]);
+      return walkIn;
+    }
+  } else {
+    const existing = await sameNameOnPhone(false);
+    if (existing) return existing;
   }
   const res = await c.query<{ id: string }>('insert into people (name, email, phone) values ($1, $2, $3) returning id', [
     contact.name,
@@ -96,6 +113,9 @@ export async function upsertPerson(c: PoolClient, contact: Contact): Promise<str
   ]);
   return res.rows[0].id;
 }
+
+/** A booking's owner check: one person, or everyone signed in through a shared phone number. */
+const ownerIds = (who: string | string[]) => (Array.isArray(who) ? who : [who]);
 
 export type ConfirmInput = { contact: Contact; remindSms: boolean; remindEmail: boolean };
 
@@ -144,24 +164,24 @@ export async function walkInBooking(slotId: string, partySize: number, contact: 
   });
 }
 
-/** Cancels a confirmed booking owned by this person, freeing its spots. */
-export async function cancelBooking(bookingId: string, personId: string) {
+/** Cancels a confirmed booking owned by this person (or household), freeing its spots. */
+export async function cancelBooking(bookingId: string, personId: string | string[]) {
   const res = await withTx((c) =>
     c.query(
       `update bookings set status = 'cancelled', cancelled_at = now()
-        where id = $1 and person_id = $2 and status = 'confirmed'`,
-      [bookingId, personId],
+        where id = $1 and person_id = any($2::uuid[]) and status = 'confirmed'`,
+      [bookingId, ownerIds(personId)],
     ),
   );
   if (!res.rowCount) throw new BookingError('booking_not_found', 'That booking could not be found.');
 }
 
 /** Moves a confirmed booking to another slot of the same size, atomically. */
-export async function changeSlot(bookingId: string, personId: string, newSlotId: string) {
+export async function changeSlot(bookingId: string, personId: string | string[], newSlotId: string) {
   return withTx(async (c) => {
     const b = await c.query<{ slot_id: string; party_size: number }>(
-      `select slot_id, party_size from bookings where id = $1 and person_id = $2 and status = 'confirmed' for update`,
-      [bookingId, personId],
+      `select slot_id, party_size from bookings where id = $1 and person_id = any($2::uuid[]) and status = 'confirmed' for update`,
+      [bookingId, ownerIds(personId)],
     );
     if (!b.rowCount) throw new BookingError('booking_not_found', 'That booking could not be found.');
     const { remaining } = await lockSlot(c, newSlotId);

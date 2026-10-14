@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { BookingError, confirmBooking, holdSpots, releaseHold } from '@/lib/booking';
 import { contactSchema } from '@/lib/contact';
 import { getBooking } from '@/lib/queries';
-import { setPersonSession } from '@/lib/session';
+import { currentViewer, setPersonSession } from '@/lib/session';
 import { sendConfirmation } from '@/lib/notify';
 
 export type FormState = { error?: string; fields?: Record<string, string>; values?: Record<string, string> } | null;
@@ -51,7 +51,12 @@ export async function confirmAction(holdId: string, _prev: FormState, form: Form
     if (err instanceof BookingError) return { error: err.message, values };
     throw err;
   }
-  await setPersonSession(result.personId, form.get('remember') === 'on');
+  // Signed in with a shared phone and booking for someone on it? Stay signed in for the whole
+  // household; otherwise this browser now belongs to the person who just booked.
+  const viewer = await currentViewer();
+  if (!(viewer?.kind === 'phone' && viewer.phone === parsed.data.phone)) {
+    await setPersonSession(result.personId, form.get('remember') === 'on');
+  }
   const booking = await getBooking(result.bookingId);
   if (booking) await sendConfirmation(booking).catch((e) => console.error('confirmation failed', e));
   redirect(`/booked/${result.bookingId}`);

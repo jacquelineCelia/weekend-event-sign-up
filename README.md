@@ -15,6 +15,9 @@ Built with Next.js 16 and Postgres (runs on Supabase as is).
 - **My sign-ups** (`/me`): remembered on the device; on a new device, sign in with a 6-digit code
   sent by text or email. Change time, cancel, and rate finished activities 1–10.
 - Confirmation message right away, reminder 15 minutes before each activity.
+- **Shared phone numbers** (families, couples): people are told apart by email, so several can use
+  one phone. Signing in with that phone shows everyone's sign-ups, each labelled with a name;
+  signing in with an email shows just that person's. Texts start with the person's first name.
 
 **Staff** (`/staff`, behind a shared passcode)
 - **Check-in**: sessions by day, live roster with search by name, last 4 of phone or code;
@@ -40,7 +43,7 @@ testing (sign-in codes included).
 Tests run against a real Postgres database (set `TEST_DATABASE_URL`; it is wiped on each run):
 
 ```bash
-npm test     # 30 tests: capacity under concurrency, holds, login codes, reminders, schedule edits
+npm test     # 38 tests: capacity under concurrency, holds, login codes, reminders, schedule edits, shared phones
 ```
 
 ## Deploy (Vercel + Supabase)

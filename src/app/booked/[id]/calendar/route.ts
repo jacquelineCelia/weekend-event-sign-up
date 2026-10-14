@@ -1,6 +1,6 @@
 import { getBooking } from '@/lib/queries';
 import { EVENT, addMinutes } from '@/lib/event';
-import { currentPersonId } from '@/lib/session';
+import { currentOwners } from '@/lib/viewer';
 
 const stamp = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
 const esc = (s: string) => s.replace(/[\\;,]/g, (m) => `\\${m}`).replace(/\n/g, '\\n');
@@ -9,8 +9,8 @@ const esc = (s: string) => s.replace(/[\\;,]/g, (m) => `\\${m}`).replace(/\n/g, 
 export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
   const b = await getBooking(id);
-  const me = await currentPersonId();
-  if (!b || b.status !== 'confirmed' || b.personId !== me) return new Response('Not found', { status: 404 });
+  const { ids } = await currentOwners();
+  if (!b || b.status !== 'confirmed' || !b.personId || !ids.includes(b.personId)) return new Response('Not found', { status: 404 });
 
   const ics = [
     'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Mindfulness Weekend//Signup//EN', 'BEGIN:VEVENT',

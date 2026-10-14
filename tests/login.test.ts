@@ -25,13 +25,13 @@ describe('sign in with a one-time code', () => {
     expect(r.masked).toBe('jo••••@example.com');
     expect(outbox.at(-1)).toMatchObject({ channel: 'email', to: 'jordan@example.com' });
     const code = lastCode();
-    expect(await verifyLogin(r.ticket!, code)).toEqual({ personId });
+    expect(await verifyLogin(r.ticket!, code)).toEqual({ viewer: { kind: 'phone', phone: '+14125550148' } });
     expect(await verifyLogin(r.ticket!, code)).toHaveProperty('error');
   });
 
   it('finds people by email too, case-insensitively', async () => {
     const r = await startLogin('JORDAN@example.com');
-    expect(await verifyLogin(r.ticket!, lastCode())).toEqual({ personId });
+    expect(await verifyLogin(r.ticket!, lastCode())).toEqual({ viewer: { kind: 'person', personId } });
   });
 
   it('gives an unknown person the same kind of answer, and no code', async () => {

@@ -1,8 +1,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getPool } from '@/lib/db';
-import { getPerson } from '@/lib/queries';
-import { currentPersonId } from '@/lib/session';
+import { currentOwners } from '@/lib/viewer';
 import { EVENT, addMinutes, dayOf, fmtTime, requestTime } from '@/lib/event';
 import { Back, Bell, Plus } from '@/components/icons';
 import { signOutAction } from './actions';
@@ -12,30 +11,34 @@ export const dynamic = 'force-dynamic';
 
 type Row = {
   id: string; code: string; party_size: number; starts_at: Date; duration_min: number; remind_sms: boolean; remind_email: boolean;
-  activity_name: string; place: string; activity_id: string; slot_id: string; score: number | null;
+  activity_name: string; place: string; activity_id: string; slot_id: string; score: number | null; person_name: string;
 };
 
 const spots = (n: number) => `${n} ${n === 1 ? 'spot' : 'spots'}`;
 
 export default async function MySignups({ searchParams }: { searchParams: Promise<{ moved?: string }> }) {
-  const me = await currentPersonId();
-  const person = me ? await getPerson(me) : null;
-  if (!person) redirect('/me/sign-in');
+  const { viewer, ids } = await currentOwners();
+  if (!viewer || !ids.length) redirect('/me/sign-in');
   const sp = await searchParams;
+  const names = (await getPool().query<{ name: string }>('select name from people where id = any($1::uuid[]) order by created_at', [ids])).rows.map((r) => r.name);
 
   const { rows } = await getPool().query<Row>(
     `select b.id, b.code, b.party_size, s.starts_at, a.duration_min, b.remind_sms, b.remind_email,
-            a.name as activity_name, a.place, a.id as activity_id, s.id as slot_id, r.score
+            a.name as activity_name, a.place, a.id as activity_id, s.id as slot_id, r.score, p.name as person_name
        from bookings b join slots s on s.id = b.slot_id join activities a on a.id = s.activity_id
+       join people p on p.id = b.person_id
        left join ratings r on r.booking_id = b.id
-      where b.person_id = $1 and b.status = 'confirmed'
-      order by s.starts_at`,
-    [person.id],
+      where b.person_id = any($1::uuid[]) and b.status = 'confirmed'
+      order by s.starts_at, p.created_at`,
+    [ids],
   );
   const now = requestTime();
   const next = rows.find((r) => r.starts_at.getTime() > now);
   const byDay = EVENT.days.map((d) => ({ d, items: rows.filter((r) => dayOf(r.starts_at)?.key === d.key) })).filter((g) => g.items.length);
   const minsUntil = next ? Math.round((next.starts_at.getTime() - now) / 60000) : 0;
+  // Signed in with a phone several people share: label each activity with whose it is.
+  const household = new Set(rows.map((r) => r.person_name)).size > 1 || (viewer.kind === 'phone' && names.length > 1);
+  const who = viewer.kind === 'phone' ? (names.length > 1 ? `${names.length} people on ••• ${viewer.phone.slice(-4)}` : names[0]) : names[0];
   const upNextLabel = minsUntil < 60 ? `in ${minsUntil} min` : minsUntil < 24 * 60 ? `in ${Math.round(minsUntil / 60)} hr` : `${dayOf(next!.starts_at)?.short}`;
 
   return (
@@ -44,13 +47,15 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
         <Link className="back" href="/"><Back /> Activities</Link>
         <form action={signOutAction}>
           <button type="submit" className="back" style={{ border: 0, background: 'transparent', cursor: 'pointer', fontWeight: 500, color: 'var(--muted)', fontSize: 13 }}>
-            {person.name} · Sign out
+            {who} · Sign out
           </button>
         </form>
       </div>
       <section className="pad stack" style={{ gap: 6, padding: '8px 20px 18px' }}>
         <h1 className="h1" style={{ fontSize: 31 }}>Your weekend</h1>
-        <p className="muted" style={{ margin: 0 }}>{rows.length} {rows.length === 1 ? 'activity' : 'activities'}</p>
+        <p className="muted" style={{ margin: 0 }}>
+          {rows.length} {rows.length === 1 ? 'activity' : 'activities'}{household ? ` · ${names.join(', ')}` : ''}
+        </p>
         {sp.moved ? <p className="note ok" role="status" style={{ margin: '8px 0 0' }}>Time changed. Your code stays the same.</p> : null}
       </section>
 
@@ -66,7 +71,7 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
           </div>
           <div className="stack" style={{ gap: 4, position: 'relative' }}>
             <span className="serif" style={{ fontSize: 24 }}>{next.activity_name}</span>
-            <span className="sub">{fmtTime(next.starts_at)} · {next.place} · {spots(next.party_size)}</span>
+            <span className="sub">{fmtTime(next.starts_at)} · {next.place} · {spots(next.party_size)}{household ? ` · ${next.person_name}` : ''}</span>
           </div>
           {next.remind_sms || next.remind_email ? (
             <div style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 13.5, color: 'var(--on-dark-2)', position: 'relative' }}>
@@ -88,6 +93,7 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
                   <div style={{ width: 74, flex: 'none', fontWeight: 700, color: 'var(--moss)', fontVariantNumeric: 'tabular-nums', paddingTop: 2 }}>{fmtTime(r.starts_at)}</div>
                   <div className="stack" style={{ gap: 3, minWidth: 0 }}>
                     <span className="serif" style={{ fontSize: 17, color: started ? 'var(--muted-2)' : undefined }}>{r.activity_name}</span>
+                    {household ? <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--ochre)' }}>{r.person_name}</span> : null}
                     <span className="muted" style={{ fontSize: 13.5 }}>{r.place} · {spots(r.party_size)} · code {r.code}</span>
                     <span style={{ fontSize: 12.5, fontWeight: 600, marginTop: 4, color: started ? 'var(--muted-2)' : 'var(--moss-dark)' }}>
                       {done ? 'Done' : started ? 'Happening now' : r.id === next?.id ? 'Up next' : r.remind_sms || r.remind_email ? 'Reminder 15 min before' : 'No reminder'}

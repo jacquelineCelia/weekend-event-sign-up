@@ -4,7 +4,8 @@ import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { startLogin, verifyLogin } from '@/lib/login';
-import { clearPersonSession, currentPersonId, setPersonSession } from '@/lib/session';
+import { clearPersonSession, setViewerSession } from '@/lib/session';
+import { currentOwners } from '@/lib/viewer';
 import { BookingError, cancelBooking, changeSlot } from '@/lib/booking';
 import { getPool } from '@/lib/db';
 
@@ -24,7 +25,7 @@ export async function verifyLoginAction(ticket: string, _prev: LoginState, form:
   const code = String(form.get('code') ?? '');
   const r = await verifyLogin(ticket, code);
   if ('error' in r) return { error: r.error };
-  await setPersonSession(r.personId, true);
+  await setViewerSession(r.viewer, true);
   redirect('/me');
 }
 
@@ -36,24 +37,24 @@ export async function signOutAction() {
 const uuid = z.string().uuid();
 
 export async function cancelAction(form: FormData) {
-  const me = await currentPersonId();
+  const { ids } = await currentOwners();
   const id = uuid.safeParse(form.get('bookingId'));
-  if (me && id.success) await cancelBooking(id.data, me).catch(() => {});
+  if (ids.length && id.success) await cancelBooking(id.data, ids).catch(() => {});
   revalidatePath('/me');
 }
 
 export async function rateAction(form: FormData) {
-  const me = await currentPersonId();
+  const { ids } = await currentOwners();
   const id = uuid.safeParse(form.get('bookingId'));
   const score = z.coerce.number().int().min(1).max(10).safeParse(form.get('score'));
-  if (!me || !id.success || !score.success) return;
+  if (!ids.length || !id.success || !score.success) return;
   // Only the attendee's own, already-started bookings can be rated.
   await getPool().query(
     `insert into ratings (booking_id, score)
      select b.id, $3 from bookings b join slots s on s.id = b.slot_id
-      where b.id = $1 and b.person_id = $2 and b.status = 'confirmed' and s.starts_at < now()
+      where b.id = $1 and b.person_id = any($2::uuid[]) and b.status = 'confirmed' and s.starts_at < now()
      on conflict (booking_id) do update set score = excluded.score, updated_at = now()`,
-    [id.data, me, score.data],
+    [id.data, ids, score.data],
   );
   revalidatePath('/me');
 }
@@ -61,12 +62,12 @@ export async function rateAction(form: FormData) {
 export type ChangeState = { error?: string } | null;
 
 export async function changeTimeAction(bookingId: string, _prev: ChangeState, form: FormData): Promise<ChangeState> {
-  const me = await currentPersonId();
+  const { ids } = await currentOwners();
   const slot = uuid.safeParse(form.get('slotId'));
-  if (!me) redirect('/me/sign-in');
+  if (!ids.length) redirect('/me/sign-in');
   if (!slot.success) return { error: 'Please pick a time' };
   try {
-    await changeSlot(bookingId, me, slot.data);
+    await changeSlot(bookingId, ids, slot.data);
   } catch (err) {
     if (err instanceof BookingError) return { error: err.message };
     throw err;

@@ -38,7 +38,11 @@ export function CodeForm({ ticket, to, via }: { ticket: string; to: string; via:
     <form action={action} className="pad stack" style={{ gap: 18, padding: '20px 20px 24px' }}>
       <span className="leafmark" style={{ width: 52, height: 52 }}><Bubble /></span>
       <h1 className="h1" style={{ fontSize: 31 }}>{via === 'sms' ? 'Check your texts' : 'Check your email'}</h1>
-      <p className="lede">If {to || 'that'} is on our list, we&apos;ve sent a code. It expires in 10 minutes.</p>
+      <p className="lede">
+        {/ and |addresses/.test(to)
+          ? <>We&apos;ve sent the same code to {to}. Use whichever arrives first — it expires in 10 minutes.</>
+          : <>If {to || 'that'} is on our list, we&apos;ve sent a code. It expires in 10 minutes.</>}
+      </p>
       <div className="field">
         <label htmlFor="code">6-digit code</label>
         <input id="code" name="code" className="input" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9 ]*" maxLength={7}
