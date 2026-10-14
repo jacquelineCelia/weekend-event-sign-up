@@ -9,29 +9,58 @@ import LangToggle from '@/components/LangToggle';
 type Props = {
   lang: Lang;
   holdId: string;
-  expiresAt: string;
+  /** Seconds left on the hold, worked out by the database (so the visitor's clock doesn't matter). */
+  secondsLeft: number;
   summary: { activity: string; when: string; spots: string; partySize: number };
   known: { name: string; first: string; email: string; phone: string } | null;
 };
 
-function useCountdown(iso: string) {
+/**
+ * Counts down from the seconds the server says are left. Uses the browser's monotonic clock
+ * (performance.now), not the computer's date and time, so a wrong system clock can't skew it.
+ * Updates from the screen-refresh loop and from a backup timer, so one being throttled or
+ * blocked (some browser extensions do this) doesn't freeze the display.
+ */
+function useCountdown(secondsLeft: number) {
   const [left, setLeft] = useState<number | null>(null);
   useEffect(() => {
-    const end = Date.parse(iso);
-    const tick = () => setLeft(Math.max(0, Math.round((end - Date.now()) / 1000)));
-    tick();
-    const t = setInterval(tick, 1000);
-    return () => clearInterval(t);
-  }, [iso]);
+    const start = performance.now();
+    const compute = () => Math.max(0, Math.ceil(secondsLeft - (performance.now() - start) / 1000));
+    let last = -1;
+    let frame = 0;
+    const update = () => {
+      const v = compute();
+      if (v !== last) {
+        last = v;
+        setLeft(v);
+      }
+    };
+    const loop = () => {
+      update();
+      frame = requestAnimationFrame(loop);
+    };
+    update();
+    frame = requestAnimationFrame(loop);
+    const backup = setInterval(update, 500);
+    const onShow = () => update();
+    document.addEventListener('visibilitychange', onShow);
+    window.addEventListener('focus', onShow);
+    return () => {
+      cancelAnimationFrame(frame);
+      clearInterval(backup);
+      document.removeEventListener('visibilitychange', onShow);
+      window.removeEventListener('focus', onShow);
+    };
+  }, [secondsLeft]);
   return left;
 }
 
-export default function DetailsForm({ lang, holdId, expiresAt, summary, known }: Props) {
+export default function DetailsForm({ lang, holdId, secondsLeft, summary, known }: Props) {
   const t = dict(lang);
   const [state, action, pending] = useActionState<FormState, FormData>(confirmAction.bind(null, holdId), null);
   const [sms, setSms] = useState(true);
   const [mail, setMail] = useState(true);
-  const left = useCountdown(expiresAt);
+  const left = useCountdown(secondsLeft);
   const v = state?.values ?? known ?? { name: '', email: '', phone: '' };
   const err = state?.fields ?? {};
   const mmss = left === null ? '' : `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`;

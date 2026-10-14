@@ -50,7 +50,7 @@ export async function activityForDay(id: string, date: string, lang: Lang = 'en'
 
 export type BookingView = {
   id: string; status: 'held' | 'confirmed' | 'cancelled'; partySize: number; code: string | null;
-  holdExpiresAt: Date | null; remindSms: boolean; remindEmail: boolean; personId: string | null;
+  holdExpiresAt: Date | null; holdSecondsLeft: number; remindSms: boolean; remindEmail: boolean; personId: string | null;
   personName: string | null; personEmail: string | null; personPhone: string | null; personLang: Lang;
   slotId: string; startsAt: Date; activityId: string; activityName: string; place: string; durationMin: number;
   activityNameZh: string; placeZh: string;
@@ -65,7 +65,8 @@ export const bookingText = (b: BookingView, lang: Lang) => ({
 export async function getBooking(id: string): Promise<BookingView | null> {
   if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
   const { rows } = await getPool().query(
-    `select b.id, b.status, b.party_size, b.code, b.hold_expires_at, b.remind_sms, b.remind_email, b.person_id,
+    `select b.id, b.status, b.party_size, b.code, b.hold_expires_at,
+            greatest(0, floor(extract(epoch from (b.hold_expires_at - clock_timestamp()))))::int as hold_left, b.remind_sms, b.remind_email, b.person_id,
             p.name as person_name, p.email as person_email, p.phone as person_phone, coalesce(p.lang, 'en') as person_lang,
             s.id as slot_id, s.starts_at, a.id as activity_id, a.name as activity_name, a.place, a.duration_min,
             a.name_zh, a.place_zh
@@ -79,7 +80,7 @@ export async function getBooking(id: string): Promise<BookingView | null> {
   const r = rows[0];
   if (!r) return null;
   return {
-    id: r.id, status: r.status, partySize: r.party_size, code: r.code, holdExpiresAt: r.hold_expires_at,
+    id: r.id, status: r.status, partySize: r.party_size, code: r.code, holdExpiresAt: r.hold_expires_at, holdSecondsLeft: r.hold_left ?? 0,
     remindSms: r.remind_sms, remindEmail: r.remind_email, personId: r.person_id,
     personName: r.person_name, personEmail: r.person_email, personPhone: r.person_phone, personLang: r.person_lang,
     slotId: r.slot_id, startsAt: r.starts_at, activityId: r.activity_id, activityName: r.activity_name,

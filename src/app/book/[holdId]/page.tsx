@@ -39,7 +39,7 @@ export default async function Details({ params }: { params: Promise<{ holdId: st
   return (
     <DetailsForm
       holdId={b.id}
-      expiresAt={b.holdExpiresAt!.toISOString()}
+      secondsLeft={b.holdSecondsLeft}
       lang={lang}
       summary={{
         activity,
