@@ -1,9 +1,10 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { clearStaffSession, isStaff, setStaffSession, staffPasscodeMatches } from '@/lib/session';
+import { LAST_SLOT_COOKIE, clearStaffSession, isStaff, setStaffSession, staffPasscodeMatches } from '@/lib/session';
 import { BookingError, walkInBooking } from '@/lib/booking';
 import { walkInContactSchema } from '@/lib/contact';
 import { getBooking } from '@/lib/queries';
@@ -14,6 +15,15 @@ import { errorText } from '@/lib/i18n';
 
 async function requireStaff() {
   if (!(await isStaff())) redirect('/staff/login');
+}
+
+/** The session staff last worked on (a walk-in sign-up, or opened on Check-in); the Check-in tab returns to it. */
+async function rememberSlot(slotId: string) {
+  (await cookies()).set(LAST_SLOT_COOKIE, slotId, { path: '/staff', httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production', maxAge: 60 * 60 * 24 });
+}
+export async function rememberSlotAction(slotId: string) {
+  await requireStaff();
+  if (z.string().uuid().safeParse(slotId).success) await rememberSlot(slotId);
 }
 
 export async function staffLoginAction(_prev: { error?: string } | null, form: FormData) {
@@ -60,6 +70,7 @@ export async function walkInAction(_prev: WalkInState, form: FormData): Promise<
     const r = await walkInBooking(base.data.slotId, base.data.party, contact.data, { allowOver: form.get('allowOver') === 'on', checkInNow, lang });
     const b = await getBooking(r.bookingId);
     if (b) await sendConfirmation(b).catch((e) => console.error('walk-in confirmation failed', e));
+    await rememberSlot(base.data.slotId);
     revalidatePath('/staff', 'layout');
     return { done: { name: contact.data.name, code: r.code, to: contact.data.email ?? contact.data.phone ?? '', checkedIn: checkInNow } };
   } catch (err) {

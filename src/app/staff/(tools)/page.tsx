@@ -5,6 +5,10 @@ import { Plus } from '@/components/icons';
 import Roster from './Roster';
 import AutoRefresh from './AutoRefresh';
 import FilterList from './FilterList';
+import RememberSlot from './RememberSlot';
+import { cookies } from 'next/headers';
+import { getPool } from '@/lib/db';
+import { LAST_SLOT_COOKIE } from '@/lib/session';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,14 +16,27 @@ export default async function CheckIn({ searchParams }: { searchParams: Promise<
   const sp = await searchParams;
   const now = requestTime();
   const today = dayOf(new Date(now));
-  const day = sp.day ? dayByKey(sp.day) : today ?? EVENT.days[0];
+  // Coming back via the Check-in tab (no day or session chosen): reopen the session staff last worked on,
+  // e.g. the one they just signed a walk-in up for — unless it has finished.
+  let slotId = sp.slot;
+  let lastDay: (typeof EVENT.days)[number] | null = null;
+  if (!sp.slot && !sp.day) {
+    const last = (await cookies()).get(LAST_SLOT_COOKIE)?.value ?? '';
+    if (/^[0-9a-f-]{36}$/i.test(last)) {
+      const r = (await getPool().query<{ starts_at: Date; duration_min: number }>(
+        'select s.starts_at, a.duration_min from slots s join activities a on a.id = s.activity_id where s.id = $1', [last],
+      )).rows[0];
+      if (r && addMinutes(r.starts_at, r.duration_min).getTime() > now) { slotId = last; lastDay = dayOf(r.starts_at); }
+    }
+  }
+  const day = sp.day ? dayByKey(sp.day) : lastDay ?? today ?? EVENT.days[0];
   const all = await sessionsForDay(day.date);
   const ends = (s: (typeof all)[number]) => addMinutes(s.startsAt, s.durationMin).getTime();
   // Finished sessions are hidden unless staff ask to see them (e.g. to look up who came).
   const showPast = sp.past === '1';
   const finished = all.filter((s) => ends(s) <= now).length;
   const sessions = showPast ? all : all.filter((s) => ends(s) > now);
-  const sel = all.find((s) => s.slotId === sp.slot) ?? sessions[0] ?? (showPast ? all[0] : undefined);
+  const sel = all.find((s) => s.slotId === slotId) ?? sessions[0] ?? (showPast ? all[0] : undefined);
   const people = sel ? await roster(sel.slotId) : [];
 
   const tag = (s: (typeof sessions)[number]) => {
@@ -46,6 +63,7 @@ export default async function CheckIn({ searchParams }: { searchParams: Promise<
   return (
     <div className="staffbody">
       <AutoRefresh seconds={20} />
+      {sel ? <RememberSlot slotId={sel.slotId} /> : null}
       <aside className="staffside" aria-label="Sessions">
         <nav className="segment" aria-label="Day">
           {EVENT.days.map((d) => (

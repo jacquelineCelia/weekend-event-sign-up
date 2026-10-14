@@ -111,3 +111,6 @@ export async function isStaff() {
 export async function clearStaffSession() {
   (await cookies()).delete({ name: STAFF_COOKIE, path: '/staff' });
 }
+
+/** Cookie holding the staff's last-worked session id (Check-in tab returns to it). */
+export const LAST_SLOT_COOKIE = 'mw_staff_slot';
