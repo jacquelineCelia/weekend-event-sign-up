@@ -108,9 +108,12 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
                     <span className={`serif${zhBold(r.activity_name)}`} style={{ fontSize: 17, color: started ? 'var(--muted-2)' : undefined }}>{r.activity_name}</span>
                     {household ? <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--ochre)' }}>{r.person_name}</span> : null}
                     <span className="muted" style={{ fontSize: 13.5 }}>{r.place} · {t.spots(r.party_size)} · {t.code(r.code)}</span>
-                    <span style={{ fontSize: 12.5, fontWeight: 600, marginTop: 4, color: started ? 'var(--muted-2)' : 'var(--moss-dark)' }}>
-                      {done ? t.done : started ? t.happening : r.id === next?.id ? t.upNext : r.remind_sms || r.remind_email ? t.reminder15 : t.noReminderShort}
-                    </span>
+                    {r.id === next?.id ? null : (
+                      // The "Up next" card at the top already covers the next one, so its row has no status line.
+                      <span style={{ fontSize: 12.5, fontWeight: 600, marginTop: 4, color: started ? 'var(--muted-2)' : 'var(--moss-dark)' }}>
+                        {done ? t.done : started ? t.happening : r.remind_sms || r.remind_email ? t.reminder15 : t.noReminderShort}
+                      </span>
+                    )}
                   </div>
                 </div>
                 {!started ? (
