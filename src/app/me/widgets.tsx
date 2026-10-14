@@ -38,7 +38,7 @@ export function RatePicker({ lang, bookingId, name, score }: { lang: Lang; booki
   const [open, setOpen] = useState(false);
   if (score && !open) {
     return (
-      <div role="status" style={{ paddingLeft: 88, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', fontSize: 13.5, color: 'var(--moss-dark)' }}>
+      <div role="status" style={{ paddingLeft: 102, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', fontSize: 13.5, color: 'var(--moss-dark)' }}>
         <span style={{ background: 'var(--sage)', padding: '6px 12px', borderRadius: 999, fontWeight: 600 }}>{t.rated(score)}</span>
         <span>{t.thanks}</span>
         <button type="button" onClick={() => setOpen(true)} style={{ border: 0, background: 'transparent', color: 'var(--moss)', fontWeight: 700, cursor: 'pointer', minHeight: 36 }}>{t.change}</button>
@@ -47,7 +47,7 @@ export function RatePicker({ lang, bookingId, name, score }: { lang: Lang; booki
   }
   if (!open) {
     return (
-      <div style={{ paddingLeft: 88 }}>
+      <div style={{ paddingLeft: 102 }}>
         <button type="button" className="btn ghost" style={{ ...small, minHeight: 40, color: 'var(--moss-dark)' }} onClick={() => setOpen(true)}>
           <Leaf /> {t.rateThis}
         </button>

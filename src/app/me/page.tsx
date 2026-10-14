@@ -103,7 +103,7 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
             return (
               <article key={r.id} className="card" style={{ borderRadius: 20, padding: 16, gap: 12, background: started ? 'var(--stone)' : undefined }}>
                 <div style={{ display: 'flex', gap: 14 }}>
-                  <div style={{ width: 74, flex: 'none', fontWeight: 700, color: 'var(--moss)', fontVariantNumeric: 'tabular-nums', paddingTop: 2 }}>{fmtTimeL(r.starts_at, lang)}</div>
+                  <div style={{ width: 88, flex: 'none', whiteSpace: 'nowrap', fontWeight: 700, color: 'var(--moss)', fontVariantNumeric: 'tabular-nums', paddingTop: 2 }}>{fmtTimeL(r.starts_at, lang)}</div>
                   <div className="stack" style={{ gap: 3, minWidth: 0 }}>
                     <span className={`serif${zhBold(r.activity_name)}`} style={{ fontSize: 17, color: started ? 'var(--muted-2)' : undefined }}>{r.activity_name}</span>
                     {household ? <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--ochre)' }}>{r.person_name}</span> : null}
@@ -111,7 +111,7 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
                   </div>
                 </div>
                 {!started ? (
-                  <div style={{ display: 'flex', gap: 8, paddingLeft: 88, flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', gap: 8, paddingLeft: 102, flexWrap: 'wrap' }}>
                     <Link className="btn ghost" style={{ minHeight: 42, fontSize: 14, padding: '0 14px' }} href={`/activity/${r.activity_id}?slot=${r.slot_id}&change=${r.id}`}>{t.changeTime}</Link>
                     <CancelButton lang={lang} bookingId={r.id} />
                   </div>
