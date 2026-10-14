@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { activitiesForDay } from '@/lib/queries';
-import { EVENT, dayByKey, dayText, fmtDurationL, fmtTimeL, isLow, requestTime } from '@/lib/event';
+import { EVENT, dateRangeL, dayByKey, dayText, eventNameL, fmtDurationL, fmtTimeL, isLow, requestTime } from '@/lib/event';
 import { getLang } from '@/lib/lang';
 import { dict } from '@/lib/i18n';
 import LangToggle from '@/components/LangToggle';
@@ -15,7 +15,7 @@ export default async function Browse({ searchParams }: { searchParams: Promise<{
   const lang = await getLang();
   const t = dict(lang);
   const all = await activitiesForDay(day.date, lang);
-  const [title1, title2] = t.heroTitle(lang === 'zh' ? EVENT.nameZh : EVENT.name);
+  const [title1, title2] = t.heroTitle(eventNameL(lang));
   const now = requestTime();
 
   const acts = all
@@ -38,7 +38,7 @@ export default async function Browse({ searchParams }: { searchParams: Promise<{
     <div className="phone">
       <header className="hero">
         <div className="meta">
-          <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Leaf /> {lang === 'zh' ? EVENT.dateRangeZh : EVENT.dateRange}</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Leaf /> {dateRangeL(lang)}</span>
           <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <LangToggle lang={lang} onDark />
             <Link href="/me"><Calendar /> {t.mySignups}</Link>

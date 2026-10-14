@@ -2,7 +2,8 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getPool } from '@/lib/db';
 import { currentOwners } from '@/lib/viewer';
-import { EVENT, addMinutes, dayOf, dayText, fmtTimeL, requestTime } from '@/lib/event';
+import { EVENT, addMinutes, dayOf, dayText, fmtTimeL, isChinese, requestTime } from '@/lib/event';
+import { localText } from '@/lib/hans';
 import { getLang } from '@/lib/lang';
 import { dict } from '@/lib/i18n';
 import LangToggle from '@/components/LangToggle';
@@ -14,7 +15,7 @@ export const dynamic = 'force-dynamic';
 
 type Row = {
   id: string; code: string; party_size: number; starts_at: Date; duration_min: number; remind_sms: boolean; remind_email: boolean;
-  activity_name: string; place: string; activity_id: string; slot_id: string; score: number | null; person_name: string;
+  activity_name: string; place: string; name_zh: string; place_zh: string; activity_id: string; slot_id: string; score: number | null; person_name: string;
 };
 
 export default async function MySignups({ searchParams }: { searchParams: Promise<{ moved?: string }> }) {
@@ -27,15 +28,19 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
 
   const { rows } = await getPool().query<Row>(
     `select b.id, b.code, b.party_size, s.starts_at, a.duration_min, b.remind_sms, b.remind_email,
-            case when $2 = 'zh' and a.name_zh <> '' then a.name_zh else a.name end as activity_name,
-            case when $2 = 'zh' and a.place_zh <> '' then a.place_zh else a.place end as place, a.id as activity_id, s.id as slot_id, r.score, p.name as person_name
+            a.name as activity_name, a.name_zh,
+            a.place, a.place_zh, a.id as activity_id, s.id as slot_id, r.score, p.name as person_name
        from bookings b join slots s on s.id = b.slot_id join activities a on a.id = s.activity_id
        join people p on p.id = b.person_id
        left join ratings r on r.booking_id = b.id
       where b.person_id = any($1::uuid[]) and b.status = 'confirmed'
       order by s.starts_at, p.created_at`,
-    [ids, lang],
+    [ids],
   );
+  for (const r of rows) {
+    r.activity_name = localText(r.activity_name, r.name_zh, lang);
+    r.place = localText(r.place, r.place_zh, lang);
+  }
   const now = requestTime();
   const next = rows.find((r) => r.starts_at.getTime() > now);
   const byDay = EVENT.days.map((d) => ({ d, items: rows.filter((r) => dayOf(r.starts_at)?.key === d.key) })).filter((g) => g.items.length);
@@ -62,7 +67,7 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
       <section className="pad stack" style={{ gap: 6, padding: '8px 20px 18px' }}>
         <h1 className="h1" style={{ fontSize: 31 }}>{t.yourWeekend}</h1>
         <p className="muted" style={{ margin: 0 }}>
-          {t.nActivities(rows.length)}{household ? ` · ${names.join(lang === 'zh' ? '、' : ', ')}` : ''}
+          {t.nActivities(rows.length)}{household ? ` · ${names.join(isChinese(lang) ? '、' : ', ')}` : ''}
         </p>
         {sp.moved ? <p className="note ok" role="status" style={{ margin: '8px 0 0' }}>{t.moved}</p> : null}
       </section>

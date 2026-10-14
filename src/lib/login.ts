@@ -15,7 +15,7 @@ const hash = (code: string) => createHmac('sha256', process.env.SESSION_SECRET ?
  * Starts a sign-in. Always returns the same shape, so it never reveals who has signed up.
  * A phone number signs in everyone who uses it (families share phones); an email signs in one person.
  */
-export async function startLogin(identifier: string, lang: 'en' | 'zh' = 'en'): Promise<{ ticket: string | null; via: 'email' | 'sms' | null; masked: string | null; limited?: boolean; many?: boolean }> {
+export async function startLogin(identifier: string, lang: 'en' | 'zh' | 'zhs' = 'en'): Promise<{ ticket: string | null; via: 'email' | 'sms' | null; masked: string | null; limited?: boolean; many?: boolean }> {
   const phone = normalizePhone(identifier);
   const email = phone ? null : normalizeEmail(identifier);
   if (!phone && !email) return { ticket: null, via: null, masked: null };

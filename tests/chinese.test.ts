@@ -9,6 +9,7 @@ import { sendConfirmation, sendReminder } from '@/lib/notify';
 import { saveSchedule, scheduleFor } from '@/lib/staff';
 import { EVENT, fmtTimeL, fmtDurationL, dayText } from '@/lib/event';
 import { dict, errorText, firstName, langFromAcceptLanguage } from '@/lib/i18n';
+import { toSimplified } from '@/lib/hans';
 
 vi.spyOn(console, 'info').mockImplementation(() => {});
 const pool = getPool();
@@ -28,17 +29,18 @@ beforeEach(async () => {
 afterAll(() => pool.end());
 
 const mei = contactSchema.parse({ name: '王美玲', email: 'mei@example.com', phone: '412 555 0123' });
-const book = async (lang: 'en' | 'zh') => {
+const book = async (lang: 'en' | 'zh' | 'zhs') => {
   const h = await holdSpots(slotId, 2);
   return confirmBooking(h.holdId, { contact: mei, remindSms: false, remindEmail: true, lang });
 };
 
 describe('language helpers', () => {
-  it('detects Traditional Chinese browsers only', () => {
+  it('detects Traditional and Simplified Chinese browsers', () => {
     expect(langFromAcceptLanguage('zh-TW,zh;q=0.9,en;q=0.8')).toBe('zh');
     expect(langFromAcceptLanguage('zh-Hant-HK')).toBe('zh');
-    expect(langFromAcceptLanguage('zh')).toBe('zh');
-    expect(langFromAcceptLanguage('zh-CN,zh;q=0.9')).toBe('en');
+    expect(langFromAcceptLanguage('zh')).toBe('zhs');
+    expect(langFromAcceptLanguage('zh-CN,zh;q=0.9')).toBe('zhs');
+    expect(langFromAcceptLanguage('zh-Hans-SG')).toBe('zhs');
     expect(langFromAcceptLanguage('en-US,en;q=0.9,zh-TW;q=0.5')).toBe('en');
     expect(langFromAcceptLanguage(null)).toBe('en');
   });
@@ -134,5 +136,42 @@ describe('messages in the attendee’s saved language', () => {
     const [s] = await scheduleFor(actId, DAY);
     expect(await saveSchedule(actId, DAY, [{ id: s.id, time: '13:00', capacity: 10 }])).toEqual({ notified: 1 });
     expect(outbox[0].text).toBe(`正念週末：時段異動。拉坯體驗改為下午 1:00 開始（原為上午 11:30）。名額與代碼 ${outbox[0].text.match(/代碼 (\w{4})/)![1]} 不變。`);
+  });
+});
+
+describe('Simplified Chinese', () => {
+  const flat = (o: unknown): string[] =>
+    typeof o === 'string' ? [o]
+    : typeof o === 'function' ? flat((() => {
+        try { return (o as (...a: unknown[]) => unknown)(1, 2, '上午 11:30', 'X', 'Y', 3, 'CODE', ''); }
+        catch { return (o as (...a: unknown[]) => unknown)(['上午 11:30', '下午 1:00']); }
+      })())
+    : Array.isArray(o) ? o.flatMap(flat)
+    : o && typeof o === 'object' ? Object.values(o).flatMap(flat) : [];
+
+  it('has every text, all already in Simplified characters and mainland wording', () => {
+    const zhs = dict('zhs');
+    expect(Object.keys(zhs).sort()).toEqual(Object.keys(dict('en')).sort());
+    const all = flat(zhs).join('\n');
+    expect(toSimplified(all)).toBe(all); // nothing left in Traditional
+    for (const taiwanWord of ['代碼', '额满', '进程', '行事历', '信箱', '报到', '「']) expect(all).not.toContain(taiwanWord);
+    expect(zhs.msg.loginSubject('123456')).toBe('你的登录验证码：123456');
+    expect(zhs.checkInCode).toBe('签到码');
+  });
+
+  it('converts the Traditional activity text staff typed', async () => {
+    const zhs = await activitiesForDay(DAY, 'zhs');
+    expect(zhs.map((a) => [a.name, a.place])).toEqual([['拉坯体验', '谷仓工作室']]);
+    expect(fmtDurationL(90, 'zhs')).toBe('1 小时 30 分钟');
+  });
+
+  it('sends messages in Simplified to people who signed up in it', async () => {
+    const r = await book('zhs');
+    const b = (await getBooking(r.bookingId))!;
+    expect(b.personLang).toBe('zhs');
+    await sendConfirmation(b);
+    expect(outbox[0].subject).toBe('报名成功：拉坯体验，11/14（六） 上午 11:30');
+    expect(outbox[0].text).toContain('签到时请出示签到码');
+    expect(outbox[0].text).toContain('地点：谷仓工作室');
   });
 });

@@ -27,7 +27,7 @@ export async function sessionsForDay(date: string): Promise<StaffSession[]> {
   }));
 }
 
-export type RosterRow = { bookingId: string; name: string; phoneLast4: string; code: string; partySize: number; checkedIn: number; walkIn: boolean; zh: boolean };
+export type RosterRow = { bookingId: string; name: string; phoneLast4: string; code: string; partySize: number; checkedIn: number; walkIn: boolean; lang: 'en' | 'zh' | 'zhs' };
 
 export async function roster(slotId: string): Promise<RosterRow[]> {
   const { rows } = await getPool().query(
@@ -38,7 +38,7 @@ export async function roster(slotId: string): Promise<RosterRow[]> {
     [slotId],
   );
   return rows.map((r) => ({
-    bookingId: r.id, name: r.name, phoneLast4: r.last4, code: r.code, partySize: r.party_size, checkedIn: r.checked_in, walkIn: r.source === 'walk_in', zh: r.lang === 'zh',
+    bookingId: r.id, name: r.name, phoneLast4: r.last4, code: r.code, partySize: r.party_size, checkedIn: r.checked_in, walkIn: r.source === 'walk_in', lang: r.lang,
   }));
 }
 
@@ -158,7 +158,7 @@ export async function saveSchedule(activityId: string, date: string, edits: Slot
     (await getPool().query<{ d: Date }>(`select (($1::date + $2::time)::timestamp at time zone $3) as d`, [date, t, EVENT.timeZone])).rows[0].d;
   for (const m of moved) {
     const [from, to] = [await at(m.from), await at(m.to)];
-    const people = await getPool().query<{ email: string | null; phone: string | null; code: string; lang: 'en' | 'zh' }>(
+    const people = await getPool().query<{ email: string | null; phone: string | null; code: string; lang: 'en' | 'zh' | 'zhs' }>(
       `select p.email, p.phone, b.code, p.lang from bookings b join people p on p.id = b.person_id where b.id = any($1)`,
       [m.bookingIds],
     );

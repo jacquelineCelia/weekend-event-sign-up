@@ -105,6 +105,7 @@ export default function WalkInForm({ options, initialKey, initialSlot }: { optio
             <span className="muted">Messages in</span>
             <label className="check"><input type="radio" name="lang" value="en" defaultChecked /> English</label>
             <label className="check" lang="zh-Hant-TW"><input type="radio" name="lang" value="zh" /> 繁體中文</label>
+            <label className="check" lang="zh-Hans-CN"><input type="radio" name="lang" value="zhs" /> 简体中文</label>
           </span>
         </div>
         {slot?.soon ? <span className="muted" style={{ fontSize: 13, marginTop: -12 }}>This session starts in under 15 minutes, so no reminder will be sent for it.</span> : null}

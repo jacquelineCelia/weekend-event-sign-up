@@ -54,7 +54,8 @@ export async function walkInAction(_prev: WalkInState, form: FormData): Promise<
   }
   const checkInNow = form.get('checkInNow') === 'on';
   // Which language their confirmation and reminders come in.
-  const lang = form.get('lang') === 'zh' ? 'zh' : 'en';
+  const raw = form.get('lang');
+  const lang = raw === 'zh' || raw === 'zhs' ? raw : 'en';
   try {
     const r = await walkInBooking(base.data.slotId, base.data.party, contact.data, { allowOver: form.get('allowOver') === 'on', checkInNow, lang });
     const b = await getBooking(r.bookingId);

@@ -4,13 +4,17 @@ import type { Lang } from './event';
 export type { Lang } from './event';
 
 export const LANG_COOKIE = 'mw_lang';
-export const isLang = (v: unknown): v is Lang => v === 'en' || v === 'zh';
+export const isLang = (v: unknown): v is Lang => v === 'en' || v === 'zh' || v === 'zhs';
 
-/** Chinese browser settings (Taiwan, Hong Kong, Traditional) → 'zh'; anything else → 'en'. */
+/**
+ * From the browser's top language: Taiwan, Hong Kong, Macau or "Traditional" → 'zh';
+ * mainland, Singapore, "Simplified" or plain Chinese → 'zhs'; anything else → 'en'.
+ */
 export function langFromAcceptLanguage(header: string | null | undefined): Lang {
   if (!header) return 'en';
-  const first = header.split(',')[0]?.trim().toLowerCase() ?? '';
-  return /^zh(-hant|-tw|-hk|-mo)?\b/.test(first) && !/^zh-(hans|cn|sg)/.test(first) ? 'zh' : 'en';
+  const first = header.split(',')[0]?.split(';')[0]?.trim().toLowerCase() ?? '';
+  if (!/^zh\b/.test(first)) return 'en';
+  return /^zh-(hant|tw|hk|mo)\b/.test(first) ? 'zh' : 'zhs';
 }
 
 const hasCJK = (s: string) => /[㐀-鿿豈-﫿]/.test(s);
@@ -367,7 +371,178 @@ const zh: Dict = {
   },
 };
 
-export const dict = (lang: Lang): Dict => (lang === 'zh' ? zh : en);
+const zhs: Dict = {
+  htmlLang: 'zh-Hans-CN',
+  switchTo: 'EN',
+  switchLabel: 'Switch to English',
+  activities: '活动',
+  mySignups: '我的报名',
+  heroTitle: (event: string) => [event, '活动报名'],
+  heroLede: '用轻松的步调度过这个周末。挑一个适合你的时段，我们会在开始前 15 分钟提醒你。',
+  dayNav: '日期',
+  hasOpen: '尚有名额',
+  countAll: (n) => `共 ${n} 项活动`,
+  countSome: (a, n) => `${n} 项中的 ${a} 项`,
+  fullyBooked: '已满员',
+  chipAria: (name, time, n) => `${name}，${time}，剩 ${n} 位`,
+  onlyLeft: (n) => `仅剩 ${n} 位`,
+  left: (n) => `剩 ${n} 位`,
+  dayFull: '这天的活动都满员了，看看另一天吧。',
+  spots: (n) => `${n} 位`,
+
+  allActivities: '所有活动',
+  alsoOn: '其他场次：',
+  pickTime: '选择时段',
+  pickNewTime: '选择新时段',
+  forYour: (n) => `你的 ${n} 位名额`,
+  spotsLive: '名额实时更新',
+  noTimes: '这天没有场次。',
+  yourTime: '目前时段',
+  started: '已开始',
+  full: '已满',
+  whosComing: '有谁参加？',
+  guests: '同行人数',
+  notCountingYou: '不含你本人',
+  removeGuest: '减少一位同行',
+  addGuest: '增加一位同行',
+  partyLine: (g, n, time) => `你 + ${g} 位同行 = 共 ${n} 位，${time}。`,
+  everyOpen: (time) => `${time} 的空位只剩这些了。`,
+  needMore: (times) => `需要更多名额？${times.join('、')} 还有空位。`,
+  moving: '正在更改时段…',
+  holding: '正在为你保留名额…',
+  pickToContinue: '请先选择时段',
+  moveTo: (t) => `改到${t}`,
+  continueBtn: (n, t) => `继续 · ${n} 位 · ${t}`,
+  codeStays: '你的签到码不变。',
+  holdNote: '名额会为你保留 10 分钟，请在时间内完成报名。',
+
+  back: '返回',
+  heldFor: (mmss) => `保留中 ${mmss}`,
+  holdEndedShort: '保留已结束，仍可尝试提交',
+  welcomeBack: (first) => `欢迎回来，${first}`,
+  almostThere: '就快完成了',
+  change: '更改',
+  fullName: '姓名',
+  email: '邮箱',
+  emailHint: '报名确认邮件和查看行程的链接会发送到这里。',
+  phone: '手机号码',
+  phoneHint: '签到时，工作人员也可以用这个号码找到你。',
+  remindLegend: '开始前 15 分钟提醒我',
+  bySms: '以短信提醒',
+  byEmail: '以邮件提醒',
+  noReminderWarn: '这个活动将不会收到提醒。',
+  rememberMe: '在这台设备上记住我，下次报名更快。',
+  confirming: '提交中…',
+  confirmBtn: (n) => `确认报名 ${n} 位`,
+  freeNote: '免费 · 随时可在“我的报名”取消',
+  holdEndedTitle: '保留时间已结束',
+  holdEndedBody: '名额已经释放，请重新选择时段。',
+
+  youreIn: (first) => (first ? `报名成功，${first}！` : '报名成功！'),
+  allSet: '深呼吸，一切都安排好了。',
+  confirmationTo: (email) => `确认邮件已发送至 ${email}。`,
+  party: '人数',
+  checkInCode: '签到码',
+  remindWill: (how, time) => `我们会在${time}（开始前 15 分钟）以${how === 'sms' ? '短信' : how === 'email' ? '邮件' : '短信和邮件'}提醒你。`,
+  noReminderChosen: '你选择不接收这个活动的提醒。',
+  another: '报名其他活动',
+  addToCalendar: '加入日历',
+  doorNote: '签到时出示姓名、手机号码或签到码即可。行程有变？请到“我的报名”取消，把名额留给其他人。',
+
+  yourWeekend: '你的周末',
+  nActivities: (n) => `${n} 项活动`,
+  signOut: '退出',
+  peopleOn: (n, last4) => `••• ${last4} 的 ${n} 位`,
+  moved: '时段已更改，签到码不变。',
+  upNext: '下一个',
+  inMin: (n) => `${n} 分钟后`,
+  inHr: (n) => `${n} 小时后`,
+  reminderAt: (t) => `${t} 提醒`,
+  done: '已结束',
+  happening: '进行中',
+  reminder15: '开始前 15 分钟提醒',
+  noReminderShort: '不提醒',
+  changeTime: '更改时段',
+  cancel: '取消',
+  code: (c) => `签到码 ${c}`,
+  noSignups: '目前还没有报名。',
+  addAnother: '再报名一项活动',
+  releaseQ: '确定要释放名额吗？',
+  yesCancel: '确定取消',
+  keepIt: '保留',
+  rated: (n) => `你给了 ${n} / 10 分`,
+  thanks: '谢谢你',
+  rateThis: '为这个活动评分',
+  howWas: (name) => `“${name}”感觉如何？`,
+  rateAria: (n) => `评 ${n} 分（满分 10 分）`,
+  notForMe: '1 · 不太适合我',
+  lovedIt: '10 · 非常喜欢',
+  later: '稍后再说',
+
+  welcomeBackTitle: '欢迎回来',
+  signinLede: '输入报名时使用的手机号码或邮箱，我们会给你发送 6 位验证码，无需密码。',
+  phoneOrEmail: '手机号码或邮箱',
+  sending: '发送中…',
+  sendCode: '发送验证码',
+  rememberNote: '曾在这部手机上报名过？那就不用再登录，整个周末我们都会记得你。',
+  checkTexts: '请查看短信',
+  checkEmail: '请查看邮箱',
+  sentMany: (to) => `我们已将同一个验证码发送到 ${to}，以最先收到的为准，10 分钟内有效。`,
+  sentIf: (to) => `如果 ${to || '这个号码或邮箱'} 在我们的名单上，你会收到一个验证码，10 分钟内有效。`,
+  codeLabel: '6 位验证码',
+  checking: '确认中…',
+  showMine: '查看我的报名',
+  differentWho: '改用其他号码或邮箱',
+  resend: '重新发送验证码',
+
+  errors: {
+    name_required: '请输入姓名',
+    email_invalid: '邮箱格式不正确',
+    email_required: '请输入邮箱',
+    phone_invalid: '手机号码格式不正确',
+    phone_required: '请输入手机号码',
+    pick_time: '请选择时段',
+    hold_not_found: '这次报名已超时，请重新选择时段。',
+    hold_expired: '保留时间已过，名额已被订走，请选择其他时段。',
+    booking_not_found: '找不到这条报名记录。',
+    slot_not_found: '这个时段已经不存在。',
+    enter_who: '请输入报名时使用的手机号码或邮箱。',
+    too_many_codes: '刚刚已发送了几个验证码，请稍等几分钟再试。',
+    bad_who: '这看起来不像手机号码或邮箱。',
+    code_expired: '验证码已过期，请重新获取。',
+    too_many_tries: '尝试次数过多，请重新获取验证码。',
+  },
+  notEnough: (n) => (n === 0 ? '这个时段刚刚满员了。' : `这个时段只剩 ${n} 位。`),
+  codeWrong: (left) => `验证码不正确，还可以再试 ${left} 次。`,
+
+  msg: {
+    youreInSubject: (act, day, time) => `报名成功：${act}，${day} ${time}`,
+    youreInTitle: (act) => `报名成功：${act}`,
+    whenWhere: (act, when, place) => `${act} — ${when}，地点：${place}。`,
+    partyFor: (n, name, code) => `${name}，共 ${n} 位。签到时请出示签到码 ${code}、姓名或手机号码。`,
+    willRemind: (t) => `我们会在${t} 提醒你。`,
+    plansChanged: '行程有变？请到“我的报名”取消，把名额留给其他人。',
+    // Kept short: a Chinese text message holds about 70 characters per part.
+    confirmSms: (event, first, act, when, place, n, code, reminder) => `${event}：${first}已报名${act}，${when}，${place}。${n}位，签到码 ${code}。${reminder}`,
+    reminderSms: (first, act, time, place, n, code, url) => `${first}：${act} 15 分钟后开始（${time}，${place}）。${n}位，签到码 ${code}。无法参加请取消：${url}`,
+    reminderSubject: (act, time) => `15 分钟后开始：${act}，${time}`,
+    reminderTitle: (act) => `15 分钟后开始：${act}`,
+    reminderLines: (act, time, place, n) => [
+      `${act}将于${time} 在${place}开始。`,
+      `共 ${n} 位 · 签到时出示签到码、姓名或手机号码即可。`,
+      '无法参加吗？请取消，把名额留给其他人。',
+    ],
+    cantMakeIt: '我无法参加',
+    loginText: (code, event) => `${code} 是你的${event}登录验证码，10 分钟内有效。`,
+    loginSubject: (code) => `你的登录验证码：${code}`,
+    loginTitle: '你的登录验证码',
+    timeChange: (event, act, to, from, code) => `${event}：时段变更。${act}改为${to} 开始（原为${from}）。名额与签到码 ${code} 不变。`,
+    timeChangeSubject: (act, to) => `时段变更：${act}改为${to}`,
+  },
+};
+
+
+export const dict = (lang: Lang): Dict => (lang === 'zh' ? zh : lang === 'zhs' ? zhs : en);
 
 /** Error text for a code returned by an action (falls back to the code itself). */
 export function errorText(lang: Lang, e: { code: string; remaining?: number; left?: number } | string | undefined | null) {

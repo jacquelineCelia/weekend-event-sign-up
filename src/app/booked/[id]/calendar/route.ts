@@ -1,5 +1,5 @@
 import { bookingText, getBooking } from '@/lib/queries';
-import { EVENT, addMinutes } from '@/lib/event';
+import { addMinutes, eventNameL } from '@/lib/event';
 import { getLang } from '@/lib/lang';
 import { currentOwners } from '@/lib/viewer';
 
@@ -15,8 +15,9 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
 
   const lang = await getLang();
   const { activity, place } = bookingText(b, lang);
-  const summary = lang === 'zh' ? `${activity} · ${EVENT.nameZh}` : `${activity} · ${EVENT.name}`;
-  const description = lang === 'zh' ? `${b.partySize} 位。報到代碼 ${b.code}。` : `${b.partySize} spot(s). Check-in code ${b.code}.`;
+  const summary = `${activity} · ${eventNameL(lang)}`;
+  const description =
+    lang === 'zh' ? `${b.partySize} 位。報到代碼 ${b.code}。` : lang === 'zhs' ? `${b.partySize} 位。签到码 ${b.code}。` : `${b.partySize} spot(s). Check-in code ${b.code}.`;
   const ics = [
     'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Mindfulness Weekend//Signup//EN', 'BEGIN:VEVENT',
     `UID:${b.id}@signup`, `DTSTAMP:${stamp(new Date())}`,

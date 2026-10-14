@@ -1,3 +1,4 @@
+import type { Lang } from './event';
 import type { PoolClient } from 'pg';
 import { randomInt } from 'node:crypto';
 import { withTx } from './db';
@@ -76,7 +77,7 @@ async function uniqueCode(c: PoolClient) {
  *    the same phone and name but no email yet (the email is added to it), else a new person.
  *  - Without an email (walk-ins): someone with the same phone and the same name, else a new person.
  */
-export async function upsertPerson(c: PoolClient, contact: Contact, lang: 'en' | 'zh' = 'en'): Promise<string> {
+export async function upsertPerson(c: PoolClient, contact: Contact, lang: Lang = 'en'): Promise<string> {
   const sameNameOnPhone = async (onlyWithoutEmail: boolean) =>
     contact.phone
       ? (await c.query<{ id: string }>(
@@ -121,7 +122,7 @@ export async function upsertPerson(c: PoolClient, contact: Contact, lang: 'en' |
 /** A booking's owner check: one person, or everyone signed in through a shared phone number. */
 const ownerIds = (who: string | string[]) => (Array.isArray(who) ? who : [who]);
 
-export type ConfirmInput = { contact: Contact; remindSms: boolean; remindEmail: boolean; lang?: 'en' | 'zh' };
+export type ConfirmInput = { contact: Contact; remindSms: boolean; remindEmail: boolean; lang?: Lang };
 
 /** Turns a hold into a confirmed booking. If the hold lapsed, re-checks capacity before confirming. */
 export async function confirmBooking(holdId: string, input: ConfirmInput) {
@@ -151,7 +152,7 @@ export async function confirmBooking(holdId: string, input: ConfirmInput) {
 }
 
 /** Staff walk-in: books directly (no hold). `allowOver` lets a lead approve going over capacity. */
-export async function walkInBooking(slotId: string, partySize: number, contact: Contact, opts: { allowOver?: boolean; checkInNow?: boolean; lang?: 'en' | 'zh' } = {}) {
+export async function walkInBooking(slotId: string, partySize: number, contact: Contact, opts: { allowOver?: boolean; checkInNow?: boolean; lang?: Lang } = {}) {
   return withTx(async (c) => {
     const { remaining } = await lockSlot(c, slotId);
     if (remaining < partySize && !opts.allowOver) {

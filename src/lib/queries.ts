@@ -1,5 +1,6 @@
 import { getPool } from './db';
 import { EVENT, type Lang } from './event';
+import { localText, toSimplified } from './hans';
 
 export type SlotView = { id: string; startsAt: Date; capacity: number; remaining: number; booked: number };
 export type ActivityView = { id: string; name: string; place: string; description: string; durationMin: number; slots: SlotView[] };
@@ -9,12 +10,13 @@ type Row = {
   slot_id: string | null; starts_at: Date | null; capacity: number | null; remaining: number | null; booked: number | null;
 };
 
-function group(rows: Row[]): ActivityView[] {
+function group(rows: Row[], lang: Lang = 'en'): ActivityView[] {
   const map = new Map<string, ActivityView>();
+  const t = (s: string) => (lang === 'zhs' ? toSimplified(s) : s);
   for (const r of rows) {
     let a = map.get(r.id);
     if (!a) {
-      a = { id: r.id, name: r.name, place: r.place, description: r.description, durationMin: r.duration_min, slots: [] };
+      a = { id: r.id, name: t(r.name), place: t(r.place), description: t(r.description), durationMin: r.duration_min, slots: [] };
       map.set(r.id, a);
     }
     if (r.slot_id) a.slots.push({ id: r.slot_id, startsAt: r.starts_at!, capacity: r.capacity!, remaining: r.remaining!, booked: r.booked! });
@@ -22,12 +24,12 @@ function group(rows: Row[]): ActivityView[] {
   return [...map.values()];
 }
 
-// Chinese text when there is some ($3 = 'zh'), otherwise the English.
+// Chinese text when there is some (any Chinese $3), otherwise the English. Simplified is converted below.
 const SELECT = `
   select a.id,
-         case when $3 = 'zh' and a.name_zh <> '' then a.name_zh else a.name end as name,
-         case when $3 = 'zh' and a.place_zh <> '' then a.place_zh else a.place end as place,
-         case when $3 = 'zh' and a.description_zh <> '' then a.description_zh else a.description end as description,
+         case when $3 <> 'en' and a.name_zh <> '' then a.name_zh else a.name end as name,
+         case when $3 <> 'en' and a.place_zh <> '' then a.place_zh else a.place end as place,
+         case when $3 <> 'en' and a.description_zh <> '' then a.description_zh else a.description end as description,
          a.duration_min,
          v.slot_id, v.starts_at, v.capacity, v.remaining, v.booked
     from activities a
@@ -38,12 +40,12 @@ const SELECT = `
 /** Every activity with its slots on one event day (activities with no slots that day are included, empty). */
 export async function activitiesForDay(date: string, lang: Lang = 'en') {
   const { rows } = await getPool().query<Row>(`${SELECT} order by a.sort_order, a.name, v.starts_at`, [EVENT.timeZone, date, lang]);
-  return group(rows);
+  return group(rows, lang);
 }
 
 export async function activityForDay(id: string, date: string, lang: Lang = 'en') {
   const { rows } = await getPool().query<Row>(`${SELECT} where a.id = $4 order by v.starts_at`, [EVENT.timeZone, date, lang, id]);
-  return group(rows)[0] ?? null;
+  return group(rows, lang)[0] ?? null;
 }
 
 export type BookingView = {
@@ -56,8 +58,8 @@ export type BookingView = {
 
 /** The activity's name and place in a language (Chinese when filled in, else English). */
 export const bookingText = (b: BookingView, lang: Lang) => ({
-  activity: lang === 'zh' && b.activityNameZh ? b.activityNameZh : b.activityName,
-  place: lang === 'zh' && b.placeZh ? b.placeZh : b.place,
+  activity: localText(b.activityName, b.activityNameZh, lang),
+  place: localText(b.place, b.placeZh, lang),
 });
 
 export async function getBooking(id: string): Promise<BookingView | null> {

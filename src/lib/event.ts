@@ -2,6 +2,7 @@
 export const EVENT = {
   name: process.env.NEXT_PUBLIC_EVENT_NAME ?? 'Mindfulness Weekend',
   nameZh: process.env.NEXT_PUBLIC_EVENT_NAME_ZH ?? '正念週末',
+  nameZhs: process.env.NEXT_PUBLIC_EVENT_NAME_ZHS ?? '正念周末',
   timeZone: process.env.EVENT_TZ ?? 'America/New_York',
   days: [
     { key: 'sat', date: '2026-11-14', label: 'Saturday 14', long: 'Saturday 14 November', short: 'Sat 14 Nov',
@@ -48,11 +49,15 @@ export const isLow = (remaining: number, capacity: number) => remaining > 0 && r
 export const requestTime = () => Date.now();
 
 // ---------- Language-aware formatting (attendee screens and messages) ----------
-export type Lang = 'en' | 'zh';
+/** en = English, zh = Traditional Chinese (Taiwan), zhs = Simplified Chinese (mainland). */
+export type Lang = 'en' | 'zh' | 'zhs';
+export const isChinese = (l: Lang) => l !== 'en';
+export const eventNameL = (l: Lang) => (l === 'zh' ? EVENT.nameZh : l === 'zhs' ? EVENT.nameZhs : EVENT.name);
+export const dateRangeL = (l: Lang) => (isChinese(l) ? EVENT.dateRangeZh : EVENT.dateRange);
 type Day = (typeof EVENT.days)[number];
 
 /** A day's label in the given language: label "Saturday 14" / "11/14（六）", long, or short. */
-export const dayText = (d: Day, kind: 'label' | 'long' | 'short', lang: Lang) => (lang === 'zh' ? d.zh[kind] : d[kind]);
+export const dayText = (d: Day, kind: 'label' | 'long' | 'short', lang: Lang) => (isChinese(lang) ? d.zh[kind] : d[kind]);
 
 /** "11:30 AM" in English; "上午 11:30" (Taiwan style) in Chinese. */
 export function fmtTimeL(d: Date, lang: Lang) {
@@ -66,7 +71,8 @@ export function fmtTimeL(d: Date, lang: Lang) {
 
 export function fmtDurationL(min: number, lang: Lang) {
   if (lang === 'en') return fmtDuration(min);
-  if (min < 60) return `${min} 分鐘`;
-  if (min % 60 === 0) return `${min / 60} 小時`;
-  return `${Math.floor(min / 60)} 小時 ${min % 60} 分鐘`;
+  const [mn, hr] = lang === 'zhs' ? ['分钟', '小时'] : ['分鐘', '小時'];
+  if (min < 60) return `${min} ${mn}`;
+  if (min % 60 === 0) return `${min / 60} ${hr}`;
+  return `${Math.floor(min / 60)} ${hr} ${min % 60} ${mn}`;
 }
