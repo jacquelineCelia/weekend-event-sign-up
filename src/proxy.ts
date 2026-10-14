@@ -6,7 +6,13 @@ const LINKS: Record<string, 'en' | 'zh' | 'zhs'> = { en: 'en', zh: 'zh', tw: 'zh
 
 export function proxy(req: NextRequest) {
   const m = req.nextUrl.pathname.match(/^\/(zh-tw|zh-cn|zh|tw|cn|en)(\/.*)?$/i);
-  if (!m) return NextResponse.next();
+  if (!m) {
+    // Tell the page whether it's a staff screen or an attendee screen (attendee screens turn off
+    // browser machine translation, since they have their own Chinese versions).
+    const headers = new Headers(req.headers);
+    headers.set('x-mw-area', /^\/staff(\/|$)/.test(req.nextUrl.pathname) ? 'staff' : 'attendee');
+    return NextResponse.next({ request: { headers } });
+  }
   const url = req.nextUrl.clone();
   url.pathname = m[2] || '/';
   const res = NextResponse.redirect(url);
@@ -14,6 +20,7 @@ export function proxy(req: NextRequest) {
   return res;
 }
 
+// Every page (not Next's own files, API routes or static files like fonts and images).
 export const config = {
-  matcher: ['/en', '/en/:path*', '/zh', '/zh/:path*', '/tw', '/tw/:path*', '/zh-tw', '/zh-tw/:path*', '/cn', '/cn/:path*', '/zh-cn', '/zh-cn/:path*'],
+  matcher: ['/((?!_next/|api/|.*\\.[a-zA-Z0-9]+$).*)'],
 };
