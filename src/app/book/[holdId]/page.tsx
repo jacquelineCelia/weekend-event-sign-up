@@ -21,7 +21,7 @@ export default async function Details({ params }: { params: Promise<{ holdId: st
   if (b.status === 'cancelled') {
     return (
       <div className="phone">
-        <div className="topbar"><span className="side"><Link className="back" href={`/activity/${b.activityId}?slot=${b.slotId}`}><Back /> <span className="lbl-s">{t.back}</span></Link></span><LangToggle lang={lang} /><span className="side end" /></div>
+        <div className="topbar"><Link className="back" href={`/activity/${b.activityId}?slot=${b.slotId}`}><Back /> {t.back}</Link><LangToggle lang={lang} /></div>
         <section className="pad stack" style={{ gap: 14, paddingTop: 20 }}>
           <h1 className="h1">{t.holdEndedTitle}</h1>
           <p className="lede">{t.holdEndedBody}</p>

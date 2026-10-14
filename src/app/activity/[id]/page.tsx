@@ -68,12 +68,11 @@ export default async function ActivityPage({
     <div className="phone">
       <div className="topbar">
         {change ? (
-          <span className="side"><Link className="back" href="/me"><Back /> <span className="lbl">{t.mySignups}</span></Link></span>
+          <Link className="back" href="/me"><Back /> {t.mySignups}</Link>
         ) : (
-          <span className="side"><Link className="back" href={`/?day=${day.key}`}><Back /> <span className="lbl">{t.activities}</span></Link></span>
+          <Link className="back" href={`/?day=${day.key}`}><Back /> {t.allActivities}</Link>
         )}
         <LangToggle lang={lang} />
-        <span className="side end" />
       </div>
       <section className="pad stack" style={{ gap: 12, padding: '8px 20px 22px' }}>
         <span className="eyebrow"><Leaf /> {dayText(day, 'long', lang)}</span>

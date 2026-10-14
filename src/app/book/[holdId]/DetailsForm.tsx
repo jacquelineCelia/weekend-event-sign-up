@@ -39,19 +39,20 @@ export default function DetailsForm({ lang, holdId, expiresAt, summary, known }:
   return (
     <div className="phone">
       <div className="topbar">
-        <form className="side" action={changeTimeAction.bind(null, holdId)}>
-          <button className="back" type="submit" style={{ border: 0, background: 'transparent', cursor: 'pointer' }}><Back /> <span className="lbl-s">{t.back}</span></button>
+        <form action={changeTimeAction.bind(null, holdId)}>
+          <button className="back" type="submit" style={{ border: 0, background: 'transparent', cursor: 'pointer' }}><Back /> {t.back}</button>
         </form>
-        <LangToggle lang={lang} />
-        <span className="side end" />
+        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {left !== null ? (
+            <span className="timer" role="timer" data-late={left === 0}>
+              <Clock /> {left > 0 ? t.heldFor(mmss) : t.holdEndedShort}
+            </span>
+          ) : null}
+          <LangToggle lang={lang} />
+        </span>
       </div>
 
       <section className="pad stack" style={{ gap: 14, padding: '8px 20px 20px' }}>
-        {left !== null ? (
-          <span className="timer" role="timer" data-late={left === 0} style={{ alignSelf: 'flex-start' }}>
-            <Clock /> {left > 0 ? t.heldFor(mmss) : t.holdEndedShort}
-          </span>
-        ) : null}
         <h1 className="h1" style={{ fontSize: 30 }}>{known ? t.welcomeBack(known.first) : t.almostThere}</h1>
         <div className="summary">
           <div className="stack" style={{ gap: 4 }}>

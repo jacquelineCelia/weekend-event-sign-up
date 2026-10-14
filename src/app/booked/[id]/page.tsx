@@ -26,7 +26,7 @@ export default async function Booked({ params }: { params: Promise<{ id: string 
 
   return (
     <div className="phone">
-      <div className="topbar"><span className="side" /><LangToggle lang={lang} /><span className="side end" /></div>
+      <div className="topbar" style={{ justifyContent: 'flex-end' }}><LangToggle lang={lang} /></div>
       <div className="pad stack" style={{ gap: 24, padding: '12px 20px 28px' }}>
         <div className="stack" style={{ gap: 14, alignItems: 'flex-start' }}>
           <span className="leafmark"><Sprout /></span>

@@ -54,18 +54,20 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
   return (
     <div className="phone">
       <div className="topbar">
-        <span className="side"><Link className="back" href="/"><Back /> <span className="lbl">{t.activities}</span></Link></span>
+        <Link className="back" href="/"><Back /> {t.activities}</Link>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 4, minWidth: 0 }}>
         <LangToggle lang={lang} />
-        <form className="side end" action={signOutAction}>
+        <form action={signOutAction}>
           <button type="submit" className="back" style={{ border: 0, background: 'transparent', cursor: 'pointer', fontWeight: 500, color: 'var(--muted)', fontSize: 13 }}>
-            {t.signOut}
+            {who} · {t.signOut}
           </button>
         </form>
+        </span>
       </div>
       <section className="pad stack" style={{ gap: 6, padding: '8px 20px 18px' }}>
         <h1 className="h1" style={{ fontSize: 31 }}>{t.yourWeekend}</h1>
         <p className="muted" style={{ margin: 0 }}>
-          {household ? `${who} · ${names.join(isChinese(lang) ? '、' : ', ')}` : who} · {t.nActivities(rows.length)}
+          {t.nActivities(rows.length)}{household ? ` · ${names.join(isChinese(lang) ? '、' : ', ')}` : ''}
         </p>
         {sp.moved ? <p className="note ok" role="status" style={{ margin: '8px 0 0' }}>{t.moved}</p> : null}
       </section>
