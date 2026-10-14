@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { bookingText, getBooking } from '@/lib/queries';
 import { addMinutes, dayOf, dayText, fmtTimeL } from '@/lib/event';
 import { getLang } from '@/lib/lang';
-import { dict, firstName } from '@/lib/i18n';
+import { dict, firstName, zhBold } from '@/lib/i18n';
 import LangToggle from '@/components/LangToggle';
 import { currentOwners } from '@/lib/viewer';
 import { Bell, Sprout } from '@/components/icons';
@@ -39,7 +39,7 @@ export default async function Booked({ params }: { params: Promise<{ id: string 
         <article className="ticket">
           <div className="top">
             <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--moss)' }}>{day ? dayText(day, 'long', lang) : ''}</span>
-            <span className="serif" style={{ fontSize: 24 }}>{activity}</span>
+            <span className={`serif${zhBold(activity)}`} style={{ fontSize: 24 }}>{activity}</span>
             <span style={{ fontSize: 15, color: 'var(--ink-2)' }}>
               {fmtTimeL(b.startsAt, lang)} – {fmtTimeL(addMinutes(b.startsAt, b.durationMin), lang)} · {place}
             </span>

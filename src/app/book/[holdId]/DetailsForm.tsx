@@ -3,7 +3,7 @@
 import { useActionState, useEffect, useState } from 'react';
 import { changeTimeAction, confirmAction, type FormState } from '@/app/actions';
 import { Back, Clock } from '@/components/icons';
-import { dict, errorText, type Lang } from '@/lib/i18n';
+import { dict, errorText, type Lang, zhBold } from '@/lib/i18n';
 import LangToggle from '@/components/LangToggle';
 
 type Props = {
@@ -85,7 +85,7 @@ export default function DetailsForm({ lang, holdId, secondsLeft, summary, known 
         <h1 className="h1" style={{ fontSize: 30 }}>{known ? t.welcomeBack(known.first) : t.almostThere}</h1>
         <div className="summary">
           <div className="stack" style={{ gap: 4 }}>
-            <span className="serif" style={{ fontSize: 19 }}>{summary.activity}</span>
+            <span className={`serif${zhBold(summary.activity)}`} style={{ fontSize: 19 }}>{summary.activity}</span>
             <span className="sub">{summary.when}</span>
             <span style={{ fontSize: 13.5, fontWeight: 600, marginTop: 4 }}>{summary.spots}</span>
           </div>

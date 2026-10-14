@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { activityForDay, getBooking } from '@/lib/queries';
 import { EVENT, addMinutes, dayByKey, dayOf, dayText, fmtDurationL, fmtTimeL, isLow, requestTime } from '@/lib/event';
 import { getLang } from '@/lib/lang';
-import { dict } from '@/lib/i18n';
+import { dict, zhBold } from '@/lib/i18n';
 import LangToggle from '@/components/LangToggle';
 import { getPool } from '@/lib/db';
 import { currentOwners } from '@/lib/viewer';
@@ -76,7 +76,7 @@ export default async function ActivityPage({
       </div>
       <section className="pad stack" style={{ gap: 12, padding: '8px 20px 22px' }}>
         <span className="eyebrow"><Leaf /> {dayText(day, 'long', lang)}</span>
-        <h1 className="h1" style={{ fontSize: 34 }}>{a.name}</h1>
+        <h1 className={`h1${zhBold(a.name)}`} style={{ fontSize: 34 }}>{a.name}</h1>
         {a.description ? <p className="lede">{a.description}</p> : null}
         <div className="pills"><span>{a.place}</span><span>{fmtDurationL(a.durationMin, lang)}</span></div>
         {EVENT.days.length > 1 ? (

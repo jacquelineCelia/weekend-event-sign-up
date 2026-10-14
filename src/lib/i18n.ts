@@ -553,3 +553,6 @@ export function errorText(lang: Lang, e: { code: string; remaining?: number; lef
   if (code === 'code_wrong') return d.codeWrong(typeof e === 'string' ? 1 : e.left ?? 1);
   return d.errors[code] ?? code;
 }
+
+/** Class for an activity name: bold when it is written in Chinese characters (Young Serif has no bold, so English stays as is). */
+export const zhBold = (name: string) => (/\p{Script=Han}/u.test(name) ? ' zhname' : '');

@@ -243,3 +243,6 @@ select.input { padding: 0 14px; }
 .listsearch input { flex: 1; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 15px; color: var(--ink); outline: none; min-height: 46px; }
 .listsearch input::-webkit-search-cancel-button { display: none; }
 .listsearch button { width: 34px; height: 34px; border: 0; border-radius: 50%; background: var(--stone); color: var(--ink-2); font-size: 18px; line-height: 1; cursor: pointer; }
+
+/* Chinese activity names are bold so they stand out the way the serif English names do. */
+.zhname { font-weight: 700; }

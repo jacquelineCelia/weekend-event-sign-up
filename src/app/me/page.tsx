@@ -5,7 +5,7 @@ import { currentOwners } from '@/lib/viewer';
 import { EVENT, addMinutes, dayOf, dayText, fmtTimeL, isChinese, requestTime } from '@/lib/event';
 import { localText } from '@/lib/hans';
 import { getLang } from '@/lib/lang';
-import { dict } from '@/lib/i18n';
+import { dict, zhBold } from '@/lib/i18n';
 import LangToggle from '@/components/LangToggle';
 import { Back, Bell, Plus } from '@/components/icons';
 import { signOutAction } from './actions';
@@ -83,7 +83,7 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
             <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: '0.14em', background: 'var(--paper)', color: 'var(--ink)', padding: '4px 10px', borderRadius: 999 }}>{next.code}</span>
           </div>
           <div className="stack" style={{ gap: 4, position: 'relative' }}>
-            <span className="serif" style={{ fontSize: 24 }}>{next.activity_name}</span>
+            <span className={`serif${zhBold(next.activity_name)}`} style={{ fontSize: 24 }}>{next.activity_name}</span>
             <span className="sub">{fmtTimeL(next.starts_at, lang)} · {next.place} · {t.spots(next.party_size)}{household ? ` · ${next.person_name}` : ''}</span>
           </div>
           {next.remind_sms || next.remind_email ? (
@@ -105,7 +105,7 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
                 <div style={{ display: 'flex', gap: 14 }}>
                   <div style={{ width: 74, flex: 'none', fontWeight: 700, color: 'var(--moss)', fontVariantNumeric: 'tabular-nums', paddingTop: 2 }}>{fmtTimeL(r.starts_at, lang)}</div>
                   <div className="stack" style={{ gap: 3, minWidth: 0 }}>
-                    <span className="serif" style={{ fontSize: 17, color: started ? 'var(--muted-2)' : undefined }}>{r.activity_name}</span>
+                    <span className={`serif${zhBold(r.activity_name)}`} style={{ fontSize: 17, color: started ? 'var(--muted-2)' : undefined }}>{r.activity_name}</span>
                     {household ? <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--ochre)' }}>{r.person_name}</span> : null}
                     <span className="muted" style={{ fontSize: 13.5 }}>{r.place} · {t.spots(r.party_size)} · {t.code(r.code)}</span>
                     <span style={{ fontSize: 12.5, fontWeight: 600, marginTop: 4, color: started ? 'var(--muted-2)' : 'var(--moss-dark)' }}>
