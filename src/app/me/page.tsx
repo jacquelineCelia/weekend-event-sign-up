@@ -49,6 +49,12 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
   const household = new Set(rows.map((r) => r.person_name)).size > 1 || (viewer.kind === 'phone' && names.length > 1);
   const who = viewer.kind === 'phone' ? (names.length > 1 ? t.peopleOn(names.length, viewer.phone.slice(-4)) : names[0]) : names[0];
   const nextDay = next ? dayOf(next.starts_at) : null;
+  // Next activity's row: "Up next · Reminder at 12:45 PM" (or "· No reminder"; just "Up next" once the reminder time has passed).
+  const upNextStatus = (r: Row) => {
+    if (!(r.remind_sms || r.remind_email)) return `${t.upNext} · ${t.noReminderShort}`;
+    const at = addMinutes(r.starts_at, -15);
+    return at.getTime() > now ? `${t.upNext} · ${t.reminderAt(fmtTimeL(at, lang))}` : t.upNext;
+  };
   const upNextLabel = minsUntil < 60 ? t.inMin(minsUntil) : minsUntil < 24 * 60 ? t.inHr(Math.round(minsUntil / 60)) : nextDay ? dayText(nextDay, 'short', lang) : '';
 
   return (
@@ -109,7 +115,9 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
                     {household ? <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--ochre)' }}>{r.person_name}</span> : null}
                     <span className="muted" style={{ fontSize: 13.5 }}>{r.place} · {t.spots(r.party_size)} · {t.code(r.code)}</span>
                     <span style={{ fontSize: 12.5, fontWeight: 600, marginTop: 4, color: started ? 'var(--muted-2)' : 'var(--moss-dark)' }}>
-                      {done ? t.done : started ? t.happening : r.id === next?.id ? t.upNext : r.remind_sms || r.remind_email ? t.reminder15 : t.noReminderShort}
+                      {done ? t.done : started ? t.happening
+                        : r.id === next?.id ? upNextStatus(r)
+                        : r.remind_sms || r.remind_email ? t.reminder15 : t.noReminderShort}
                     </span>
                   </div>
                 </div>
