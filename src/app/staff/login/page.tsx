@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 export default async function StaffLogin() {
   if (await isStaff()) redirect('/staff');
   return (
-    <div className="phone" style={{ justifyContent: 'center' }}>
+    <div className="phone" lang="en" style={{ justifyContent: 'center' }}>
       <div className="pad stack" style={{ gap: 18, padding: '40px 20px' }}>
         <span className="eyebrow">{EVENT.name} · Staff</span>
         <h1 className="h1">Staff sign-in</h1>

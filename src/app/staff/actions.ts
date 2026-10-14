@@ -10,6 +10,7 @@ import { getBooking } from '@/lib/queries';
 import { sendConfirmation } from '@/lib/notify';
 import { setCheckedIn, saveSchedule, saveActivity, type SlotEdit } from '@/lib/staff';
 import { EVENT } from '@/lib/event';
+import { errorText } from '@/lib/i18n';
 
 async function requireStaff() {
   if (!(await isStaff())) redirect('/staff/login');
@@ -48,18 +49,20 @@ export async function walkInAction(_prev: WalkInState, form: FormData): Promise<
   const contact = walkInContactSchema.safeParse({ name: form.get('name') ?? '', email: form.get('email') ?? '', phone: form.get('phone') ?? '' });
   if (!base.success || !contact.success) {
     const fields: Record<string, string> = {};
-    for (const i of [...(base.error?.issues ?? []), ...(contact.error?.issues ?? [])]) fields[String(i.path[0])] ??= i.message;
+    for (const i of [...(base.error?.issues ?? []), ...(contact.error?.issues ?? [])]) fields[String(i.path[0])] ??= errorText('en', i.message);
     return { fields };
   }
   const checkInNow = form.get('checkInNow') === 'on';
+  // Which language their confirmation and reminders come in.
+  const lang = form.get('lang') === 'zh' ? 'zh' : 'en';
   try {
-    const r = await walkInBooking(base.data.slotId, base.data.party, contact.data, { allowOver: form.get('allowOver') === 'on', checkInNow });
+    const r = await walkInBooking(base.data.slotId, base.data.party, contact.data, { allowOver: form.get('allowOver') === 'on', checkInNow, lang });
     const b = await getBooking(r.bookingId);
     if (b) await sendConfirmation(b).catch((e) => console.error('walk-in confirmation failed', e));
     revalidatePath('/staff', 'layout');
     return { done: { name: contact.data.name, code: r.code, to: contact.data.email ?? contact.data.phone ?? '', checkedIn: checkInNow } };
   } catch (err) {
-    if (err instanceof BookingError) return { error: err.message };
+    if (err instanceof BookingError) return { error: errorText('en', { code: err.code, remaining: err.remaining }) };
     throw err;
   }
 }
@@ -93,7 +96,13 @@ export async function saveActivityAction(activityId: string | null, _prev: Sched
     place: z.string().trim().min(1).max(80),
     durationMin: z.coerce.number().int().min(5).max(600),
     description: z.string().trim().max(600),
-  }).safeParse({ name: form.get('name'), place: form.get('place'), durationMin: form.get('durationMin'), description: form.get('description') ?? '' });
+    nameZh: z.string().trim().max(80),
+    placeZh: z.string().trim().max(80),
+    descriptionZh: z.string().trim().max(600),
+  }).safeParse({
+    name: form.get('name'), place: form.get('place'), durationMin: form.get('durationMin'), description: form.get('description') ?? '',
+    nameZh: form.get('nameZh') ?? '', placeZh: form.get('placeZh') ?? '', descriptionZh: form.get('descriptionZh') ?? '',
+  });
   if (!parsed.success) return { error: 'Name, place and a length in minutes are required.' };
   const id = await saveActivity(activityId, parsed.data);
   revalidatePath('/staff', 'layout');

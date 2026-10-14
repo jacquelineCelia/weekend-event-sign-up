@@ -1,7 +1,10 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { activityForDay, getBooking } from '@/lib/queries';
-import { EVENT, addMinutes, dayByKey, dayOf, fmtDuration, fmtTime, isLow, requestTime } from '@/lib/event';
+import { EVENT, addMinutes, dayByKey, dayOf, dayText, fmtDurationL, fmtTimeL, isLow, requestTime } from '@/lib/event';
+import { getLang } from '@/lib/lang';
+import { dict } from '@/lib/i18n';
+import LangToggle from '@/components/LangToggle';
 import { getPool } from '@/lib/db';
 import { currentOwners } from '@/lib/viewer';
 import { Back, Leaf } from '@/components/icons';
@@ -27,7 +30,9 @@ export default async function ActivityPage({
     const d = r.rows[0] && dayOf(r.rows[0].starts_at);
     if (d) day = d;
   }
-  const a = await activityForDay(id, day.date);
+  const lang = await getLang();
+  const t = dict(lang);
+  const a = await activityForDay(id, day.date, lang);
   if (!a) notFound();
 
   // "Change time" mode: moving an existing booking (only the owner's own).
@@ -46,8 +51,8 @@ export default async function ActivityPage({
     const current = change?.currentSlotId === s.id;
     return {
       id: s.id,
-      range: `${fmtTime(s.startsAt)} – ${fmtTime(addMinutes(s.startsAt, a.durationMin))}`,
-      short: fmtTime(s.startsAt),
+      range: `${fmtTimeL(s.startsAt, lang)} – ${fmtTimeL(addMinutes(s.startsAt, a.durationMin), lang)}`,
+      short: fmtTimeL(s.startsAt, lang),
       remaining: past || current ? 0 : s.remaining,
       low: !past && !current && isLow(s.remaining, s.capacity),
       past,
@@ -63,25 +68,26 @@ export default async function ActivityPage({
     <div className="phone">
       <div className="topbar">
         {change ? (
-          <Link className="back" href="/me"><Back /> My sign-ups</Link>
+          <Link className="back" href="/me"><Back /> {t.mySignups}</Link>
         ) : (
-          <Link className="back" href={`/?day=${day.key}`}><Back /> All activities</Link>
+          <Link className="back" href={`/?day=${day.key}`}><Back /> {t.allActivities}</Link>
         )}
+        <LangToggle lang={lang} />
       </div>
       <section className="pad stack" style={{ gap: 12, padding: '8px 20px 22px' }}>
-        <span className="eyebrow"><Leaf /> {day.long}</span>
+        <span className="eyebrow"><Leaf /> {dayText(day, 'long', lang)}</span>
         <h1 className="h1" style={{ fontSize: 34 }}>{a.name}</h1>
         {a.description ? <p className="lede">{a.description}</p> : null}
-        <div className="pills"><span>{a.place}</span><span>{fmtDuration(a.durationMin)}</span></div>
+        <div className="pills"><span>{a.place}</span><span>{fmtDurationL(a.durationMin, lang)}</span></div>
         {EVENT.days.length > 1 ? (
           <p className="muted" style={{ margin: 0, fontSize: 13.5 }}>
-            Also on {EVENT.days.filter((d) => d.key !== day.key).map((d) => (
-              <Link key={d.key} href={`/activity/${a.id}?day=${d.key}${change ? `&change=${change.bookingId}` : ''}`}>{d.long}</Link>
+            {t.alsoOn}{EVENT.days.filter((d) => d.key !== day.key).map((d) => (
+              <Link key={d.key} href={`/activity/${a.id}?day=${d.key}${change ? `&change=${change.bookingId}` : ''}`}>{dayText(d, 'long', lang)}</Link>
             ))}
           </p>
         ) : null}
       </section>
-      <SlotPicker slots={slots} preselected={preselected} change={change ? { bookingId: change.bookingId, partySize: change.partySize } : null} />
+      <SlotPicker lang={lang} slots={slots} preselected={preselected} change={change ? { bookingId: change.bookingId, partySize: change.partySize } : null} />
     </div>
   );
 }

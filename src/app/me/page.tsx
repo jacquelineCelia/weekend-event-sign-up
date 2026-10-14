@@ -2,7 +2,10 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getPool } from '@/lib/db';
 import { currentOwners } from '@/lib/viewer';
-import { EVENT, addMinutes, dayOf, fmtTime, requestTime } from '@/lib/event';
+import { EVENT, addMinutes, dayOf, dayText, fmtTimeL, requestTime } from '@/lib/event';
+import { getLang } from '@/lib/lang';
+import { dict } from '@/lib/i18n';
+import LangToggle from '@/components/LangToggle';
 import { Back, Bell, Plus } from '@/components/icons';
 import { signOutAction } from './actions';
 import { CancelButton, RatePicker } from './widgets';
@@ -14,23 +17,24 @@ type Row = {
   activity_name: string; place: string; activity_id: string; slot_id: string; score: number | null; person_name: string;
 };
 
-const spots = (n: number) => `${n} ${n === 1 ? 'spot' : 'spots'}`;
-
 export default async function MySignups({ searchParams }: { searchParams: Promise<{ moved?: string }> }) {
   const { viewer, ids } = await currentOwners();
   if (!viewer || !ids.length) redirect('/me/sign-in');
   const sp = await searchParams;
+  const lang = await getLang();
+  const t = dict(lang);
   const names = (await getPool().query<{ name: string }>('select name from people where id = any($1::uuid[]) order by created_at', [ids])).rows.map((r) => r.name);
 
   const { rows } = await getPool().query<Row>(
     `select b.id, b.code, b.party_size, s.starts_at, a.duration_min, b.remind_sms, b.remind_email,
-            a.name as activity_name, a.place, a.id as activity_id, s.id as slot_id, r.score, p.name as person_name
+            case when $2 = 'zh' and a.name_zh <> '' then a.name_zh else a.name end as activity_name,
+            case when $2 = 'zh' and a.place_zh <> '' then a.place_zh else a.place end as place, a.id as activity_id, s.id as slot_id, r.score, p.name as person_name
        from bookings b join slots s on s.id = b.slot_id join activities a on a.id = s.activity_id
        join people p on p.id = b.person_id
        left join ratings r on r.booking_id = b.id
       where b.person_id = any($1::uuid[]) and b.status = 'confirmed'
       order by s.starts_at, p.created_at`,
-    [ids],
+    [ids, lang],
   );
   const now = requestTime();
   const next = rows.find((r) => r.starts_at.getTime() > now);
@@ -38,44 +42,48 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
   const minsUntil = next ? Math.round((next.starts_at.getTime() - now) / 60000) : 0;
   // Signed in with a phone several people share: label each activity with whose it is.
   const household = new Set(rows.map((r) => r.person_name)).size > 1 || (viewer.kind === 'phone' && names.length > 1);
-  const who = viewer.kind === 'phone' ? (names.length > 1 ? `${names.length} people on ••• ${viewer.phone.slice(-4)}` : names[0]) : names[0];
-  const upNextLabel = minsUntil < 60 ? `in ${minsUntil} min` : minsUntil < 24 * 60 ? `in ${Math.round(minsUntil / 60)} hr` : `${dayOf(next!.starts_at)?.short}`;
+  const who = viewer.kind === 'phone' ? (names.length > 1 ? t.peopleOn(names.length, viewer.phone.slice(-4)) : names[0]) : names[0];
+  const nextDay = next ? dayOf(next.starts_at) : null;
+  const upNextLabel = minsUntil < 60 ? t.inMin(minsUntil) : minsUntil < 24 * 60 ? t.inHr(Math.round(minsUntil / 60)) : nextDay ? dayText(nextDay, 'short', lang) : '';
 
   return (
     <div className="phone">
       <div className="topbar">
-        <Link className="back" href="/"><Back /> Activities</Link>
+        <Link className="back" href="/"><Back /> {t.activities}</Link>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 4, minWidth: 0 }}>
+        <LangToggle lang={lang} />
         <form action={signOutAction}>
           <button type="submit" className="back" style={{ border: 0, background: 'transparent', cursor: 'pointer', fontWeight: 500, color: 'var(--muted)', fontSize: 13 }}>
-            {who} · Sign out
+            {who} · {t.signOut}
           </button>
         </form>
+        </span>
       </div>
       <section className="pad stack" style={{ gap: 6, padding: '8px 20px 18px' }}>
-        <h1 className="h1" style={{ fontSize: 31 }}>Your weekend</h1>
+        <h1 className="h1" style={{ fontSize: 31 }}>{t.yourWeekend}</h1>
         <p className="muted" style={{ margin: 0 }}>
-          {rows.length} {rows.length === 1 ? 'activity' : 'activities'}{household ? ` · ${names.join(', ')}` : ''}
+          {t.nActivities(rows.length)}{household ? ` · ${names.join(lang === 'zh' ? '、' : ', ')}` : ''}
         </p>
-        {sp.moved ? <p className="note ok" role="status" style={{ margin: '8px 0 0' }}>Time changed. Your code stays the same.</p> : null}
+        {sp.moved ? <p className="note ok" role="status" style={{ margin: '8px 0 0' }}>{t.moved}</p> : null}
       </section>
 
       {next ? (
-        <section aria-label="Up next" className="summary" style={{ margin: '0 20px 22px', flexDirection: 'column', alignItems: 'stretch', gap: 12, borderRadius: 24, padding: '20px 20px 18px' }}>
+        <section aria-label={t.upNext} className="summary" style={{ margin: '0 20px 22px', flexDirection: 'column', alignItems: 'stretch', gap: 12, borderRadius: 24, padding: '20px 20px 18px' }}>
           <svg viewBox="0 0 350 70" preserveAspectRatio="none" aria-hidden="true" style={{ position: 'absolute', right: 0, bottom: 0, width: '100%', height: 70, opacity: 0.55 }}>
             <path d="M0 50 C 80 30, 160 36, 230 48 S 320 52, 350 40 L350 70 L0 70 Z" fill="#3B5644" />
             <path d="M0 62 C 100 50, 220 60, 350 54 L350 70 L0 70 Z" fill="#4E6E57" />
           </svg>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative' }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: '#cfdacb' }}>Up next · {upNextLabel}</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: '#cfdacb' }}>{t.upNext} · {upNextLabel}</span>
             <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: '0.14em', background: 'var(--paper)', color: 'var(--ink)', padding: '4px 10px', borderRadius: 999 }}>{next.code}</span>
           </div>
           <div className="stack" style={{ gap: 4, position: 'relative' }}>
             <span className="serif" style={{ fontSize: 24 }}>{next.activity_name}</span>
-            <span className="sub">{fmtTime(next.starts_at)} · {next.place} · {spots(next.party_size)}{household ? ` · ${next.person_name}` : ''}</span>
+            <span className="sub">{fmtTimeL(next.starts_at, lang)} · {next.place} · {t.spots(next.party_size)}{household ? ` · ${next.person_name}` : ''}</span>
           </div>
           {next.remind_sms || next.remind_email ? (
             <div style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 13.5, color: 'var(--on-dark-2)', position: 'relative' }}>
-              <Bell size={16} /> Reminder at {fmtTime(addMinutes(next.starts_at, -15))}
+              <Bell size={16} /> {t.reminderAt(fmtTimeL(addMinutes(next.starts_at, -15), lang))}
             </div>
           ) : null}
         </section>
@@ -83,30 +91,30 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
 
       {byDay.map(({ d, items }) => (
         <section key={d.key} className="pad stack" style={{ gap: 10, paddingBottom: 20 }}>
-          <h2 className="h2" style={{ fontSize: 18, color: 'var(--ink-2)' }}>{d.long}</h2>
+          <h2 className="h2" style={{ fontSize: 18, color: 'var(--ink-2)' }}>{dayText(d, 'long', lang)}</h2>
           {items.map((r) => {
             const started = r.starts_at.getTime() <= now;
             const done = addMinutes(r.starts_at, r.duration_min).getTime() <= now;
             return (
               <article key={r.id} className="card" style={{ borderRadius: 20, padding: 16, gap: 12, background: started ? 'var(--stone)' : undefined }}>
                 <div style={{ display: 'flex', gap: 14 }}>
-                  <div style={{ width: 74, flex: 'none', fontWeight: 700, color: 'var(--moss)', fontVariantNumeric: 'tabular-nums', paddingTop: 2 }}>{fmtTime(r.starts_at)}</div>
+                  <div style={{ width: 74, flex: 'none', fontWeight: 700, color: 'var(--moss)', fontVariantNumeric: 'tabular-nums', paddingTop: 2 }}>{fmtTimeL(r.starts_at, lang)}</div>
                   <div className="stack" style={{ gap: 3, minWidth: 0 }}>
                     <span className="serif" style={{ fontSize: 17, color: started ? 'var(--muted-2)' : undefined }}>{r.activity_name}</span>
                     {household ? <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--ochre)' }}>{r.person_name}</span> : null}
-                    <span className="muted" style={{ fontSize: 13.5 }}>{r.place} · {spots(r.party_size)} · code {r.code}</span>
+                    <span className="muted" style={{ fontSize: 13.5 }}>{r.place} · {t.spots(r.party_size)} · {t.code(r.code)}</span>
                     <span style={{ fontSize: 12.5, fontWeight: 600, marginTop: 4, color: started ? 'var(--muted-2)' : 'var(--moss-dark)' }}>
-                      {done ? 'Done' : started ? 'Happening now' : r.id === next?.id ? 'Up next' : r.remind_sms || r.remind_email ? 'Reminder 15 min before' : 'No reminder'}
+                      {done ? t.done : started ? t.happening : r.id === next?.id ? t.upNext : r.remind_sms || r.remind_email ? t.reminder15 : t.noReminderShort}
                     </span>
                   </div>
                 </div>
                 {!started ? (
                   <div style={{ display: 'flex', gap: 8, paddingLeft: 88, flexWrap: 'wrap' }}>
-                    <Link className="btn ghost" style={{ minHeight: 42, fontSize: 14, padding: '0 14px' }} href={`/activity/${r.activity_id}?slot=${r.slot_id}&change=${r.id}`}>Change time</Link>
-                    <CancelButton bookingId={r.id} />
+                    <Link className="btn ghost" style={{ minHeight: 42, fontSize: 14, padding: '0 14px' }} href={`/activity/${r.activity_id}?slot=${r.slot_id}&change=${r.id}`}>{t.changeTime}</Link>
+                    <CancelButton lang={lang} bookingId={r.id} />
                   </div>
                 ) : done ? (
-                  <RatePicker bookingId={r.id} name={r.activity_name} score={r.score} />
+                  <RatePicker lang={lang} bookingId={r.id} name={r.activity_name} score={r.score} />
                 ) : null}
               </article>
             );
@@ -114,11 +122,11 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
         </section>
       ))}
 
-      {rows.length === 0 ? <p className="empty">No sign-ups yet.</p> : null}
+      {rows.length === 0 ? <p className="empty">{t.noSignups}</p> : null}
 
       <div className="pad" style={{ paddingBottom: 30 }}>
         <Link className="btn ghost" href="/" style={{ width: '100%', border: '1.5px dashed #8c9688', color: 'var(--moss-dark)' }}>
-          <Plus size={18} /> Add another activity
+          <Plus size={18} /> {t.addAnother}
         </Link>
       </div>
     </div>

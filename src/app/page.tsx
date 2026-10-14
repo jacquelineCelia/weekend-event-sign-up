@@ -1,6 +1,9 @@
 import Link from 'next/link';
 import { activitiesForDay } from '@/lib/queries';
-import { EVENT, dayByKey, fmtDuration, fmtTime, isLow, requestTime } from '@/lib/event';
+import { EVENT, dayByKey, dayText, fmtDurationL, fmtTimeL, isLow, requestTime } from '@/lib/event';
+import { getLang } from '@/lib/lang';
+import { dict } from '@/lib/i18n';
+import LangToggle from '@/components/LangToggle';
 import { Calendar, Hills, Leaf, Check } from '@/components/icons';
 
 export const dynamic = 'force-dynamic';
@@ -9,7 +12,10 @@ export default async function Browse({ searchParams }: { searchParams: Promise<{
   const sp = await searchParams;
   const day = dayByKey(sp.day);
   const onlyOpen = sp.open === '1';
-  const all = await activitiesForDay(day.date);
+  const lang = await getLang();
+  const t = dict(lang);
+  const all = await activitiesForDay(day.date, lang);
+  const [title1, title2] = t.heroTitle(lang === 'zh' ? EVENT.nameZh : EVENT.name);
   const now = requestTime();
 
   const acts = all
@@ -32,40 +38,43 @@ export default async function Browse({ searchParams }: { searchParams: Promise<{
     <div className="phone">
       <header className="hero">
         <div className="meta">
-          <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Leaf /> {EVENT.dateRange}</span>
-          <Link href="/me"><Calendar /> My sign-ups</Link>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Leaf /> {lang === 'zh' ? EVENT.dateRangeZh : EVENT.dateRange}</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <LangToggle lang={lang} onDark />
+            <Link href="/me"><Calendar /> {t.mySignups}</Link>
+          </span>
         </div>
-        <h1>{EVENT.name}<br />Activities</h1>
-        <p>Gentle ways to spend the weekend. Choose a time that suits you — we&apos;ll send a reminder 15 minutes before.</p>
+        <h1>{title1}<br />{title2}</h1>
+        <p>{t.heroLede}</p>
         <Hills />
       </header>
 
       <div className="filterbar">
-        <nav className="segment" aria-label="Day">
+        <nav className="segment" aria-label={t.dayNav}>
           {EVENT.days.map((d) => (
-            <Link key={d.key} href={href({ day: d.key })} aria-current={d.key === day.key ? 'true' : undefined}>{d.label}</Link>
+            <Link key={d.key} href={href({ day: d.key })} aria-current={d.key === day.key ? 'true' : undefined}>{dayText(d, 'label', lang)}</Link>
           ))}
         </nav>
         <div className="filterrow">
           <Link className="toggle-link" href={href({ open: !onlyOpen })} role="switch" aria-checked={onlyOpen}>
             <span className="box" data-on={onlyOpen}>{onlyOpen ? <Check /> : null}</span>
-            Has open spots
+            {t.hasOpen}
           </Link>
           <span className="muted" aria-live="polite" style={{ fontSize: 13 }}>
-            {acts.length === total ? `${total} activities` : `${acts.length} of ${total} activities`}
+            {acts.length === total ? t.countAll(total) : t.countSome(acts.length, total)}
           </span>
         </div>
       </div>
 
-      <main className="list" aria-label="Activities">
+      <main className="list" aria-label={t.activities}>
         {acts.map((a) => (
           <section key={a.id} className="card" aria-labelledby={`a-${a.id}`}>
             <div className="card-head">
               <div className="stack" style={{ gap: 4, minWidth: 0 }}>
                 <Link id={`a-${a.id}`} className="card-title" href={`/activity/${a.id}?day=${day.key}`}>{a.name}</Link>
-                <span className="card-sub">{a.place} · {fmtDuration(a.durationMin)}</span>
+                <span className="card-sub">{a.place} · {fmtDurationL(a.durationMin, lang)}</span>
               </div>
-              {a.open.length === 0 ? <span className="badge">Fully booked</span> : null}
+              {a.open.length === 0 ? <span className="badge">{t.fullyBooked}</span> : null}
             </div>
             {a.open.length > 0 ? (
               <div className="chips">
@@ -73,9 +82,9 @@ export default async function Browse({ searchParams }: { searchParams: Promise<{
                   const low = isLow(s.remaining, s.capacity);
                   return (
                     <Link key={s.id} className={`chip ${low ? 'low' : 'open'}`} href={`/activity/${a.id}?day=${day.key}&slot=${s.id}`}
-                      aria-label={`${a.name} at ${fmtTime(s.startsAt)}, ${s.remaining} spots left`}>
-                      <b>{fmtTime(s.startsAt)}</b>
-                      <span>{low ? `Only ${s.remaining} left` : `${s.remaining} left`}</span>
+                      aria-label={t.chipAria(a.name, fmtTimeL(s.startsAt, lang), s.remaining)}>
+                      <b>{fmtTimeL(s.startsAt, lang)}</b>
+                      <span>{low ? t.onlyLeft(s.remaining) : t.left(s.remaining)}</span>
                     </Link>
                   );
                 })}
@@ -83,7 +92,7 @@ export default async function Browse({ searchParams }: { searchParams: Promise<{
             ) : null}
           </section>
         ))}
-        {acts.length === 0 ? <p className="empty">Everything on this day is full. Try the other day.</p> : null}
+        {acts.length === 0 ? <p className="empty">{t.dayFull}</p> : null}
       </main>
     </div>
   );

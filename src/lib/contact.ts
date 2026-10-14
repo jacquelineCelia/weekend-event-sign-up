@@ -18,19 +18,20 @@ export function normalizeEmail(input: string): string | null {
 }
 
 const raw = z.object({
-  name: z.string().trim().min(1, 'Please enter your name').max(120),
+  name: z.string().trim().min(1, 'name_required').max(120),
   email: z.string().trim().max(200).default(''),
   phone: z.string().trim().max(40).default(''),
 });
 
 function build(emailRequired: boolean) {
   // superRefine runs even when the name is missing, so every problem shows at once.
+  // Messages are codes (see errors in i18n.ts), turned into words in the visitor's language.
   return raw
     .superRefine((v, ctx) => {
-      if (v.email && !normalizeEmail(v.email)) ctx.addIssue({ code: 'custom', path: ['email'], message: 'That email doesn’t look right' });
-      if (!v.email && emailRequired) ctx.addIssue({ code: 'custom', path: ['email'], message: 'Please enter your email' });
-      if (v.phone && !normalizePhone(v.phone)) ctx.addIssue({ code: 'custom', path: ['phone'], message: 'That phone number doesn’t look right' });
-      if (!v.phone) ctx.addIssue({ code: 'custom', path: ['phone'], message: 'Please enter your mobile number' });
+      if (v.email && !normalizeEmail(v.email)) ctx.addIssue({ code: 'custom', path: ['email'], message: 'email_invalid' });
+      if (!v.email && emailRequired) ctx.addIssue({ code: 'custom', path: ['email'], message: 'email_required' });
+      if (v.phone && !normalizePhone(v.phone)) ctx.addIssue({ code: 'custom', path: ['phone'], message: 'phone_invalid' });
+      if (!v.phone) ctx.addIssue({ code: 'custom', path: ['phone'], message: 'phone_required' });
     })
     .transform((v) => ({
       name: v.name,

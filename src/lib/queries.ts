@@ -1,5 +1,5 @@
 import { getPool } from './db';
-import { EVENT } from './event';
+import { EVENT, type Lang } from './event';
 
 export type SlotView = { id: string; startsAt: Date; capacity: number; remaining: number; booked: number };
 export type ActivityView = { id: string; name: string; place: string; description: string; durationMin: number; slots: SlotView[] };
@@ -22,8 +22,13 @@ function group(rows: Row[]): ActivityView[] {
   return [...map.values()];
 }
 
+// Chinese text when there is some ($3 = 'zh'), otherwise the English.
 const SELECT = `
-  select a.id, a.name, a.place, a.description, a.duration_min,
+  select a.id,
+         case when $3 = 'zh' and a.name_zh <> '' then a.name_zh else a.name end as name,
+         case when $3 = 'zh' and a.place_zh <> '' then a.place_zh else a.place end as place,
+         case when $3 = 'zh' and a.description_zh <> '' then a.description_zh else a.description end as description,
+         a.duration_min,
          v.slot_id, v.starts_at, v.capacity, v.remaining, v.booked
     from activities a
     left join slot_availability v
@@ -31,29 +36,37 @@ const SELECT = `
      and (v.starts_at at time zone $1)::date = $2::date`;
 
 /** Every activity with its slots on one event day (activities with no slots that day are included, empty). */
-export async function activitiesForDay(date: string) {
-  const { rows } = await getPool().query<Row>(`${SELECT} order by a.sort_order, a.name, v.starts_at`, [EVENT.timeZone, date]);
+export async function activitiesForDay(date: string, lang: Lang = 'en') {
+  const { rows } = await getPool().query<Row>(`${SELECT} order by a.sort_order, a.name, v.starts_at`, [EVENT.timeZone, date, lang]);
   return group(rows);
 }
 
-export async function activityForDay(id: string, date: string) {
-  const { rows } = await getPool().query<Row>(`${SELECT} where a.id = $3 order by v.starts_at`, [EVENT.timeZone, date, id]);
+export async function activityForDay(id: string, date: string, lang: Lang = 'en') {
+  const { rows } = await getPool().query<Row>(`${SELECT} where a.id = $4 order by v.starts_at`, [EVENT.timeZone, date, lang, id]);
   return group(rows)[0] ?? null;
 }
 
 export type BookingView = {
   id: string; status: 'held' | 'confirmed' | 'cancelled'; partySize: number; code: string | null;
   holdExpiresAt: Date | null; remindSms: boolean; remindEmail: boolean; personId: string | null;
-  personName: string | null; personEmail: string | null; personPhone: string | null;
+  personName: string | null; personEmail: string | null; personPhone: string | null; personLang: Lang;
   slotId: string; startsAt: Date; activityId: string; activityName: string; place: string; durationMin: number;
+  activityNameZh: string; placeZh: string;
 };
+
+/** The activity's name and place in a language (Chinese when filled in, else English). */
+export const bookingText = (b: BookingView, lang: Lang) => ({
+  activity: lang === 'zh' && b.activityNameZh ? b.activityNameZh : b.activityName,
+  place: lang === 'zh' && b.placeZh ? b.placeZh : b.place,
+});
 
 export async function getBooking(id: string): Promise<BookingView | null> {
   if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
   const { rows } = await getPool().query(
     `select b.id, b.status, b.party_size, b.code, b.hold_expires_at, b.remind_sms, b.remind_email, b.person_id,
-            p.name as person_name, p.email as person_email, p.phone as person_phone,
-            s.id as slot_id, s.starts_at, a.id as activity_id, a.name as activity_name, a.place, a.duration_min
+            p.name as person_name, p.email as person_email, p.phone as person_phone, coalesce(p.lang, 'en') as person_lang,
+            s.id as slot_id, s.starts_at, a.id as activity_id, a.name as activity_name, a.place, a.duration_min,
+            a.name_zh, a.place_zh
        from bookings b
        join slots s on s.id = b.slot_id
        join activities a on a.id = s.activity_id
@@ -66,9 +79,9 @@ export async function getBooking(id: string): Promise<BookingView | null> {
   return {
     id: r.id, status: r.status, partySize: r.party_size, code: r.code, holdExpiresAt: r.hold_expires_at,
     remindSms: r.remind_sms, remindEmail: r.remind_email, personId: r.person_id,
-    personName: r.person_name, personEmail: r.person_email, personPhone: r.person_phone,
+    personName: r.person_name, personEmail: r.person_email, personPhone: r.person_phone, personLang: r.person_lang,
     slotId: r.slot_id, startsAt: r.starts_at, activityId: r.activity_id, activityName: r.activity_name,
-    place: r.place, durationMin: r.duration_min,
+    place: r.place, durationMin: r.duration_min, activityNameZh: r.name_zh, placeZh: r.place_zh,
   };
 }
 

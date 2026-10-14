@@ -1,6 +1,6 @@
 import { getPool, withTx } from './db';
 import { EVENT } from './event';
-import { sendEmail, sendSms, smsEnabled } from './messaging';
+import { sendTimeChange } from './notify';
 
 // ---------- Check-in ----------
 
@@ -27,18 +27,18 @@ export async function sessionsForDay(date: string): Promise<StaffSession[]> {
   }));
 }
 
-export type RosterRow = { bookingId: string; name: string; phoneLast4: string; code: string; partySize: number; checkedIn: number; walkIn: boolean };
+export type RosterRow = { bookingId: string; name: string; phoneLast4: string; code: string; partySize: number; checkedIn: number; walkIn: boolean; zh: boolean };
 
 export async function roster(slotId: string): Promise<RosterRow[]> {
   const { rows } = await getPool().query(
-    `select b.id, p.name, coalesce(right(p.phone, 4), '') as last4, b.code, b.party_size, b.checked_in, b.source
+    `select b.id, p.name, coalesce(right(p.phone, 4), '') as last4, b.code, b.party_size, b.checked_in, b.source, p.lang
        from bookings b join people p on p.id = b.person_id
       where b.slot_id = $1 and b.status = 'confirmed'
       order by lower(p.name)`,
     [slotId],
   );
   return rows.map((r) => ({
-    bookingId: r.id, name: r.name, phoneLast4: r.last4, code: r.code, partySize: r.party_size, checkedIn: r.checked_in, walkIn: r.source === 'walk_in',
+    bookingId: r.id, name: r.name, phoneLast4: r.last4, code: r.code, partySize: r.party_size, checkedIn: r.checked_in, walkIn: r.source === 'walk_in', zh: r.lang === 'zh',
   }));
 }
 
@@ -55,8 +55,11 @@ export type SlotEdit = { id: string | null; time: string; capacity: number };
 export type ScheduleSlot = { id: string; time: string; capacity: number; booked: number; held: number };
 
 export async function activitiesWithCounts(date: string) {
-  const { rows } = await getPool().query<{ id: string; name: string; place: string; description: string; duration_min: number; slots: number; spots: number }>(
-    `select a.id, a.name, a.place, a.description, a.duration_min,
+  const { rows } = await getPool().query<{
+    id: string; name: string; place: string; description: string; duration_min: number; slots: number; spots: number;
+    name_zh: string; place_zh: string; description_zh: string;
+  }>(
+    `select a.id, a.name, a.place, a.description, a.duration_min, a.name_zh, a.place_zh, a.description_zh,
             count(s.id)::int as slots, coalesce(sum(s.capacity), 0)::int as spots
        from activities a
        left join slots s on s.activity_id = a.id and (s.starts_at at time zone $1)::date = $2::date
@@ -84,9 +87,11 @@ const toMin = (t: string) => Number(t.slice(0, 2)) * 60 + Number(t.slice(3, 5));
 /** Applies one activity-day's edits atomically. Guards bookings; tells moved guests. */
 export async function saveSchedule(activityId: string, date: string, edits: SlotEdit[]): Promise<{ notified: number } | { error: string }> {
   const moved: { bookingIds: string[]; from: string; to: string }[] = [];
+  let nameZh = '';
   const result = await withTx(async (c) => {
-    const act = await c.query<{ duration_min: number; name: string }>('select duration_min, name from activities where id = $1 for update', [activityId]);
+    const act = await c.query<{ duration_min: number; name: string; name_zh: string }>('select duration_min, name, name_zh from activities where id = $1 for update', [activityId]);
     if (!act.rowCount) return { error: 'That activity no longer exists.' };
+    nameZh = act.rows[0].name_zh;
     const dur = act.rows[0].duration_min;
     // Lock this day's slots so no hold or booking can land while we edit them.
     await c.query(
@@ -147,18 +152,19 @@ export async function saveSchedule(activityId: string, date: string, edits: Slot
   });
   if ('error' in result) return { error: result.error as string };
 
-  // Tell guests whose time moved (after the change is committed).
+  // Tell guests whose time moved (after the change is committed), each in their own language.
   let notified = 0;
+  const at = async (t: string) =>
+    (await getPool().query<{ d: Date }>(`select (($1::date + $2::time)::timestamp at time zone $3) as d`, [date, t, EVENT.timeZone])).rows[0].d;
   for (const m of moved) {
-    const people = await getPool().query<{ name: string; email: string | null; phone: string | null; code: string }>(
-      `select p.name, p.email, p.phone, b.code from bookings b join people p on p.id = b.person_id where b.id = any($1)`,
+    const [from, to] = [await at(m.from), await at(m.to)];
+    const people = await getPool().query<{ email: string | null; phone: string | null; code: string; lang: 'en' | 'zh' }>(
+      `select p.email, p.phone, b.code, p.lang from bookings b join people p on p.id = b.person_id where b.id = any($1)`,
       [m.bookingIds],
     );
     for (const p of people.rows) {
-      const text = `${EVENT.name}: time change. ${result.name} now starts at ${hhmm(m.to)} (was ${hhmm(m.from)}). Your spots and code ${p.code} stay the same.`;
       try {
-        if (p.phone && smsEnabled()) await sendSms(p.phone, text);
-        else if (p.email) await sendEmail(p.email, `Time change: ${result.name} now at ${hhmm(m.to)}`, text);
+        await sendTimeChange(p, { name: result.name, nameZh }, from, to);
         notified++;
       } catch (e) {
         console.error('time-change notice failed', e);
@@ -168,20 +174,25 @@ export async function saveSchedule(activityId: string, date: string, edits: Slot
   return { notified };
 }
 
-const hhmm = (t: string) => {
-  const h = Number(t.slice(0, 2)), m = t.slice(3, 5);
-  return `${((h + 11) % 12) + 1}:${m} ${h >= 12 ? 'PM' : 'AM'}`;
+export type ActivityInput = {
+  name: string; place: string; durationMin: number; description: string;
+  nameZh: string; placeZh: string; descriptionZh: string;
 };
 
-export async function saveActivity(id: string | null, a: { name: string; place: string; durationMin: number; description: string }) {
+export async function saveActivity(id: string | null, a: ActivityInput) {
+  const v = [a.name, a.place, a.durationMin, a.description, a.nameZh, a.placeZh, a.descriptionZh];
   if (id) {
-    await getPool().query('update activities set name = $2, place = $3, duration_min = $4, description = $5 where id = $1', [id, a.name, a.place, a.durationMin, a.description]);
+    await getPool().query(
+      `update activities set name = $2, place = $3, duration_min = $4, description = $5, name_zh = $6, place_zh = $7, description_zh = $8
+        where id = $1`,
+      [id, ...v],
+    );
     return id;
   }
   const r = await getPool().query<{ id: string }>(
-    `insert into activities (name, place, duration_min, description, sort_order)
-     values ($1, $2, $3, $4, coalesce((select max(sort_order) + 1 from activities), 1)) returning id`,
-    [a.name, a.place, a.durationMin, a.description],
+    `insert into activities (name, place, duration_min, description, name_zh, place_zh, description_zh, sort_order)
+     values ($1, $2, $3, $4, $5, $6, $7, coalesce((select max(sort_order) + 1 from activities), 1)) returning id`,
+    v,
   );
   return r.rows[0].id;
 }

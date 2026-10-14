@@ -18,6 +18,10 @@ Built with Next.js 16 and Postgres (runs on Supabase as is).
 - **Shared phone numbers** (families, couples): people are told apart by email, so several can use
   one phone. Signing in with that phone shows everyone's sign-ups, each labelled with a name;
   signing in with an email shows just that person's. Texts start with the person's first name.
+- **Traditional Chinese (Taiwan)**: opens in 繁體中文 on phones set to Chinese, with an EN | 繁中
+  switch on every screen (switching keeps a half-filled form and the 10-minute hold). Share
+  `yoursite/zh` to open it in Chinese whatever the phone's setting. Each attendee's language is saved,
+  so confirmations, reminders, sign-in codes and time-change notices come in it.
 
 **Staff** (`/staff`, behind a shared passcode)
 - **Check-in**: sessions by day, live roster with search by name, last 4 of phone or code;
@@ -26,7 +30,10 @@ Built with Next.js 16 and Postgres (runs on Supabase as is).
   optional "check in now".
 - **Schedule & capacity**: add, move or delete time slots and change capacity per slot; edit or add
   activities. Capacity can't drop below what's booked, booked slots can't be deleted, overlapping
-  slots are blocked, and guests in a moved slot are told the new time.
+  slots are blocked, and guests in a moved slot are told the new time. Each activity also has
+  Chinese name, place and description fields; blank ones show the English, and the list marks
+  activities with "中 missing" until they're filled in. Staff screens stay in English; the check-in
+  list tags Chinese-speaking attendees with 中, and walk-ins can be given Chinese messages.
 
 ## Run it locally
 
@@ -43,7 +50,7 @@ testing (sign-in codes included).
 Tests run against a real Postgres database (set `TEST_DATABASE_URL`; it is wiped on each run):
 
 ```bash
-npm test     # 38 tests: capacity under concurrency, holds, login codes, reminders, schedule edits, shared phones
+npm test     # 48 tests: capacity, holds, login codes, reminders, schedule edits, shared phones, Chinese
 ```
 
 ## Deploy (Vercel + Supabase)

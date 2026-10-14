@@ -23,7 +23,15 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
         {acts.map((a) => (
           <Link key={a.id} className="session" href={href({ a: a.id })} aria-current={a.id === cur?.id ? 'true' : undefined} style={{ padding: '13px 18px', borderRadius: 18 }}>
             <span className="serif" style={{ fontSize: 16 }}>{a.name}</span>
-            <span className="meta">{a.slots} {a.slots === 1 ? 'time' : 'times'} · {a.spots} spots on {day.label}</span>
+            <span className="meta">
+              {a.slots} {a.slots === 1 ? 'time' : 'times'} · {a.spots} spots on {day.label}
+              {!a.name_zh || !a.place_zh || (a.description && !a.description_zh) ? (
+                <span title="Some Chinese text is missing; Chinese readers see the English for those parts."
+                  style={{ marginLeft: 6, padding: '1px 7px', borderRadius: 999, background: 'var(--ochre-pale)', color: 'var(--ochre-dark)', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                  <span lang="zh-Hant-TW">中</span> missing
+                </span>
+              ) : null}
+            </span>
           </Link>
         ))}
         <Link className="btn ghost" href={`/staff/schedule?day=${day.key}&a=new`} style={{ border: '1.5px dashed #8c9688', color: 'var(--moss-dark)' }} aria-current={isNew ? 'true' : undefined}>
@@ -61,7 +69,7 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
             />
             <details className="panel" style={{ gap: 12 }}>
               <summary style={{ cursor: 'pointer', fontWeight: 600, minHeight: 32 }}>Edit activity details</summary>
-              <ActivityForm activity={{ id: cur.id, name: cur.name, place: cur.place, durationMin: cur.duration_min, description: cur.description }} />
+              <ActivityForm activity={{ id: cur.id, name: cur.name, place: cur.place, durationMin: cur.duration_min, description: cur.description, nameZh: cur.name_zh, placeZh: cur.place_zh, descriptionZh: cur.description_zh }} />
             </details>
           </>
         ) : (

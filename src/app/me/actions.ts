@@ -8,23 +8,24 @@ import { clearPersonSession, setViewerSession } from '@/lib/session';
 import { currentOwners } from '@/lib/viewer';
 import { BookingError, cancelBooking, changeSlot } from '@/lib/booking';
 import { getPool } from '@/lib/db';
+import { getLang } from '@/lib/lang';
 
-export type LoginState = { error?: string; value?: string } | null;
+export type LoginState = { error?: { code: string; left?: number }; value?: string } | null;
 
 export async function startLoginAction(_prev: LoginState, form: FormData): Promise<LoginState> {
   const value = String(form.get('who') ?? '').trim();
-  if (!value) return { error: 'Enter the phone number or email you signed up with.', value };
-  const r = await startLogin(value);
-  if (r.limited) return { error: 'We just sent you a few codes. Please wait a few minutes and try again.', value };
-  if (!r.ticket) return { error: 'That doesn’t look like a phone number or email.', value };
-  const p = new URLSearchParams({ t: r.ticket, to: r.masked ?? '', via: r.via ?? 'email' });
+  if (!value) return { error: { code: 'enter_who' }, value };
+  const r = await startLogin(value, await getLang());
+  if (r.limited) return { error: { code: 'too_many_codes' }, value };
+  if (!r.ticket) return { error: { code: 'bad_who' }, value };
+  const p = new URLSearchParams({ t: r.ticket, to: r.masked ?? '', via: r.via ?? 'email', ...(r.many ? { m: '1' } : {}) });
   redirect(`/me/sign-in?${p}`);
 }
 
 export async function verifyLoginAction(ticket: string, _prev: LoginState, form: FormData): Promise<LoginState> {
   const code = String(form.get('code') ?? '');
   const r = await verifyLogin(ticket, code);
-  if ('error' in r) return { error: r.error };
+  if ('error' in r) return { error: { code: r.error, left: r.left } };
   await setViewerSession(r.viewer, true);
   redirect('/me');
 }
@@ -59,17 +60,17 @@ export async function rateAction(form: FormData) {
   revalidatePath('/me');
 }
 
-export type ChangeState = { error?: string } | null;
+export type ChangeState = { error?: { code: string; remaining?: number } } | null;
 
 export async function changeTimeAction(bookingId: string, _prev: ChangeState, form: FormData): Promise<ChangeState> {
   const { ids } = await currentOwners();
   const slot = uuid.safeParse(form.get('slotId'));
   if (!ids.length) redirect('/me/sign-in');
-  if (!slot.success) return { error: 'Please pick a time' };
+  if (!slot.success) return { error: { code: 'pick_time' } };
   try {
     await changeSlot(bookingId, ids, slot.data);
   } catch (err) {
-    if (err instanceof BookingError) return { error: err.message };
+    if (err instanceof BookingError) return { error: { code: err.code, remaining: err.remaining } };
     throw err;
   }
   redirect('/me?moved=1');

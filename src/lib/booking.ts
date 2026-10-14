@@ -76,7 +76,7 @@ async function uniqueCode(c: PoolClient) {
  *    the same phone and name but no email yet (the email is added to it), else a new person.
  *  - Without an email (walk-ins): someone with the same phone and the same name, else a new person.
  */
-export async function upsertPerson(c: PoolClient, contact: Contact): Promise<string> {
+export async function upsertPerson(c: PoolClient, contact: Contact, lang: 'en' | 'zh' = 'en'): Promise<string> {
   const sameNameOnPhone = async (onlyWithoutEmail: boolean) =>
     contact.phone
       ? (await c.query<{ id: string }>(
@@ -94,22 +94,26 @@ export async function upsertPerson(c: PoolClient, contact: Contact): Promise<str
   if (contact.email) {
     const byEmail = (await c.query<{ id: string }>('select id from people where lower(email) = $1', [contact.email])).rows[0]?.id;
     if (byEmail) {
-      await c.query('update people set name = $2, phone = coalesce($3, phone) where id = $1', [byEmail, contact.name, contact.phone]);
+      await c.query('update people set name = $2, phone = coalesce($3, phone), lang = $4 where id = $1', [byEmail, contact.name, contact.phone, lang]);
       return byEmail;
     }
     const walkIn = await sameNameOnPhone(true);
     if (walkIn) {
-      await c.query('update people set email = $2, name = $3 where id = $1', [walkIn, contact.email, contact.name]);
+      await c.query('update people set email = $2, name = $3, lang = $4 where id = $1', [walkIn, contact.email, contact.name, lang]);
       return walkIn;
     }
   } else {
     const existing = await sameNameOnPhone(false);
-    if (existing) return existing;
+    if (existing) {
+      await c.query('update people set lang = $2 where id = $1', [existing, lang]);
+      return existing;
+    }
   }
-  const res = await c.query<{ id: string }>('insert into people (name, email, phone) values ($1, $2, $3) returning id', [
+  const res = await c.query<{ id: string }>('insert into people (name, email, phone, lang) values ($1, $2, $3, $4) returning id', [
     contact.name,
     contact.email,
     contact.phone,
+    lang,
   ]);
   return res.rows[0].id;
 }
@@ -117,7 +121,7 @@ export async function upsertPerson(c: PoolClient, contact: Contact): Promise<str
 /** A booking's owner check: one person, or everyone signed in through a shared phone number. */
 const ownerIds = (who: string | string[]) => (Array.isArray(who) ? who : [who]);
 
-export type ConfirmInput = { contact: Contact; remindSms: boolean; remindEmail: boolean };
+export type ConfirmInput = { contact: Contact; remindSms: boolean; remindEmail: boolean; lang?: 'en' | 'zh' };
 
 /** Turns a hold into a confirmed booking. If the hold lapsed, re-checks capacity before confirming. */
 export async function confirmBooking(holdId: string, input: ConfirmInput) {
@@ -134,7 +138,7 @@ export async function confirmBooking(holdId: string, input: ConfirmInput) {
         throw new BookingError('hold_expired', 'Your hold ran out and those spots were taken. Please pick another time.', remaining);
       }
     }
-    const personId = await upsertPerson(c, input.contact);
+    const personId = await upsertPerson(c, input.contact, input.lang);
     const code = await uniqueCode(c);
     await c.query(
       `update bookings set status = 'confirmed', person_id = $2, code = $3, remind_sms = $4, remind_email = $5,
@@ -147,13 +151,13 @@ export async function confirmBooking(holdId: string, input: ConfirmInput) {
 }
 
 /** Staff walk-in: books directly (no hold). `allowOver` lets a lead approve going over capacity. */
-export async function walkInBooking(slotId: string, partySize: number, contact: Contact, opts: { allowOver?: boolean; checkInNow?: boolean } = {}) {
+export async function walkInBooking(slotId: string, partySize: number, contact: Contact, opts: { allowOver?: boolean; checkInNow?: boolean; lang?: 'en' | 'zh' } = {}) {
   return withTx(async (c) => {
     const { remaining } = await lockSlot(c, slotId);
     if (remaining < partySize && !opts.allowOver) {
       throw new BookingError('not_enough_spots', `Only ${remaining} left at this time.`, remaining);
     }
-    const personId = await upsertPerson(c, contact);
+    const personId = await upsertPerson(c, contact, opts.lang);
     const code = await uniqueCode(c);
     const res = await c.query<{ id: string }>(
       `insert into bookings (slot_id, person_id, party_size, status, source, code, remind_sms, remind_email, checked_in, confirmed_at)

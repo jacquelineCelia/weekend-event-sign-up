@@ -1,5 +1,6 @@
-import { getBooking } from '@/lib/queries';
+import { bookingText, getBooking } from '@/lib/queries';
 import { EVENT, addMinutes } from '@/lib/event';
+import { getLang } from '@/lib/lang';
 import { currentOwners } from '@/lib/viewer';
 
 const stamp = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
@@ -12,20 +13,25 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
   const { ids } = await currentOwners();
   if (!b || b.status !== 'confirmed' || !b.personId || !ids.includes(b.personId)) return new Response('Not found', { status: 404 });
 
+  const lang = await getLang();
+  const { activity, place } = bookingText(b, lang);
+  const summary = lang === 'zh' ? `${activity} · ${EVENT.nameZh}` : `${activity} · ${EVENT.name}`;
+  const description = lang === 'zh' ? `${b.partySize} 位。報到代碼 ${b.code}。` : `${b.partySize} spot(s). Check-in code ${b.code}.`;
   const ics = [
     'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Mindfulness Weekend//Signup//EN', 'BEGIN:VEVENT',
     `UID:${b.id}@signup`, `DTSTAMP:${stamp(new Date())}`,
     `DTSTART:${stamp(b.startsAt)}`, `DTEND:${stamp(addMinutes(b.startsAt, b.durationMin))}`,
-    `SUMMARY:${esc(`${b.activityName} · ${EVENT.name}`)}`, `LOCATION:${esc(b.place)}`,
-    `DESCRIPTION:${esc(`${b.partySize} spot(s). Check-in code ${b.code}.`)}`,
-    'BEGIN:VALARM', 'TRIGGER:-PT15M', 'ACTION:DISPLAY', `DESCRIPTION:${esc(b.activityName)}`, 'END:VALARM',
+    `SUMMARY:${esc(summary)}`, `LOCATION:${esc(place)}`,
+    `DESCRIPTION:${esc(description)}`,
+    'BEGIN:VALARM', 'TRIGGER:-PT15M', 'ACTION:DISPLAY', `DESCRIPTION:${esc(activity)}`, 'END:VALARM',
     'END:VEVENT', 'END:VCALENDAR', '',
   ].join('\r\n');
 
   return new Response(ics, {
     headers: {
       'Content-Type': 'text/calendar; charset=utf-8',
-      'Content-Disposition': `attachment; filename="${b.activityName.replace(/[^\w ]/g, '')}.ics"`,
+      // ASCII name for old clients, plus the real (possibly Chinese) name for everyone else.
+      'Content-Disposition': `attachment; filename="${b.activityName.replace(/[^\w ]/g, '') || 'activity'}.ics"; filename*=UTF-8''${encodeURIComponent(activity)}.ics`,
     },
   });
 }
