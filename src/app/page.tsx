@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { activitiesForDay } from '@/lib/queries';
-import { EVENT, dateRangeL, dayByKey, dayText, eventNameL, fmtDurationL, fmtTimeL, isLow, requestTime } from '@/lib/event';
+import { eventName } from '@/lib/hans';
+import { EVENT, dateRangeL, dayByKey, dayText, fmtDurationL, fmtTimeL, isLow, requestTime } from '@/lib/event';
 import { getLang } from '@/lib/lang';
 import { dict, zhBold } from '@/lib/i18n';
 import LangToggle from '@/components/LangToggle';
@@ -15,7 +16,7 @@ export default async function Browse({ searchParams }: { searchParams: Promise<{
   const lang = await getLang();
   const t = dict(lang);
   const all = await activitiesForDay(day.date, lang);
-  const [title1, title2] = t.heroTitle(eventNameL(lang));
+  const [title1, title2] = t.heroTitle(eventName(lang));
   const now = requestTime();
 
   const acts = all

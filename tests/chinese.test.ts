@@ -9,7 +9,7 @@ import { sendConfirmation, sendReminder } from '@/lib/notify';
 import { saveSchedule, scheduleFor } from '@/lib/staff';
 import { EVENT, fmtTimeL, fmtDurationL, dayText } from '@/lib/event';
 import { dict, errorText, firstName, langFromAcceptLanguage } from '@/lib/i18n';
-import { toSimplified } from '@/lib/hans';
+import { eventName, toSimplified } from '@/lib/hans';
 
 vi.spyOn(console, 'info').mockImplementation(() => {});
 const pool = getPool();
@@ -157,6 +157,18 @@ describe('Simplified Chinese', () => {
     for (const taiwanWord of ['代碼', '额满', '进程', '行事历', '信箱', '报到', '「']) expect(all).not.toContain(taiwanWord);
     expect(zhs.msg.loginSubject('123456')).toBe('你的登录验证码：123456');
     expect(zhs.checkInCode).toBe('签到码');
+  });
+
+  it('derives the Simplified event name from the Traditional one unless set', () => {
+    const saved = process.env.NEXT_PUBLIC_EVENT_NAME_ZHS;
+    try {
+      delete process.env.NEXT_PUBLIC_EVENT_NAME_ZHS;
+      expect(eventName('zhs')).toBe(toSimplified(EVENT.nameZh));
+      process.env.NEXT_PUBLIC_EVENT_NAME_ZHS = '我的周末';
+      expect(eventName('zhs')).toBe('我的周末');
+    } finally {
+      if (saved === undefined) delete process.env.NEXT_PUBLIC_EVENT_NAME_ZHS; else process.env.NEXT_PUBLIC_EVENT_NAME_ZHS = saved;
+    }
   });
 
   it('converts the Traditional activity text staff typed', async () => {

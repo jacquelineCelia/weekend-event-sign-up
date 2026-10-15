@@ -1,5 +1,6 @@
 import { bookingText, type BookingView } from './queries';
-import { addMinutes, dayOf, dayText, eventNameL, fmtTimeL, isChinese, type Lang } from './event';
+import { addMinutes, dayOf, dayText, fmtTimeL, isChinese, type Lang } from './event';
+import { eventName as eventNameFor } from './hans';
 import { localText } from './hans';
 import { dict, firstName } from './i18n';
 import { sendEmail, sendSms, smsEnabled } from './messaging';
@@ -10,7 +11,7 @@ const vercelHost = () => process.env.VERCEL_BRANCH_URL || process.env.VERCEL_URL
 const appUrl = () =>
   (process.env.APP_URL || (vercelHost() ? `https://${vercelHost()}` : 'http://localhost:3000')).replace(/\/$/, '');
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
-const eventName = eventNameL;
+const eventName = eventNameFor;
 
 function emailHtml(lang: Lang, title: string, lines: string[], code: string | null, cta?: { href: string; label: string }) {
   const font =
