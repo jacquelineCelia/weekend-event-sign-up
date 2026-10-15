@@ -15,6 +15,9 @@ Built with Next.js 16 and Postgres (runs on Supabase as is).
 - **My sign-ups** (`/me`): remembered on the device; on a new device, sign in with a 6-digit code
   sent by text or email. Change time, cancel, and rate finished activities 1–10.
 - Confirmation message right away, reminder 15 minutes before each activity.
+- **Map**: a Map button on the Up next card opens a map of the grounds with the next activity's place
+  highlighted and what happens where. The map is a **placeholder drawing**: replace the drawing in
+  `src/components/VenueMap.tsx` and the pin positions in `src/lib/venue-map.ts` with the real site.
 - **Shared phone numbers** (families, couples): people are told apart by email, so several can use
   one phone. Signing in with that phone shows everyone's sign-ups, each labelled with a name;
   signing in with an email shows just that person's. Texts start with the person's first name.

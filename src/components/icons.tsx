@@ -41,3 +41,9 @@ export const Hills = () => (
     <path d="M0 56 L0 52 C 100 46, 260 58, 390 50 L390 56 Z" fill="#EEEFE7" />
   </svg>
 );
+export const MapIcon = ({ size = 16 }: P) => (
+  <svg {...base(size)}><path d="M9 4L3 6.5v13.5L9 17.5l6 2.5 6-2.5V4l-6 2.5L9 4z" /><path d="M9 4v13.5M15 6.5V20" /></svg>
+);
+export const Close = ({ size = 20 }: P) => (
+  <svg {...base(size)} strokeWidth={2}><path d="M6 6l12 12M18 6L6 18" /></svg>
+);

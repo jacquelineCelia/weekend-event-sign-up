@@ -8,6 +8,7 @@ import { getLang } from '@/lib/lang';
 import { dict, zhBold } from '@/lib/i18n';
 import LangToggle from '@/components/LangToggle';
 import { Back, Bell, Plus } from '@/components/icons';
+import VenueMap, { type MapPlace } from '@/components/VenueMap';
 import { signOutAction } from './actions';
 import { CancelButton, RatePicker } from './widgets';
 
@@ -15,7 +16,7 @@ export const dynamic = 'force-dynamic';
 
 type Row = {
   id: string; code: string; party_size: number; starts_at: Date; duration_min: number; remind_sms: boolean; remind_email: boolean;
-  activity_name: string; place: string; name_zh: string; place_zh: string; activity_id: string; slot_id: string; score: number | null; person_name: string;
+  activity_name: string; place: string; place_en?: string; name_zh: string; place_zh: string; activity_id: string; slot_id: string; score: number | null; person_name: string;
 };
 
 export default async function MySignups({ searchParams }: { searchParams: Promise<{ moved?: string }> }) {
@@ -39,9 +40,20 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
   );
   for (const r of rows) {
     r.activity_name = localText(r.activity_name, r.name_zh, lang);
+    r.place_en = r.place;
     r.place = localText(r.place, r.place_zh, lang);
   }
   const now = requestTime();
+  // Every place on the grounds with what happens there, for the map in the Up next card.
+  const placeRows = (await getPool().query<{ name: string; name_zh: string; place: string; place_zh: string }>(
+    'select name, name_zh, place, place_zh from activities order by sort_order, name',
+  )).rows;
+  const mapPlaces: MapPlace[] = [];
+  for (const a of placeRows) {
+    let p = mapPlaces.find((m) => m.key === a.place);
+    if (!p) mapPlaces.push(p = { key: a.place, label: localText(a.place, a.place_zh, lang), activities: [] });
+    p.activities.push(localText(a.name, a.name_zh, lang));
+  }
   const next = rows.find((r) => r.starts_at.getTime() > now);
   const byDay = EVENT.days.map((d) => ({ d, items: rows.filter((r) => dayOf(r.starts_at)?.key === d.key) })).filter((g) => g.items.length);
   const minsUntil = next ? Math.round((next.starts_at.getTime() - now) / 60000) : 0;
@@ -60,7 +72,7 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
   return (
     <div className="phone">
       <div className="topbar">
-        <Link className="back" href="/"><Back /> {t.activities}</Link>
+        <Link className="back" href="/"><Back /> {t.allActivities}</Link>
         <span style={{ display: 'flex', alignItems: 'center', gap: 4, minWidth: 0 }}>
         <LangToggle lang={lang} />
         <form action={signOutAction}>
@@ -92,11 +104,15 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
             <span className={`serif${zhBold(next.activity_name)}`} style={{ fontSize: 24 }}>{next.activity_name}</span>
             <span className="sub">{fmtTimeL(next.starts_at, lang)} · {next.place} · {t.spots(next.party_size)}{household ? ` · ${next.person_name}` : ''}</span>
           </div>
-          {next.remind_sms || next.remind_email ? (
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 13.5, color: 'var(--on-dark-2)', position: 'relative' }}>
-              <Bell size={16} /> {t.reminderAt(fmtTimeL(addMinutes(next.starts_at, -15), lang))}
-            </div>
-          ) : null}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, position: 'relative' }}>
+            {next.remind_sms || next.remind_email ? (
+              <span style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 13.5, color: 'var(--on-dark-2)' }}>
+                <Bell size={16} /> {t.reminderAt(fmtTimeL(addMinutes(next.starts_at, -15), lang))}
+              </span>
+            ) : <span />}
+            <VenueMap places={mapPlaces} current={next.place_en ?? next.place} zh={isChinese(lang)}
+              text={{ map: t.map, mapTitle: t.mapTitle, close: t.close, yourNext: t.yourNextHere, entrance: t.entrance }} />
+          </div>
         </section>
       ) : null}
 
