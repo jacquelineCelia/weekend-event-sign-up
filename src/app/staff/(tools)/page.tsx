@@ -64,7 +64,7 @@ export default async function CheckIn({ searchParams }: { searchParams: Promise<
     <div className="staffbody">
       <AutoRefresh seconds={20} />
       {sel ? <RememberSlot slotId={sel.slotId} /> : null}
-      <aside className="staffside" aria-label="Sessions">
+      <aside className="staffside scrollside" aria-label="Sessions">
         <nav className="segment" aria-label="Day">
           {EVENT.days.map((d) => (
             <Link key={d.key} href={href({ day: d.key })} aria-current={d.key === day.key ? 'true' : undefined}>{d.label}</Link>

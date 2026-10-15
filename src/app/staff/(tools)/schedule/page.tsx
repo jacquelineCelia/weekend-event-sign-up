@@ -27,7 +27,7 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
 
   return (
     <div className="staffbody">
-      <aside className="staffside" aria-label="Activities" style={{ maxWidth: 360 }}>
+      <aside className="staffside scrollside" aria-label="Activities" style={{ maxWidth: 360 }}>
         <h2 className="h2" style={{ fontSize: 18, color: 'var(--ink-2)' }}>Activities</h2>
         <FilterList label="Search activities" placeholder="Search activity or place" noun={['activity', 'activities']}
           items={acts.map((a) => ({

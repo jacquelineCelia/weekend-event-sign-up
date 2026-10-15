@@ -246,3 +246,15 @@ select.input { padding: 0 14px; }
 
 /* Chinese activity names are bold so they stand out the way the serif English names do. */
 .zhname { font-weight: 700; }
+
+/* Staff lists (Check-in sessions, Schedule activities): when the list sits beside the main panel, it
+   scrolls on its own and stays in view, so the right side doesn't scroll away while looking for one.
+   On narrow screens the list stacks above the panel and the page scrolls as usual. */
+@media (min-width: 960px) {
+  .scrollside {
+    position: sticky; top: 20px;
+    max-height: calc(100dvh - 116px);   /* below the 68px staff bar and the page padding */
+    overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable;
+    padding: 4px 6px 4px 4px; margin: -4px -6px -4px -4px;   /* room for focus rings and shadows */
+  }
+}
