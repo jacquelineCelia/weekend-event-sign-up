@@ -20,9 +20,20 @@ export default function WalkInForm({ options, initialKey, initialSlot }: { optio
   const [checkNow, setCheckNow] = useState(true);
   const [state, action, pending] = useActionState<WalkInState, FormData>(walkInAction, null);
 
+  // After each successful sign-up: party size back to 0 (staff set it for the next guest), and a fresh
+  // form. React clears the form's fields after the action, which would leave the Activity menu showing the
+  // first option while the rest of the page still shows the chosen one; re-mounting keeps them in step.
+  const [seen, setSeen] = useState(state);
+  const [formKey, setFormKey] = useState(0);
+  if (state !== seen) {
+    setSeen(state);
+    if (state?.done) { setParty(0); setApproved(false); setFormKey((k) => k + 1); }
+  }
+
   const slot = usable.find((s) => s.id === slotId) ?? null;
   const over = !!slot && party > slot.remaining;
-  const blocked = !slot || (over && !approved);
+  const noParty = party < 1;
+  const blocked = !slot || noParty || (over && !approved);
   const err = state?.fields ?? {};
 
   const pickActivity = (k: string) => {
@@ -35,7 +46,7 @@ export default function WalkInForm({ options, initialKey, initialSlot }: { optio
   if (!act) return <p className="muted">No activities yet. Add them on the Schedule &amp; capacity screen.</p>;
 
   return (
-    <form action={action} style={{ display: 'contents' }}>
+    <form key={formKey} action={action} style={{ display: 'contents' }}>
       <div className="sheet staffmain" style={{ gap: 22 }}>
         <h1 className="h1" style={{ fontSize: 30 }}>Welcome someone in</h1>
 
@@ -73,7 +84,7 @@ export default function WalkInForm({ options, initialKey, initialSlot }: { optio
             <span className="muted" style={{ fontSize: 13 }}>Including the person signing up</span>
           </div>
           <div className="stepper" role="group" aria-labelledby="party-l">
-            <button type="button" className="round" aria-label="Smaller party" disabled={party <= 1} onClick={() => setParty(party - 1)}>−</button>
+            <button type="button" className="round" aria-label="Smaller party" disabled={party <= 1} onClick={() => setParty(Math.max(1, party - 1))}>−</button>
             <output aria-live="polite">{party}</output>
             <button type="button" className="round" aria-label="Larger party" disabled={party >= 50} onClick={() => { setParty(party + 1); setApproved(false); }}>+</button>
           </div>
@@ -129,7 +140,7 @@ export default function WalkInForm({ options, initialKey, initialSlot }: { optio
           {state?.error ? <span role="alert" style={{ color: 'var(--sun)', fontWeight: 600 }}>{state.error}</span> : null}
           <button type="submit" disabled={blocked || pending} className="btn"
             style={{ background: blocked ? '#3b5644' : 'var(--paper)', color: blocked ? '#a9b8a6' : 'var(--ink)', marginTop: 4 }}>
-            {pending ? 'Signing up…' : blocked && slot ? 'Needs lead approval' : checkNow ? `Sign up & check in ${party}` : `Sign up ${party}`}
+            {pending ? 'Signing up…' : !slot ? 'Pick a time' : noParty ? 'Set the party size' : blocked ? 'Needs lead approval' : checkNow ? `Sign up & check in ${party}` : `Sign up ${party}`}
           </button>
         </div>
         {state?.done ? (
