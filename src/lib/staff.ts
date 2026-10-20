@@ -158,8 +158,8 @@ export async function saveSchedule(activityId: string, date: string, edits: Slot
     (await getPool().query<{ d: Date }>(`select (($1::date + $2::time)::timestamp at time zone $3) as d`, [date, t, EVENT.timeZone])).rows[0].d;
   for (const m of moved) {
     const [from, to] = [await at(m.from), await at(m.to)];
-    const people = await getPool().query<{ email: string | null; phone: string | null; code: string; lang: 'en' | 'zh' | 'zhs' }>(
-      `select p.email, p.phone, b.code, p.lang from bookings b join people p on p.id = b.person_id where b.id = any($1)`,
+    const people = await getPool().query<{ email: string | null; phone: string | null; code: string; lang: 'en' | 'zh' | 'zhs'; sms: boolean }>(
+      `select p.email, p.phone, b.code, p.lang, b.remind_sms as sms from bookings b join people p on p.id = b.person_id where b.id = any($1)`,
       [m.bookingIds],
     );
     for (const p of people.rows) {

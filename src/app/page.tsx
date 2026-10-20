@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { activitiesForDay } from '@/lib/queries';
 import { eventName } from '@/lib/hans';
+import { LegalFoot } from '@/components/LegalPage';
 import { EVENT, dateRangeL, dayByKey, dayText, fmtDurationL, fmtTimeL, isLow, requestTime } from '@/lib/event';
 import { getLang } from '@/lib/lang';
 import { dict, zhBold } from '@/lib/i18n';
@@ -95,6 +96,7 @@ export default async function Browse({ searchParams }: { searchParams: Promise<{
         ))}
         {acts.length === 0 ? <p className="empty">{t.dayFull}</p> : null}
       </main>
+      <LegalFoot lang={lang} />
     </div>
   );
 }

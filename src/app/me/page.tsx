@@ -9,6 +9,7 @@ import { dict, zhBold } from '@/lib/i18n';
 import LangToggle from '@/components/LangToggle';
 import { Back, Bell, Plus } from '@/components/icons';
 import VenueMap, { type MapPlace } from '@/components/VenueMap';
+import { LegalFoot } from '@/components/LegalPage';
 import { signOutAction } from './actions';
 import { CancelButton, RatePicker } from './widgets';
 
@@ -158,6 +159,7 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
           <Plus size={18} /> {t.addAnother}
         </Link>
       </div>
+      <LegalFoot lang={lang} />
     </div>
   );
 }

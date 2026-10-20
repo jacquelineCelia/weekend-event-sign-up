@@ -1,7 +1,8 @@
 import { createHmac, randomInt, randomUUID, timingSafeEqual } from 'node:crypto';
 import { getPool, withTx } from './db';
 import { normalizeEmail, normalizePhone } from './contact';
-import { sendLoginCode } from './notify';
+import { phoneOptedIn, sendLoginCode } from './notify';
+import { SmsOptedOut } from './messaging';
 import { smsEnabled } from './messaging';
 import type { Viewer } from './session';
 
@@ -30,10 +31,12 @@ export async function startLogin(identifier: string, lang: 'en' | 'zh' | 'zhs' =
   // so the form can't be used to find out who has signed up.
   if (!people.length) return { ticket: randomUUID(), via: phone && smsEnabled() ? 'sms' : 'email', masked: mask(phone ?? email!) };
 
-  // Where the code goes: a text to the phone when texting is set up, otherwise email.
-  // For a shared phone without texting, every email on that number gets it.
+  // Where the code goes: a text when the number opted in to texts (or has no email to fall back on;
+  // then the person is asking for this one code themselves), otherwise email. On a shared phone,
+  // every email on that number gets it.
   const emails = [...new Set(people.map((p) => p.email).filter((e): e is string => !!e))].slice(0, 5);
-  const via: 'email' | 'sms' = phone ? (smsEnabled() || !emails.length ? 'sms' : 'email') : 'email';
+  let via: 'email' | 'sms' = 'email';
+  if (phone) via = !emails.length || (smsEnabled() && (await phoneOptedIn(phone))) ? 'sms' : 'email';
 
   const recent = await getPool().query<{ n: number }>(
     phone
@@ -50,8 +53,15 @@ export async function startLogin(identifier: string, lang: 'en' | 'zh' | 'zhs' =
     [phone ? null : people[0].id, phone, hash(code), via, CODE_TTL_MIN],
   );
   if (via === 'sms') {
-    await sendLoginCode({ email: null, phone: phone ?? people[0].phone }, code, 'sms', lang);
-    return { ticket: ins.rows[0].id, via, masked: mask((phone ?? people[0].phone)!) };
+    try {
+      await sendLoginCode({ email: null, phone: phone ?? people[0].phone }, code, 'sms', lang);
+      return { ticket: ins.rows[0].id, via, masked: mask((phone ?? people[0].phone)!) };
+    } catch (e) {
+      // The number replied STOP: use email if there is one.
+      if (!(e instanceof SmsOptedOut) || !emails.length) throw e;
+      via = 'email';
+      await getPool().query(`update login_codes set sent_via = 'email' where id = $1`, [ins.rows[0].id]);
+    }
   }
   const to = phone ? emails : [people[0].email!];
   for (const e of to) await sendLoginCode({ email: e, phone: null }, code, 'email', lang);

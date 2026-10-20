@@ -8,6 +8,7 @@ import LangToggle from '@/components/LangToggle';
 
 type Props = {
   lang: Lang;
+  eventName: string;
   holdId: string;
   /** Seconds left on the hold, worked out by the database (so the visitor's clock doesn't matter). */
   secondsLeft: number;
@@ -55,10 +56,11 @@ function useCountdown(secondsLeft: number) {
   return left;
 }
 
-export default function DetailsForm({ lang, holdId, secondsLeft, summary, known }: Props) {
+export default function DetailsForm({ lang, eventName, holdId, secondsLeft, summary, known }: Props) {
   const t = dict(lang);
   const [state, action, pending] = useActionState<FormState, FormData>(confirmAction.bind(null, holdId), null);
-  const [sms, setSms] = useState(true);
+  // Carriers require texting to be opted in to, never pre-ticked.
+  const [sms, setSms] = useState(false);
   const [mail, setMail] = useState(true);
   const left = useCountdown(secondsLeft);
   const v = state?.values ?? known ?? { name: '', email: '', phone: '' };
@@ -106,7 +108,11 @@ export default function DetailsForm({ lang, holdId, secondsLeft, summary, known 
           <fieldset style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
             <legend className="legend" style={{ padding: 0, marginBottom: 8 }}>{t.remindLegend}</legend>
             <div className="stack" style={{ border: '1px solid var(--line)', background: 'var(--paper)', borderRadius: 20, padding: '10px 18px', gap: 4 }}>
-              <label className="check"><input type="checkbox" name="remindSms" checked={sms} onChange={(e) => setSms(e.target.checked)} /> {t.bySms}</label>
+              <label className="check"><input type="checkbox" name="remindSms" checked={sms} onChange={(e) => setSms(e.target.checked)} aria-describedby="sms-consent" /> {t.bySms}</label>
+              <p id="sms-consent" className="consent">
+                {t.smsConsent(eventName)}{' '}
+                <a href="/terms" target="_blank" rel="noopener">{t.terms}</a> · <a href="/privacy" target="_blank" rel="noopener">{t.privacy}</a>
+              </p>
               <label className="check"><input type="checkbox" name="remindEmail" checked={mail} onChange={(e) => setMail(e.target.checked)} /> {t.byEmail}</label>
               {!sms && !mail ? <span className="note" role="status" style={{ fontSize: 13, padding: '9px 12px', borderRadius: 12 }}>{t.noReminderWarn}</span> : null}
             </div>

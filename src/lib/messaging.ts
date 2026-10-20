@@ -42,6 +42,11 @@ export async function sendEmail(to: string, subject: string, text: string, html?
   return { channel: 'email', to, delivered: true, id: res.headers.get('x-message-id') ?? undefined };
 }
 
+/** Twilio refuses to text a number that replied STOP (error 21610). */
+export class SmsOptedOut extends Error {
+  constructor(public phone: string) { super(`${phone} has opted out of texts (replied STOP)`); }
+}
+
 export async function sendSms(to: string, text: string): Promise<Sent> {
   const sid = process.env.TWILIO_ACCOUNT_SID;
   const token = process.env.TWILIO_AUTH_TOKEN;
@@ -60,7 +65,13 @@ export async function sendSms(to: string, text: string): Promise<Sent> {
     },
     body: form,
   });
-  if (!res.ok) throw new Error(`SMS failed (${res.status}): ${await res.text()}`);
+  if (!res.ok) {
+    const raw = await res.text();
+    let code: number | undefined;
+    try { code = (JSON.parse(raw) as { code?: number }).code; } catch {}
+    if (code === 21610) throw new SmsOptedOut(to);
+    throw new Error(`SMS failed (${res.status}): ${raw}`);
+  }
   const body = (await res.json()) as { sid?: string };
   return { channel: 'sms', to, delivered: true, id: body.sid };
 }

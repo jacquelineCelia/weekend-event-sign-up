@@ -287,3 +287,13 @@ select.input { padding: 0 14px; }
 .maplist .dot { flex: none; width: 12px; height: 12px; margin-top: 5px; border-radius: 50%; background: #3D6B4F; box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--line); }
 .maplist .dot[data-on='true'] { background: #B5852A; }
 .maplist .you { margin-left: 8px; padding: 1px 8px; border-radius: 999px; background: var(--forest); color: var(--on-dark); font-size: 11.5px; font-weight: 600; vertical-align: 2px; }
+
+/* Text-message consent wording beside the opt-in box, and the Terms/Privacy pages. */
+.consent { margin: 0 0 6px 34px; font-size: 12.5px; line-height: 1.55; color: var(--muted); }
+.consent a, .hint a, .legalfoot a { color: var(--moss-dark); font-weight: 600; }
+.legalfoot { display: flex; justify-content: center; gap: 10px; padding: 18px 20px 28px; font-size: 13px; color: var(--muted); }
+.legal { padding: 4px 22px 32px; font-size: 15px; line-height: 1.65; color: var(--ink-2); }
+.legal h2 { font-family: var(--serif); font-weight: 400; font-size: 20px; color: var(--ink); margin: 26px 0 6px; }
+.legal p, .legal ul { margin: 0 0 10px; }
+.legal ul { padding-left: 20px; }
+:lang(zh) .legal { line-height: 1.8; }

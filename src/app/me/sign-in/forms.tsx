@@ -25,6 +25,7 @@ export function AskForm({ lang }: { lang: Lang }) {
         <input id="who" name="who" className="input" style={{ minHeight: 54, fontSize: 17 }} autoComplete="email tel"
           defaultValue={state?.value ?? ''} aria-invalid={!!state?.error} aria-describedby={state?.error ? 'who-err' : undefined} required />
         {state?.error ? <span id="who-err" className="error">{errorText(lang, state.error)}</span> : null}
+        <span className="hint">{t.signinSmsNote} <a href="/terms">{t.terms}</a> · <a href="/privacy">{t.privacy}</a></span>
       </div>
       <button className="btn" type="submit" disabled={pending}>{pending ? t.sending : t.sendCode}</button>
       <div className="panel" style={{ fontSize: 14, color: 'var(--ink-2)', padding: '14px 18px', borderRadius: 20 }}>

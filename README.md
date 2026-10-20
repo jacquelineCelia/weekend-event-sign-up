@@ -15,6 +15,12 @@ Built with Next.js 16 and Postgres (runs on Supabase as is).
 - **My sign-ups** (`/me`): remembered on the device; on a new device, sign in with a 6-digit code
   sent by text or email. Change time, cancel, and rate finished activities 1–10.
 - Confirmation message right away, reminder 15 minutes before each activity.
+- **Texting follows carrier (A2P 10DLC) rules**: the "By text message" box starts unticked, with the
+  consent wording and Terms/Privacy links beside it; only people who tick it (or walk-ins whose
+  "OK to text" box staff tick after asking) get texts; every text names the event and the first says
+  "Reply STOP to opt out"; sign-in codes go by text only to numbers that opted in (else email); and
+  if someone replies STOP, their reminders switch to email. Terms (`/terms`) and Privacy (`/privacy`)
+  pages are in all three languages; set `NEXT_PUBLIC_ORG_NAME` and `NEXT_PUBLIC_SUPPORT_EMAIL`.
 - **Map**: a Map button on the Up next card opens a map of the grounds with the next activity's place
   highlighted and what happens where. The map is a **placeholder drawing**: replace the drawing in
   `src/components/VenueMap.tsx` and the pin positions in `src/lib/venue-map.ts` with the real site.
@@ -57,7 +63,7 @@ testing (sign-in codes included).
 Tests run against a real Postgres database (set `TEST_DATABASE_URL`; it is wiped on each run):
 
 ```bash
-npm test     # 51 tests: capacity, holds, login codes, reminders, schedule edits, shared phones, Chinese
+npm test     # 58 tests: capacity, holds, login codes, reminders, schedule edits, shared phones, Chinese
 ```
 
 ## Deploy (Vercel + Supabase)

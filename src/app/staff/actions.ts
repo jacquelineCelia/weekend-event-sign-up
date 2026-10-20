@@ -67,7 +67,7 @@ export async function walkInAction(_prev: WalkInState, form: FormData): Promise<
   const raw = form.get('lang');
   const lang = raw === 'zh' || raw === 'zhs' ? raw : 'en';
   try {
-    const r = await walkInBooking(base.data.slotId, base.data.party, contact.data, { allowOver: form.get('allowOver') === 'on', checkInNow, lang });
+    const r = await walkInBooking(base.data.slotId, base.data.party, contact.data, { allowOver: form.get('allowOver') === 'on', checkInNow, lang, okToText: form.get('okToText') === 'on' });
     const b = await getBooking(r.bookingId);
     if (b) await sendConfirmation(b).catch((e) => console.error('walk-in confirmation failed', e));
     await rememberSlot(base.data.slotId);

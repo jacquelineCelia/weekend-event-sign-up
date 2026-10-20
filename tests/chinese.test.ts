@@ -103,7 +103,7 @@ describe('messages in the attendee’s saved language', () => {
     try {
       await sendReminder((await getBooking(r.bookingId))!);
       const body = new URLSearchParams(String((fetchSpy.mock.calls[0][1] as RequestInit).body)).get('Body')!;
-      expect(body).toMatch(/^王美玲：拉坯體驗 15 分鐘後開始（上午 11:30，穀倉工作室）。2位，代碼 /);
+      expect(body).toMatch(/^正念週末：王美玲，拉坯體驗 15 分鐘後開始（上午 11:30，穀倉工作室）。2位，代碼 /);
       expect(body.length).toBeLessThanOrEqual(134); // 2 × 67-character parts for Chinese text
     } finally {
       fetchSpy.mockRestore();
