@@ -88,6 +88,7 @@ const en = {
   smsConsent: (event: string) =>
     `By checking this, you agree to get texts from ${event} about your sign-ups: a confirmation, reminders, schedule changes and sign-in codes you request. Usually 2–3 texts per activity. Msg & data rates may apply. Reply HELP for help, STOP to opt out.`,
   terms: 'Terms',
+  organizedBy: (org: string, parent: string) => `Organized by ${org}, part of ${parent}.`,
   privacy: 'Privacy',
   signinSmsNote: 'If you enter a phone number, we may text you the code. Msg & data rates may apply.',
   confirming: 'Confirming…',
@@ -275,6 +276,7 @@ const zh: Dict = {
   smsConsent: (event) =>
     `勾選即表示你同意接收${event}傳送與你的報名相關的簡訊：報名確認、活動提醒、時段異動，以及你申請的登入代碼。每項活動通常 2–3 則。可能產生簡訊及數據傳輸費用。回覆 HELP 取得協助，回覆 STOP 取消簡訊。`,
   terms: '使用條款',
+  organizedBy: (org, parent) => `由 ${org} 主辦，隸屬 ${parent}。`,
   privacy: '隱私權政策',
   signinSmsNote: '若輸入手機號碼，我們可能以簡訊傳送代碼，可能產生簡訊費用。',
   confirming: '送出中…',
@@ -455,6 +457,7 @@ const zhs: Dict = {
   smsConsent: (event) =>
     `勾选即表示你同意接收${event}发送的与你的报名相关的短信：报名确认、活动提醒、时段变更，以及你申请的登录验证码。每项活动通常 2–3 条。可能产生短信和数据流量费用。回复 HELP 获取帮助，回复 STOP 退订。`,
   terms: '使用条款',
+  organizedBy: (org, parent) => `由 ${org} 主办，隶属于 ${parent}。`,
   privacy: '隐私政策',
   signinSmsNote: '如输入手机号码，我们可能通过短信发送验证码，可能产生短信费用。',
   confirming: '提交中…',

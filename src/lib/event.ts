@@ -5,6 +5,7 @@ export const EVENT = {
   nameZhs: process.env.NEXT_PUBLIC_EVENT_NAME_ZHS ?? '正念周末',
   /** Who runs the event (as registered for text messaging), and where people can write for help. */
   org: process.env.NEXT_PUBLIC_ORG_NAME || 'Yellow Flower Meditation Academy',
+  parentOrg: process.env.NEXT_PUBLIC_PARENT_ORG || 'The Oneness Truth Foundation',
   supportEmail: process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@onenesstruth.org',
   timeZone: process.env.EVENT_TZ ?? 'America/New_York',
   days: [

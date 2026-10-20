@@ -291,7 +291,9 @@ select.input { padding: 0 14px; }
 /* Text-message consent wording beside the opt-in box, and the Terms/Privacy pages. */
 .consent { margin: 0 0 6px 34px; font-size: 12.5px; line-height: 1.55; color: var(--muted); }
 .consent a, .hint a, .legalfoot a { color: var(--moss-dark); font-weight: 600; }
-.legalfoot { display: flex; justify-content: center; gap: 10px; padding: 18px 20px 28px; font-size: 13px; color: var(--muted); }
+.legalfoot { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 18px 20px 28px; font-size: 13px; color: var(--muted); text-align: center; }
+.legalfoot p { margin: 0; }
+.legalfoot .links { display: flex; gap: 10px; }
 .legal { padding: 4px 22px 32px; font-size: 15px; line-height: 1.65; color: var(--ink-2); }
 .legal h2 { font-family: var(--serif); font-weight: 400; font-size: 20px; color: var(--ink); margin: 26px 0 6px; }
 .legal p, .legal ul { margin: 0 0 10px; }

@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Back } from '@/components/icons';
 import LangToggle from '@/components/LangToggle';
 import { dict } from '@/lib/i18n';
-import type { Lang } from '@/lib/event';
+import { EVENT, type Lang } from '@/lib/event';
 import type { LegalDoc } from '@/lib/legal';
 
 /** Shared layout for the Terms and Privacy pages: public, no sign-in, in the reader's language. */
@@ -37,7 +37,8 @@ export function LegalFoot({ lang }: { lang: Lang }) {
   const t = dict(lang);
   return (
     <footer className="legalfoot">
-      <Link href="/terms">{t.terms}</Link><span aria-hidden="true">·</span><Link href="/privacy">{t.privacy}</Link>
+      <p className="org">{t.organizedBy(EVENT.org, EVENT.parentOrg)}</p>
+      <p className="links"><Link href="/terms">{t.terms}</Link><span aria-hidden="true">·</span><Link href="/privacy">{t.privacy}</Link></p>
     </footer>
   );
 }

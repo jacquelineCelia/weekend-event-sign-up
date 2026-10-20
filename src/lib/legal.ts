@@ -13,7 +13,8 @@ const UPDATED = { en: 'Last updated October 20, 2026', zh: '最後更新：2026 
 const NOTE = { zh: '本頁為中文譯本，如與英文版本有出入，以英文版本為準。', zhs: '本页为中文译本，如与英文版本有出入，以英文版本为准。' };
 
 export function terms(lang: Lang, event: string): LegalDoc {
-  const { org, supportEmail: mail } = EVENT;
+  const { supportEmail: mail } = EVENT;
+  const org = lang === 'en' ? `${EVENT.org}, part of ${EVENT.parentOrg}` : lang === 'zh' ? `${EVENT.org}（隸屬 ${EVENT.parentOrg}）` : `${EVENT.org}（隶属于 ${EVENT.parentOrg}）`;
   if (lang === 'en') return {
     title: 'Terms of use', updated: UPDATED.en,
     intro: `The ${event} activity sign-up is run by ${org} (“we”, “us”). By signing up for an activity, you agree to these terms.`,
@@ -89,7 +90,8 @@ export function terms(lang: Lang, event: string): LegalDoc {
 }
 
 export function privacy(lang: Lang, event: string): LegalDoc {
-  const { org, supportEmail: mail } = EVENT;
+  const { supportEmail: mail } = EVENT;
+  const org = lang === 'en' ? `${EVENT.org}, part of ${EVENT.parentOrg}` : lang === 'zh' ? `${EVENT.org}（隸屬 ${EVENT.parentOrg}）` : `${EVENT.org}（隶属于 ${EVENT.parentOrg}）`;
   if (lang === 'en') return {
     title: 'Privacy policy', updated: UPDATED.en,
     intro: `${org} (“we”, “us”) runs the ${event} activity sign-up. This policy explains what we collect and how we use it.`,
