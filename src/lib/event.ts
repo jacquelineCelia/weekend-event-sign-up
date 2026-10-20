@@ -5,7 +5,7 @@ export const EVENT = {
   nameZhs: process.env.NEXT_PUBLIC_EVENT_NAME_ZHS ?? '正念周末',
   /** Who runs the event (as registered for text messaging), and where people can write for help. */
   org: process.env.NEXT_PUBLIC_ORG_NAME || 'Yellow Flower Meditation Academy',
-  supportEmail: process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@yellowflowermeditation.org',
+  supportEmail: process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@onenesstruth.org',
   timeZone: process.env.EVENT_TZ ?? 'America/New_York',
   days: [
     { key: 'sat', date: '2026-11-14', label: 'Saturday 14', long: 'Saturday 14 November', short: 'Sat 14 Nov',
