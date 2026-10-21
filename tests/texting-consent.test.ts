@@ -68,13 +68,11 @@ describe('texting only with consent', () => {
     expect(outbox.map((m) => m.channel)).toEqual(['email']); // the email confirmation still goes too
   });
 
-  it('only texts walk-ins when staff ticked "OK to text"', async () => {
+  it('never texts walk-ins', async () => {
     const guest = walkInContactSchema.parse({ name: 'Walk In', phone: '412 555 0199', email: '' });
-    const no = await walkInBooking(slotId, 1, guest);
-    const yes = await walkInBooking(slotId, 1, walkInContactSchema.parse({ name: 'Other Guest', phone: '412 555 0198', email: '' }), { okToText: true });
-    expect((await getBooking(no.bookingId))!.remindSms).toBe(false);
-    expect((await getBooking(yes.bookingId))!.remindSms).toBe(true);
-    await sendConfirmation((await getBooking(no.bookingId))!);
+    const w = await walkInBooking(slotId, 1, guest);
+    expect((await getBooking(w.bookingId))!.remindSms).toBe(false);
+    await sendConfirmation((await getBooking(w.bookingId))!);
     expect(texts).toEqual([]);
   });
 

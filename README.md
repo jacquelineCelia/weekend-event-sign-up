@@ -22,8 +22,8 @@ Built with Next.js 16 and Postgres (runs on Supabase as is).
   sent by text or email. Change time, cancel, and rate finished activities 1–10.
 - Confirmation message right away, reminder 15 minutes before each activity.
 - **Texting follows carrier (A2P 10DLC) rules**: the "By text message" box starts unticked, with the
-  consent wording and Terms/Privacy links beside it; only people who tick it (or walk-ins whose
-  "OK to text" box staff tick after asking) get texts; every text names the event and the first says
+  consent wording and Terms/Privacy links beside it; only people who tick it get texts (walk-ins
+  signed up by staff are never texted); every text names the event and the first says
   "Reply STOP to opt out"; sign-in codes go by text only to numbers that opted in (else email); and
   if someone replies STOP, their reminders switch to email. Terms (`/terms`) and Privacy (`/privacy`)
   pages are in all three languages; set `NEXT_PUBLIC_ORG_NAME` and `NEXT_PUBLIC_SUPPORT_EMAIL`.
@@ -45,7 +45,7 @@ Built with Next.js 16 and Postgres (runs on Supabase as is).
   with a "Show finished" link to look back), live roster with search by name, last 4 of phone or code;
   check in a whole party or some of it. Refreshes every 20 seconds.
 - **Walk-in sign-up**: any activity and time that hasn't ended yet, over-capacity only with an explicit lead approval,
-  optional "check in now".
+  optional "check in now". Walk-ins are never texted; reminders go by email if they give one.
 - **Schedule & capacity**: add, move or delete time slots and change capacity per slot; edit or add
   activities. Capacity can't drop below what's booked, booked slots can't be deleted, overlapping
   slots are blocked, and guests in a moved slot are told the new time. Each activity also has

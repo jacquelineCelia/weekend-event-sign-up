@@ -112,9 +112,6 @@ export default function WalkInForm({ options, initialKey, initialSlot }: { optio
 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px 24px' }}>
           <label className="check"><input type="checkbox" name="checkInNow" checked={checkNow} onChange={(e) => setCheckNow(e.target.checked)} /> Check them in now</label>
-          <label className="check" title="Ask first: “Can we text you a reminder 15 minutes before, and if the time changes? Usual message rates apply; reply STOP any time.”">
-            <input type="checkbox" name="okToText" /> OK to text them <span className="muted" style={{ fontSize: 13 }}>(ask first)</span>
-          </label>
           <span role="radiogroup" aria-label="Messages in" style={{ display: 'flex', alignItems: 'center', gap: 14, fontSize: 15 }}>
             <span className="muted">Messages in</span>
             <label className="check"><input type="radio" name="lang" value="en" defaultChecked /> English</label>
@@ -123,8 +120,7 @@ export default function WalkInForm({ options, initialKey, initialSlot }: { optio
           </span>
         </div>
         <p className="muted" style={{ fontSize: 13, margin: '-12px 0 0', lineHeight: 1.5 }}>
-          Only tick “OK to text” if they say yes to: “Can we text you a reminder 15 minutes before, and if the time changes?
-          Message and data rates may apply; reply STOP any time to stop.” Otherwise reminders go by email.
+          Walk-ins aren’t texted. Add their email if they’d like a reminder 15 minutes before.
         </p>
         {slot?.soon ? <span className="muted" style={{ fontSize: 13, marginTop: -12 }}>This session starts in under 15 minutes, so no reminder will be sent for it.</span> : null}
       </div>

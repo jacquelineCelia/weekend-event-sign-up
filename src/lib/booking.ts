@@ -230,8 +230,8 @@ export async function confirmBooking(holdId: string, input: ConfirmInput) {
   });
 }
 
-/** Staff walk-in: books directly (no hold). `allowOver` lets a lead approve going over capacity. */
-export async function walkInBooking(slotId: string, partySize: number, contact: Contact, opts: { allowOver?: boolean; checkInNow?: boolean; lang?: Lang; okToText?: boolean } = {}) {
+/** Staff walk-in: books directly (no hold). `allowOver` lets a lead approve going over capacity. Walk-ins are never texted; reminders go by email when there is one. */
+export async function walkInBooking(slotId: string, partySize: number, contact: Contact, opts: { allowOver?: boolean; checkInNow?: boolean; lang?: Lang } = {}) {
   return withTx(async (c) => {
     const { remaining } = await lockSlot(c, slotId);
     if (remaining < partySize && !opts.allowOver) {
@@ -242,7 +242,7 @@ export async function walkInBooking(slotId: string, partySize: number, contact: 
     const res = await c.query<{ id: string }>(
       `insert into bookings (slot_id, person_id, party_size, status, source, code, remind_sms, remind_email, checked_in, confirmed_at)
        values ($1, $2, $3, 'confirmed', 'walk_in', $4, $5, $6, $7, now()) returning id`,
-      [slotId, personId, partySize, code, !!opts.okToText && !!contact.phone, !!contact.email, opts.checkInNow ? partySize : 0],
+      [slotId, personId, partySize, code, false, !!contact.email, opts.checkInNow ? partySize : 0],
     );
     return { bookingId: res.rows[0].id, personId, code };
   });

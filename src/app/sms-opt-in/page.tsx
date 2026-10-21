@@ -74,18 +74,10 @@ export default async function SmsOptIn() {
 
         <h2>2. Walk-in guests at the event</h2>
         <p>
-          Staff sign up walk-in guests on a staff device. Before ticking the separate <b>“OK to text them”</b> box,
-          which is also unchecked by default, staff ask the guest:
+          Staff can sign up walk-in guests on a staff device. Walk-in sign-ups never receive text messages; their
+          confirmation and reminder go by email if they give one. The only way to get texts is to tick the box on the
+          sign-up form shown above.
         </p>
-        <blockquote className="quote">
-          “Can we text you a reminder 15 minutes before, and if the time changes? Message and data rates may apply;
-          reply STOP any time to stop.”
-        </blockquote>
-        <p>Staff tick the box only if the guest says yes. Otherwise their reminders go by email.</p>
-        <figure className="shot">
-          <img src="/sms-opt-in/walk-in-form.png" alt="The staff walk-in form: name, mobile phone and email fields, an unchecked “OK to text them (ask first)” box, and the question staff read to the guest." width={727} height={369} />
-          <figcaption>The staff walk-in form, with the unchecked “OK to text them” box and the question staff read.</figcaption>
-        </figure>
 
         <h2>3. What we send</h2>
         <ul>
