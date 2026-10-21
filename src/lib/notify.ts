@@ -28,15 +28,6 @@ export async function markOptedOut(phone: string) {
   );
 }
 
-/** True when this number has exactly one booking with texts on, i.e. it just opted in for the first time. */
-async function firstOptIn(phone: string) {
-  const r = await getPool().query<{ n: number }>(
-    `select count(*)::int as n from bookings b join people p on p.id = b.person_id where p.phone = $1 and b.remind_sms`,
-    [phone],
-  );
-  return r.rows[0].n === 1;
-}
-
 /** Sends a text; returns false (and records the opt-out) if the number has replied STOP. */
 async function trySms(phone: string, text: string) {
   try {
@@ -95,10 +86,8 @@ export async function sendConfirmation(b: BookingView) {
       emailHtml(lang, m.youreInTitle(activity), lines, b.code, { href: url, label: dict(lang).mySignups }),
     );
   }
-  // Texts, if they opted in. The first time a number opts in it gets a welcome text first (carrier
-  // rules: names the event, what we send, how often, rates, HELP and STOP); every text names the event.
+  // The first text anyone gets names the event and says how to stop (carrier rules).
   if (b.remindSms && b.personPhone && smsEnabled()) {
-    if (await firstOptIn(b.personPhone) && !(await trySms(b.personPhone, m.welcomeSms(eventName(lang))))) return;
     await trySms(b.personPhone, m.confirmSms(eventName(lang), firstName(b.personName), activity, when, place, b.partySize, b.code ?? '', reminder));
   }
 }
@@ -147,6 +136,6 @@ export async function sendTimeChange(
   const m = dict(p.lang).msg;
   const activity = localText(act.name, act.nameZh, p.lang);
   const text = m.timeChange(eventName(p.lang), activity, fmtTimeL(to, p.lang), fmtTimeL(from, p.lang), p.code);
-  if (p.sms && p.phone && smsEnabled() && (await trySms(p.phone, text + m.stopSuffix))) return;
+  if (p.sms && p.phone && smsEnabled() && (await trySms(p.phone, text))) return;
   if (p.email) return sendEmail(p.email, m.timeChangeSubject(activity, fmtTimeL(to, p.lang)), text);
 }

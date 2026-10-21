@@ -62,28 +62,10 @@ describe('texting only with consent', () => {
   it('texts a confirmation that names the event and says how to stop, when they opted in', async () => {
     const r = await book(true);
     await sendConfirmation((await getBooking(r.bookingId))!);
-    // First opt-in for this number: a welcome text with all the required disclosures, then the confirmation.
-    expect(texts).toHaveLength(2);
-    expect(texts[0].to).toBe(E164);
-    expect(texts[0].body).toMatch(/^Mindfulness Weekend: You're signed up for texts/);
-    for (const part of ['Msg frequency varies', 'Msg & data rates may apply', 'Reply HELP for help, STOP to cancel']) expect(texts[0].body).toContain(part);
-    expect(texts[1].body).toMatch(/^Mindfulness Weekend: Mei is in for Pottery Wheel, .* Reply STOP to opt out\.$/);
-    expect(outbox.map((m) => m.channel)).toEqual(['email']); // the email confirmation still goes too
-
-    // A second sign-up from the same number gets just the confirmation.
-    texts = [];
-    const later = (await pool.query<{ id: string }>(`insert into slots (activity_id, starts_at, capacity) values ($1, '2026-11-14 19:00:00+00', 10) returning id`, [actId])).rows[0].id;
-    const h2 = await holdSpots(later, 1);
-    const r2 = await confirmBooking(h2.holdId, { contact: mei, remindSms: true, remindEmail: false });
-    await sendConfirmation((await getBooking(r2.bookingId))!);
     expect(texts).toHaveLength(1);
-    expect(texts[0].body).toMatch(/Mei is in for Pottery Wheel/);
-  });
-
-  it('puts "Reply STOP to opt out" on reminder texts', async () => {
-    const r = await book(true);
-    await sendReminder((await getBooking(r.bookingId))!);
-    expect(texts[0].body).toMatch(/^Mindfulness Weekend: Mei, Pottery Wheel starts in 15 min[\s\S]*Reply STOP to opt out\.$/);
+    expect(texts[0].to).toBe(E164);
+    expect(texts[0].body).toMatch(/^Mindfulness Weekend: Mei is in for Pottery Wheel, .* Reply STOP to opt out\.$/);
+    expect(outbox.map((m) => m.channel)).toEqual(['email']); // the email confirmation still goes too
   });
 
   it('only texts walk-ins when staff ticked "OK to text"', async () => {
