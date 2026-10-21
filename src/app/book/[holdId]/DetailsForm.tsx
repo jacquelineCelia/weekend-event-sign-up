@@ -8,7 +8,8 @@ import LangToggle from '@/components/LangToggle';
 
 type Props = {
   lang: Lang;
-  eventName: string;
+  /** smsSender(lang): the event and the organizations behind it, for the texting consent. */
+  smsFrom: string;
   holdId: string;
   /** Seconds left on the hold, worked out by the database (so the visitor's clock doesn't matter). */
   secondsLeft: number;
@@ -56,7 +57,7 @@ function useCountdown(secondsLeft: number) {
   return left;
 }
 
-export default function DetailsForm({ lang, eventName, holdId, secondsLeft, summary, known }: Props) {
+export default function DetailsForm({ lang, smsFrom, holdId, secondsLeft, summary, known }: Props) {
   const t = dict(lang);
   const [state, action, pending] = useActionState<FormState, FormData>(confirmAction.bind(null, holdId), null);
   // Carriers require texting to be opted in to, never pre-ticked.
@@ -112,7 +113,7 @@ export default function DetailsForm({ lang, eventName, holdId, secondsLeft, summ
             <div className="stack" style={{ border: '1px solid var(--line)', background: 'var(--paper)', borderRadius: 20, padding: '10px 18px', gap: 4 }}>
               <label className="check"><input type="checkbox" name="remindSms" checked={sms} onChange={(e) => setSms(e.target.checked)} aria-describedby="sms-consent" /> {t.bySms}</label>
               <p id="sms-consent" className="consent">
-                {t.smsConsent(eventName)}{' '}
+                {t.smsConsent(smsFrom)}{' '}
                 <a href="/terms" target="_blank" rel="noopener">{t.terms}</a> · <a href="/privacy" target="_blank" rel="noopener">{t.privacy}</a>
               </p>
               <label className="check"><input type="checkbox" name="remindEmail" checked={mail} onChange={(e) => setMail(e.target.checked)} /> {t.byEmail}</label>

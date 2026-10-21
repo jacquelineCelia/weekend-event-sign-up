@@ -26,6 +26,18 @@ export function localText(en: string, zhTraditional: string, lang: 'en' | 'zh' |
 }
 
 /**
+ * Who texts come from, with the full organizational chain so carriers can verify the sender:
+ * "Mindfulness Weekend (run by Yellow Flower Meditation Academy, part of The Oneness Truth Foundation)".
+ * The organizations keep their registered (English) names in every language.
+ */
+export function smsSender(lang: Lang) {
+  const event = eventName(lang);
+  if (lang === 'zh') return `${event}（由 ${EVENT.org} 主辦，隸屬 ${EVENT.parentOrg}）`;
+  if (lang === 'zhs') return `${event}（由 ${EVENT.org} 主办，隶属于 ${EVENT.parentOrg}）`;
+  return `${event} (run by ${EVENT.org}, part of ${EVENT.parentOrg})`;
+}
+
+/**
  * The event's name in the reader's language. Simplified uses NEXT_PUBLIC_EVENT_NAME_ZHS when it is set;
  * otherwise it is converted from the Traditional name (NEXT_PUBLIC_EVENT_NAME_ZH), so changing that one
  * changes both.

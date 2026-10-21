@@ -4,6 +4,7 @@ import { EVENT } from '@/lib/event';
 import { dict } from '@/lib/i18n';
 import { getLang } from '@/lib/lang';
 import { Back } from '@/components/icons';
+import { smsSender } from '@/lib/hans';
 import { LegalFoot } from '@/components/LegalPage';
 
 // Public page for text-message carriers (A2P 10DLC review): how people opt in, with screenshots.
@@ -39,7 +40,7 @@ export default async function SmsOptIn() {
             Under “Remind me 15 minutes before” is a separate checkbox, <b>unchecked by default</b>, labeled
             “By text message (optional)”. Directly beneath it they see:
             <blockquote className="quote">
-              {dict('en').smsConsent(event)} <a href="/terms">Terms</a> · <a href="/privacy">Privacy</a>
+              {dict('en').smsConsent(smsSender('en'))} <a href="/terms">Terms</a> · <a href="/privacy">Privacy</a>
             </blockquote>
           </li>
           <li>We text the attendee only if they tick that box themselves. Booking works whether or not they do.</li>
@@ -60,14 +61,14 @@ export default async function SmsOptIn() {
             <legend className="legend">{dict('en').remindLegend}</legend>
             <label className="check"><input type="checkbox" name="sms_consent" value="yes" aria-describedby="s-consent" /> {dict('en').bySms}</label>
             <p id="s-consent" className="consent">
-              {dict('en').smsConsent(event)} <a href="/terms">Terms</a> · <a href="/privacy">Privacy</a>
+              {dict('en').smsConsent(smsSender('en'))} <a href="/terms">Terms</a> · <a href="/privacy">Privacy</a>
             </p>
             <label className="check"><input type="checkbox" name="email_reminder" defaultChecked /> {dict('en').byEmail}</label>
           </fieldset>
           <button type="button" className="btn" disabled>Confirm 1 spot (sample, doesn’t submit)</button>
         </form>
         <figure className="shot">
-          <img src="/sms-opt-in/sign-up-form.png" alt="The sign-up details page: name, email and mobile phone fields, then an unchecked “By text message” box with the consent wording and Terms and Privacy links beneath it." width={430} height={1073} />
+          <img src="/sms-opt-in/sign-up-form.png" alt="The sign-up details page: name, email and mobile phone fields, then an unchecked “By text message” box with the consent wording and Terms and Privacy links beneath it." width={430} height={1200} />
           <figcaption>The details page as attendees see it. The “By text message” box starts unchecked.</figcaption>
         </figure>
 

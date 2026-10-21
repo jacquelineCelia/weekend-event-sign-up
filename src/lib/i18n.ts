@@ -85,8 +85,9 @@ const en = {
   byEmail: 'By email',
   noReminderWarn: 'You won’t get a reminder for this activity.',
   rememberMe: 'Remember me on this device so my next sign-up is quicker.',
-  smsConsent: (event: string) =>
-    `By checking this box, you agree to receive text messages from ${event} about your sign-ups: confirmations, reminders, schedule changes and sign-in codes you request. Message frequency varies (usually 2–3 per activity). Msg & data rates may apply. Reply STOP to cancel, HELP for help. Texting is optional and not required to sign up.`,
+  /** `sender` is smsSender(lang): the event with the organizations behind it. */
+  smsConsent: (sender: string) =>
+    `By checking this box, you agree to receive text messages from ${sender} about your sign-ups: confirmations, reminders, schedule changes and sign-in codes you request. Message frequency varies (usually 2–3 per activity). Msg & data rates may apply. Reply STOP to cancel, HELP for help. Texting is optional and not required to sign up.`,
   terms: 'Terms',
   organizedBy: (org: string, parent: string) => `Organized by ${org}, part of ${parent}.`,
   privacy: 'Privacy',
@@ -281,8 +282,8 @@ const zh: Dict = {
   byEmail: '以電子郵件提醒',
   noReminderWarn: '這個活動將不會收到提醒。',
   rememberMe: '在這台裝置上記住我，下次報名更快。',
-  smsConsent: (event) =>
-    `勾選此方框，即表示你同意接收${event}傳送與你的報名相關的簡訊：報名確認、活動提醒、時段異動，以及你申請的登入代碼。簡訊頻率不一（每項活動通常 2–3 則）。可能產生簡訊及數據傳輸費用。回覆 STOP 取消，回覆 HELP 取得協助。簡訊為選擇性服務，不勾選也能報名。`,
+  smsConsent: (sender) =>
+    `勾選此方框，即表示你同意接收${sender}傳送與你的報名相關的簡訊：報名確認、活動提醒、時段異動，以及你申請的登入代碼。簡訊頻率不一（每項活動通常 2–3 則）。可能產生簡訊及數據傳輸費用。回覆 STOP 取消，回覆 HELP 取得協助。簡訊為選擇性服務，不勾選也能報名。`,
   terms: '使用條款',
   organizedBy: (org, parent) => `由 ${org} 主辦，隸屬 ${parent}。`,
   privacy: '隱私權政策',
@@ -470,8 +471,8 @@ const zhs: Dict = {
   byEmail: '以邮件提醒',
   noReminderWarn: '这个活动将不会收到提醒。',
   rememberMe: '在这台设备上记住我，下次报名更快。',
-  smsConsent: (event) =>
-    `勾选此方框，即表示你同意接收${event}发送的与你的报名相关的短信：报名确认、活动提醒、时段变更，以及你申请的登录验证码。短信频率不一（每项活动通常 2–3 条）。可能产生短信和数据流量费用。回复 STOP 退订，回复 HELP 获取帮助。短信为可选服务，不勾选也能报名。`,
+  smsConsent: (sender) =>
+    `勾选此方框，即表示你同意接收${sender}发送的与你的报名相关的短信：报名确认、活动提醒、时段变更，以及你申请的登录验证码。短信频率不一（每项活动通常 2–3 条）。可能产生短信和数据流量费用。回复 STOP 退订，回复 HELP 获取帮助。短信为可选服务，不勾选也能报名。`,
   terms: '使用条款',
   organizedBy: (org, parent) => `由 ${org} 主办，隶属于 ${parent}。`,
   privacy: '隐私政策',
