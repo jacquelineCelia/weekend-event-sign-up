@@ -77,12 +77,12 @@ export default async function SmsOptIn() {
           which is also unchecked by default, staff ask the guest:
         </p>
         <blockquote className="quote">
-          “Can we text you a reminder 15 minutes before, and if the time changes? Message and data rates may apply;
-          reply STOP any time to stop.”
+          “Can {event} text you about your sign-ups: a confirmation, a reminder 15 minutes before each activity, and any
+          time changes? Usually 2–3 texts per activity. Message and data rates may apply. Reply STOP to cancel, HELP for help.”
         </blockquote>
         <p>Staff tick the box only if the guest says yes. Otherwise their reminders go by email.</p>
         <figure className="shot">
-          <img src="/sms-opt-in/walk-in-form.png" alt="The staff walk-in form: name, mobile phone and email fields, an unchecked “OK to text them (ask first)” box, and the question staff read to the guest." width={727} height={369} />
+          <img src="/sms-opt-in/walk-in-form.png" alt="The staff walk-in form: name, mobile phone and email fields, an unchecked “OK to text them (ask first)” box, and the question staff read to the guest." width={727} height={388} />
           <figcaption>The staff walk-in form, with the unchecked “OK to text them” box and the question staff read.</figcaption>
         </figure>
 
@@ -90,7 +90,10 @@ export default async function SmsOptIn() {
         <ul>
           <li>Message frequency varies with how many activities someone signs up for, usually 2–3 texts per activity.</li>
           <li>Message and data rates may apply.</li>
-          <li>Every text starts with “{event}:” or names {event}. The first text says “Reply STOP to opt out.”</li>
+          <li>
+            The first time a number opts in, we send: “{dict('en').msg.welcomeSms(event)}”
+          </li>
+          <li>Every text names {event} and says how to opt out (“Reply STOP to opt out”).</li>
           <li>Reply <b>STOP</b> at any time to stop texts; reply <b>HELP</b> for help, or email <a href={`mailto:${mail}`}>{mail}</a>.</li>
           <li>Phone numbers and text-message consent are never shared with third parties or sold. See our <a href="/privacy">Privacy policy</a> and <a href="/terms">Terms</a>.</li>
         </ul>
