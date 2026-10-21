@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useActionState, useState } from 'react';
 import { useFormStatus } from 'react-dom';
-import { cancelAction, rateAction } from './actions';
-import { Leaf } from '@/components/icons';
-import { dict, type Lang } from '@/lib/i18n';
+import { cancelAction, changeSeatsAction, rateAction, type ChangeState } from './actions';
+import { Leaf, Minus, Plus } from '@/components/icons';
+import { dict, errorText, type Lang } from '@/lib/i18n';
 
 const small = { minHeight: 42, fontSize: 14, padding: '0 14px' } as const;
 
@@ -72,6 +72,56 @@ export function RatePicker({ lang, bookingId, name, score }: { lang: Lang; booki
         </div>
       </fieldset>
       <button type="button" onClick={() => setOpen(false)} style={{ border: 0, background: 'transparent', color: 'var(--muted)', fontWeight: 600, fontSize: 13, minHeight: 36, padding: 0, cursor: 'pointer' }}>{t.later}</button>
+    </form>
+  );
+}
+
+/** A seat type this sign-up can use: what's free at its time (its own seats included) and how many it has now. */
+export type SeatChoice = { id: string; name: string; free: number; count: number };
+
+/**
+ * "Change seating": a button that opens seat steppers for the same party at the same time.
+ * Saves only when everyone has a seat and something changed.
+ */
+export function SeatChanger({ lang, bookingId, party, choices }: { lang: Lang; bookingId: string; party: number; choices: SeatChoice[] }) {
+  const t = dict(lang);
+  const [open, setOpen] = useState(false);
+  const start = Object.fromEntries(choices.map((x) => [x.id, x.count]));
+  const [count, setCount] = useState<Record<string, number>>(start);
+  const [state, action, pending] = useActionState<ChangeState, FormData>(changeSeatsAction.bind(null, bookingId), null);
+  if (!open) {
+    return <button type="button" className="btn ghost" style={small} onClick={() => { setCount(start); setOpen(true); }}>{t.changeSeating}</button>;
+  }
+  const seated = choices.reduce((n, x) => n + (count[x.id] ?? 0), 0);
+  const changed = choices.some((x) => (count[x.id] ?? 0) !== x.count);
+  return (
+    <form action={action} className="stack" role="group" aria-labelledby={`seat-h-${bookingId}`}
+      style={{ flexBasis: 'calc(100% + 102px)', marginLeft: -102, order: 1, gap: 10, border: '1px solid var(--line)', borderRadius: 16, padding: '12px 14px', background: 'var(--ground)' }}>
+      <span id={`seat-h-${bookingId}`} style={{ fontSize: 14, fontWeight: 600 }}>{t.changeSeating} · <span style={{ fontWeight: 500, color: seated === party ? 'var(--moss-dark)' : 'var(--ochre-dark)' }}>{t.seatsChosen(seated, party)}</span></span>
+      {choices.map((x) => {
+        const n = count[x.id] ?? 0;
+        return (
+          <div key={x.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+            <div className="stack" style={{ gap: 2, minWidth: 0 }}>
+              <span style={{ fontSize: 14.5, fontWeight: 600 }} id={`seat-${bookingId}-${x.id}`}>{x.name}</span>
+              <span style={{ fontSize: 12.5, color: 'var(--muted)' }}>{x.free === 0 ? t.full : t.left(x.free)}</span>
+            </div>
+            <div className="stepper" role="group" aria-labelledby={`seat-${bookingId}-${x.id}`}>
+              <button type="button" className="round" aria-label={t.removeSeat(x.name)} disabled={n <= 0} onClick={() => setCount({ ...count, [x.id]: n - 1 })}><Minus /></button>
+              <output aria-live="polite">{n}</output>
+              <button type="button" className="round" aria-label={t.addSeat(x.name)} disabled={n >= x.free || seated >= party} onClick={() => setCount({ ...count, [x.id]: n + 1 })}><Plus /></button>
+            </div>
+          </div>
+        );
+      })}
+      <input type="hidden" name="seats" value={JSON.stringify(choices.map((x) => ({ seatTypeId: x.id, count: count[x.id] ?? 0 })).filter((x) => x.count > 0))} />
+      {state?.error ? <p className="error" role="alert" style={{ margin: 0 }}>{errorText(lang, state.error)}</p> : null}
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <button type="submit" className="btn" style={small} disabled={pending || seated !== party || !changed}>
+          {pending ? t.savingSeating : seated !== party ? t.moreSeats(party - seated) : t.saveSeating}
+        </button>
+        <button type="button" className="btn ghost" style={small} onClick={() => setOpen(false)}>{t.keepIt}</button>
+      </div>
     </form>
   );
 }

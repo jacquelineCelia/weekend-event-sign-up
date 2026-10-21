@@ -59,21 +59,21 @@ export type BookingView = {
 };
 
 /** One seat type in a sign-up: its names and how many of the party sit there. */
-export type BookedSeat = { name: string; nameZh: string; count: number };
+export type BookedSeat = { seatTypeId: string; name: string; nameZh: string; count: number };
 
 /** The seating of several sign-ups at once, by booking id. */
 export async function seatsForBookings(ids: string[]): Promise<Map<string, BookedSeat[]>> {
   const out = new Map<string, BookedSeat[]>();
   if (!ids.length) return out;
-  const { rows } = await getPool().query<{ booking_id: string; name: string; name_zh: string; count: number }>(
-    `select bs.booking_id, st.name, st.name_zh, bs.count
+  const { rows } = await getPool().query<{ booking_id: string; seat_type_id: string; name: string; name_zh: string; count: number }>(
+    `select bs.booking_id, bs.seat_type_id, st.name, st.name_zh, bs.count
        from booking_seats bs join seat_types st on st.id = bs.seat_type_id
       where bs.booking_id = any($1::uuid[]) order by st.sort_order, st.name`,
     [ids],
   );
   for (const r of rows) {
     const list = out.get(r.booking_id) ?? [];
-    list.push({ name: r.name, nameZh: r.name_zh, count: r.count });
+    list.push({ seatTypeId: r.seat_type_id, name: r.name, nameZh: r.name_zh, count: r.count });
     out.set(r.booking_id, list);
   }
   return out;

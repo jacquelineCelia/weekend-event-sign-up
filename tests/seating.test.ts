@@ -1,6 +1,6 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { getPool } from '@/lib/db';
-import { changeSlot, confirmBooking, holdSpots, walkInBooking } from '@/lib/booking';
+import { changeSeats, changeSlot, confirmBooking, holdSpots, walkInBooking } from '@/lib/booking';
 import { contactSchema, walkInContactSchema } from '@/lib/contact';
 import { getBooking, seatOptions } from '@/lib/queries';
 import { roster, saveSchedule, saveSeating, seatTypesFor } from '@/lib/staff';
@@ -44,7 +44,7 @@ describe('seating', () => {
     const r = await book(slotA, 1, 2);
     const b = (await getBooking(r.bookingId))!;
     expect(b.partySize).toBe(3);
-    expect(b.seats).toEqual([{ name: 'High chair', nameZh: '椅子座位', count: 1 }, { name: 'Ground seat', nameZh: '席地座位', count: 2 }]);
+    expect(b.seats).toEqual([{ seatTypeId: chair, name: 'High chair', nameZh: '椅子座位', count: 1 }, { seatTypeId: ground, name: 'Ground seat', nameZh: '席地座位', count: 2 }]);
     expect((await roster(slotA))[0].seats).toBe('High chair × 1, Ground seat × 2');
   });
 
@@ -79,6 +79,20 @@ describe('seating', () => {
     await expect(changeSlot(r.bookingId, r.personId, slotB)).rejects.toMatchObject({ code: 'seats_taken' });
     const g = await book(slotA, 0, 3);
     await expect(changeSlot(g.bookingId, g.personId, slotB)).resolves.toBeUndefined();
+  });
+
+  it('changes a sign-up’s seating, counting its own seats as free', async () => {
+    const r = await book(slotA, 2, 1); // both high chairs
+    await book(slotA, 0, 3);           // ground: 4 of 4 taken
+    // Its own seats count as free, but there's no other ground seat to move into.
+    await expect(changeSeats(r.bookingId, r.personId, [{ seatTypeId: chair, count: 1 }, { seatTypeId: ground, count: 2 }])).rejects.toMatchObject({ code: 'seats_taken' });
+    await expect(changeSeats(r.bookingId, r.personId, [{ seatTypeId: chair, count: 2 }, { seatTypeId: ground, count: 1 }])).resolves.toBeUndefined();
+    await expect(changeSeats(r.bookingId, r.personId, [{ seatTypeId: ground, count: 3 }])).rejects.toMatchObject({ code: 'seats_taken' });
+    await expect(changeSeats(r.bookingId, r.personId, [{ seatTypeId: chair, count: 1 }])).rejects.toMatchObject({ code: 'seats_needed' });
+    await expect(changeSeats(r.bookingId, '00000000-0000-0000-0000-000000000000', [{ seatTypeId: chair, count: 2 }, { seatTypeId: ground, count: 1 }])).rejects.toMatchObject({ code: 'booking_not_found' });
+    const g = await book(slotB, 0, 2);
+    await changeSeats(g.bookingId, g.personId, [{ seatTypeId: chair, count: 1 }, { seatTypeId: ground, count: 1 }]);
+    expect((await getBooking(g.bookingId))!.seats.map((x) => [x.name, x.count])).toEqual([['High chair', 1], ['Ground seat', 1]]);
   });
 
   it('walk-ins choose seats; a lead can approve going over', async () => {

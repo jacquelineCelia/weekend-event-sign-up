@@ -359,3 +359,25 @@ export async function changeSlot(bookingId: string, personId: string | string[],
     await c.query('update bookings set slot_id = $2, reminder_sent_at = null where id = $1', [bookingId, newSlotId]);
   });
 }
+
+/**
+ * Changes how a confirmed, not-yet-started sign-up is seated (same party size, same time).
+ * The new seats need room, not counting the ones this sign-up already has.
+ */
+export async function changeSeats(bookingId: string, personId: string | string[], seats: SeatPick[]) {
+  return withTx(async (c) => {
+    const b = await c.query<{ slot_id: string; party_size: number; upcoming: boolean }>(
+      `select b.slot_id, b.party_size, s.starts_at > now() as upcoming
+         from bookings b join slots s on s.id = b.slot_id
+        where b.id = $1 and b.person_id = any($2::uuid[]) and b.status = 'confirmed' for update of b`,
+      [bookingId, ownerIds(personId)],
+    );
+    const row = b.rows[0];
+    if (!row || !row.upcoming) throw new BookingError('booking_not_found', 'That booking could not be found.');
+    await lockSlot(c, row.slot_id);
+    const picks = await checkSeats(c, row.slot_id, row.party_size, seats, { exclude: bookingId });
+    if (!picks.length) return; // this activity has no seating choices
+    await c.query('delete from booking_seats where booking_id = $1', [bookingId]);
+    await saveSeats(c, bookingId, picks);
+  });
+}

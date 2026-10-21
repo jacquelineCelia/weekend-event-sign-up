@@ -15,7 +15,8 @@ Built with Next.js 16 and Postgres (runs on Supabase as is).
 - **Seating choices** (e.g. Tea Ceremony: "High chair" and "Ground seat"): staff add seat types,
   each with a capacity that applies to every time slot, under Schedule & capacity → Seating; the
   slot's capacity becomes their total. When attendees say how many are coming they choose a seat for
-  each person (a party can mix types). Seating shows on the ticket, My sign-ups, the confirmation
+  each person (a party can mix types). Attendees can change their seating later from My sign-ups (same party,
+  same time). Seating shows on the ticket, My sign-ups, the confirmation
   and reminder emails, the staff roster, and the walk-in form.
 - **No overlapping sign-ups**: one person (one email) can't sign up for two activities whose times
   overlap (back-to-back is fine). The details screen explains the clash and offers to cancel the
@@ -74,7 +75,7 @@ testing (sign-in codes included).
 Tests run against a real Postgres database (set `TEST_DATABASE_URL`; it is wiped on each run):
 
 ```bash
-npm test     # 78 tests: capacity, holds, overlaps, seating, login codes, reminders, schedule edits, shared phones, Chinese
+npm test     # 79 tests: capacity, holds, overlaps, seating, login codes, reminders, schedule edits, shared phones, Chinese
 ```
 
 ## Deploy (Vercel + Supabase)
