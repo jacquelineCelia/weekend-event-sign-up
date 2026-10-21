@@ -23,7 +23,7 @@ type Props = {
  * Updates from the screen-refresh loop and from a backup timer, so one being throttled or
  * blocked (some browser extensions do this) doesn't freeze the display.
  */
-function useCountdown(secondsLeft: number) {
+export function useCountdown(secondsLeft: number) {
   const [left, setLeft] = useState<number | null>(null);
   useEffect(() => {
     const start = performance.now();

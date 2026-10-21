@@ -1,81 +1,63 @@
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { EVENT } from '@/lib/event';
+import { getPool } from '@/lib/db';
+import { addMinutes, dayOf, dayText, fmtTimeL } from '@/lib/event';
+import { eventName, localText, smsSender } from '@/lib/hans';
 import { dict } from '@/lib/i18n';
 import { getLang } from '@/lib/lang';
-import { Back } from '@/components/icons';
-import { smsSender } from '@/lib/hans';
-import { LegalFoot } from '@/components/LegalPage';
+import SignUpSample from './SignUpSample';
 
-// Public page for text-message carriers (A2P 10DLC review): how people opt in, with a live sample of the form.
-// In English, the language reviewers read.
-export const metadata: Metadata = { title: `How people opt in to texts · ${EVENT.name}` };
+// Public page linked from the text-message (A2P 10DLC) campaign as the opt-in example: the sign-up
+// details page with an activity already picked, then the success page. Nothing is saved.
+export const dynamic = 'force-dynamic';
+
+type Pick = { name: string; place: string; nameZh: string; placeZh: string; durationMin: number; startsAt: Date };
+
+// Used when the schedule has no Sunrise Yoga (e.g. once the real activities are entered).
+const FALLBACK: Pick = {
+  name: 'Sunrise Yoga', place: 'The Meadow', nameZh: '晨光瑜伽', placeZh: '草原區', durationMin: 45,
+  startsAt: new Date('2026-11-14T12:30:00Z'), // 7:30 AM in New York
+};
+
+async function pickActivity(): Promise<Pick> {
+  try {
+    const r = await getPool().query<{ name: string; place: string; name_zh: string; place_zh: string; duration_min: number; starts_at: Date }>(
+      `select a.name, a.place, a.name_zh, a.place_zh, a.duration_min, s.starts_at
+         from activities a join slots s on s.activity_id = a.id
+        where a.name = 'Sunrise Yoga' order by s.starts_at limit 1`,
+    );
+    const x = r.rows[0];
+    if (!x) return FALLBACK;
+    return { name: x.name, place: x.place, nameZh: x.name_zh, placeZh: x.place_zh, durationMin: x.duration_min, startsAt: x.starts_at };
+  } catch {
+    return FALLBACK;
+  }
+}
 
 export default async function SmsOptIn() {
   const lang = await getLang();
   const t = dict(lang);
-  const event = EVENT.name;
-  const mail = EVENT.supportEmail;
+  const a = await pickActivity();
+  const activity = localText(a.name, a.nameZh, lang);
+  const place = localText(a.place, a.placeZh, lang);
+  const day = dayOf(a.startsAt);
+  const start = fmtTimeL(a.startsAt, lang);
+  const end = addMinutes(a.startsAt, a.durationMin);
+
   return (
-    <div className="phone">
-      <div className="topbar">
-        <Link className="back" href="/"><Back /> {t.allActivities}</Link>
-      </div>
-      <article className="legal" lang="en">
-        <h1 className="h1" style={{ fontSize: 30, margin: '6px 0 4px' }}>How people opt in to {event} texts</h1>
-        <p className="muted" style={{ fontSize: 13 }}>Run by {EVENT.org}, part of {EVENT.parentOrg}</p>
-        <p>
-          We send text messages only to attendees who agree to them, and only about their own sign-ups: a confirmation,
-          a reminder 15 minutes before each activity, a notice if an activity’s start time changes, and one-time sign-in
-          codes they request. We never send marketing texts. Texting is optional; attendees can choose email instead.
-        </p>
-
-        <h2>1. Signing up on this website</h2>
-        <ol>
-          <li>On <Link href="/">{process.env.APP_URL?.replace(/^https?:\/\//, '').replace(/\/$/, '') || 'the home page'}</Link>, the attendee picks an activity and a time, then taps <b>Continue</b>.</li>
-          <li>On the details page they enter their name, email and mobile number.</li>
-          <li>
-            Under “Remind me 15 minutes before” is a separate checkbox, <b>unchecked by default</b>, labeled
-            “By text message (optional)”. Directly beneath it they see:
-            <blockquote className="quote">
-              {dict('en').smsConsent(smsSender('en'))} <a href="/terms">Terms</a> · <a href="/privacy">Privacy</a>
-            </blockquote>
-          </li>
-          <li>We text the attendee only if they tick that box themselves. Booking works whether or not they do.</li>
-        </ol>
-        <p>
-          Here is that part of the sign-up form, exactly as it appears on the details page (this sample doesn’t submit;
-          the real form is reached by picking an activity and time on the home page):
-        </p>
-        <form className="sample" aria-label="Sample of the sign-up form's contact and text-message consent section">
-          <div className="field"><label htmlFor="s-name">Full name</label><input id="s-name" name="name" className="input" autoComplete="off" placeholder="Jane Doe" /></div>
-          <div className="field"><label htmlFor="s-email">Email</label><input id="s-email" name="email" type="email" className="input" autoComplete="off" placeholder="jane@example.com" /></div>
-          <div className="field">
-            <label htmlFor="s-phone">Mobile phone</label>
-            <input id="s-phone" name="phone" type="tel" className="input" autoComplete="off" placeholder="(555) 555-0100" aria-describedby="s-phone-hint" />
-            <span id="s-phone-hint" className="hint">{dict('en').phoneHint}</span>
-          </div>
-          <fieldset>
-            <legend className="legend">{dict('en').remindLegend}</legend>
-            <label className="check"><input type="checkbox" name="sms_consent" value="yes" aria-describedby="s-consent" /> {dict('en').bySms}</label>
-            <p id="s-consent" className="consent">
-              {dict('en').smsConsent(smsSender('en'))} <a href="/terms">Terms</a> · <a href="/privacy">Privacy</a>
-            </p>
-            <label className="check"><input type="checkbox" name="email_reminder" defaultChecked /> {dict('en').byEmail}</label>
-          </fieldset>
-          <button type="button" className="btn" disabled>Confirm 1 spot (sample, doesn’t submit)</button>
-        </form>
-
-        <h2>2. What we send</h2>
-        <ul>
-          <li>Message frequency varies with how many activities someone signs up for, usually 2–3 texts per activity.</li>
-          <li>Message and data rates may apply.</li>
-          <li>Every text starts with “{event}:”. The first text (the booking confirmation) also says “Msg frequency varies. Msg &amp; data rates may apply. Reply HELP for help, STOP to opt out.”</li>
-          <li>Reply <b>STOP</b> at any time to stop texts; reply <b>HELP</b> for help, or email <a href={`mailto:${mail}`}>{mail}</a>.</li>
-          <li>Phone numbers and text-message consent are never shared with third parties or sold. See our <a href="/privacy">Privacy policy</a> and <a href="/terms">Terms</a>.</li>
-        </ul>
-      </article>
-      <LegalFoot lang={lang} />
-    </div>
+    <SignUpSample
+      lang={lang}
+      smsFrom={smsSender(lang)}
+      summary={{
+        activity,
+        when: `${day ? dayText(day, 'short', lang) : ''} · ${start} · ${place}`,
+        spots: t.spots(1),
+        partySize: 1,
+      }}
+      ticket={{
+        day: day ? dayText(day, 'long', lang) : '',
+        time: `${start} – ${fmtTimeL(end, lang)} · ${place}`,
+        remindAt: fmtTimeL(addMinutes(a.startsAt, -15), lang),
+      }}
+      calendar={{ title: `${activity} · ${eventName(lang)}`, place, start: a.startsAt.toISOString(), end: end.toISOString() }}
+    />
   );
 }
