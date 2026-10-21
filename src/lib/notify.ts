@@ -87,7 +87,7 @@ export async function sendConfirmation(b: BookingView) {
       emailHtml(lang, m.youreInTitle(activity), lines, b.code, { href: url, label: dict(lang).mySignups }),
     );
   }
-  // The first text anyone gets names the event and says how to stop (carrier rules).
+  // The first text anyone gets names the event and gives frequency, rates, HELP and STOP (carrier rules).
   if (b.remindSms && b.personPhone && smsEnabled()) {
     await trySms(b.personPhone, m.confirmSms(eventName(lang), firstName(b.personName), activity, when, place, b.partySize, b.code ?? '', reminder));
   }

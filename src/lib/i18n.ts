@@ -221,7 +221,7 @@ const en = {
     willRemind: (t: string) => `We'll remind you at ${t}.`,
     plansChanged: 'Plans changed? Cancel from My sign-ups so someone else can take your spots.',
     confirmSms: (event: string, first: string, act: string, when: string, place: string, n: number, code: string, reminder: string) =>
-      `${event}: ${first} is in for ${act}, ${when}, ${place}. ${n} ${n === 1 ? 'spot' : 'spots'}, code ${code}. ${reminder} Reply STOP to opt out.`.replace(/\s+/g, ' ').trim(),
+      `${event}: ${first} is in for ${act}, ${when}, ${place}. ${n} ${n === 1 ? 'spot' : 'spots'}, code ${code}. ${reminder} Msg frequency varies. Msg & data rates may apply. Reply HELP for help, STOP to opt out.`.replace(/\s+/g, ' ').trim(),
     reminderSms: (event: string, first: string, act: string, time: string, place: string, n: number, code: string, url: string) =>
       `${event}: ${first}, ${act} starts in 15 min (${time}, ${place}). ${n} ${n === 1 ? 'spot' : 'spots'}, code ${code}.\n\nCan't make it? Let us know so someone else can take your spots: ${url}`,
     reminderSubject: (act: string, time: string) => `In 15 minutes: ${act}, ${time}`,
@@ -437,7 +437,7 @@ const zh: Dict = {
     willRemind: (t) => `我們會在${t} 提醒你。`,
     plansChanged: '行程有變？請到「我的報名」取消，把名額留給其他人。',
     // Kept short: a Chinese text message holds about 70 characters per part.
-    confirmSms: (event, first, act, when, place, n, code, reminder) => `${event}：${first}已報名${act}，${when}，${place}。${n}位，代碼 ${code}。${reminder}回覆 STOP 取消簡訊。`,
+    confirmSms: (event, first, act, when, place, n, code, reminder) => `${event}：${first}已報名${act}，${when}，${place}。${n}位，代碼 ${code}。${reminder}簡訊頻率不一。可能產生簡訊及數據傳輸費用。回覆 HELP 取得協助，回覆 STOP 取消簡訊。`,
     reminderSms: (event, first, act, time, place, n, code, url) => `${event}：${first}，${act} 15 分鐘後開始（${time}，${place}）。${n}位，代碼 ${code}。無法參加請取消：${url}`,
     reminderSubject: (act, time) => `15 分鐘後開始：${act}，${time}`,
     reminderTitle: (act) => `15 分鐘後開始：${act}`,
@@ -649,7 +649,7 @@ const zhs: Dict = {
     willRemind: (t) => `我们会在${t} 提醒你。`,
     plansChanged: '行程有变？请到“我的报名”取消，把名额留给其他人。',
     // Kept short: a Chinese text message holds about 70 characters per part.
-    confirmSms: (event, first, act, when, place, n, code, reminder) => `${event}：${first}已报名${act}，${when}，${place}。${n}位，签到码 ${code}。${reminder}回复 STOP 退订短信。`,
+    confirmSms: (event, first, act, when, place, n, code, reminder) => `${event}：${first}已报名${act}，${when}，${place}。${n}位，签到码 ${code}。${reminder}短信频率不一。可能产生短信和数据流量费用。回复 HELP 获取帮助，回复 STOP 退订短信。`,
     reminderSms: (event, first, act, time, place, n, code, url) => `${event}：${first}，${act} 15 分钟后开始（${time}，${place}）。${n}位，签到码 ${code}。无法参加请取消：${url}`,
     reminderSubject: (act, time) => `15 分钟后开始：${act}，${time}`,
     reminderTitle: (act) => `15 分钟后开始：${act}`,
