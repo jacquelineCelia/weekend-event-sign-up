@@ -364,15 +364,23 @@ export async function cancelBooking(bookingId: string, personId: string | string
   if (!res.rowCount) throw new BookingError('booking_not_found', 'That booking could not be found.');
 }
 
-/** Moves a confirmed booking to another slot of the same size, atomically. */
-export async function changeSlot(bookingId: string, personId: string | string[], newSlotId: string) {
+/** Moves a confirmed booking to another slot of the same size, atomically (cancelling `replace`, its owner's clashing sign-ups, first). */
+export async function changeSlot(bookingId: string, personId: string | string[], newSlotId: string, replace: string[] = []) {
   return withTx(async (c) => {
     const b = await c.query<{ slot_id: string; party_size: number; person_id: string }>(
       `select slot_id, party_size, person_id from bookings where id = $1 and person_id = any($2::uuid[]) and status = 'confirmed' for update`,
       [bookingId, ownerIds(personId)],
     );
     if (!b.rowCount) throw new BookingError('booking_not_found', 'That booking could not be found.');
-    // The new time can't overlap the person's other sign-ups.
+    // The new time can't overlap the person's other sign-ups, unless they chose to cancel those
+    // (same person only), in the same transaction.
+    if (replace.length) {
+      await c.query(
+        `update bookings set status = 'cancelled', cancelled_at = now()
+          where id = any($1::uuid[]) and person_id = $2 and id <> $3 and status = 'confirmed'`,
+        [replace, b.rows[0].person_id, bookingId],
+      );
+    }
     const conflicts = await findOverlaps(c, b.rows[0].person_id, newSlotId, bookingId);
     if (conflicts.length) {
       throw new BookingError('overlap', 'That time overlaps another of your sign-ups.', undefined, { personId: b.rows[0].person_id, conflicts });

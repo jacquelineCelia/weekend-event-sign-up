@@ -11,8 +11,12 @@ export type PickerSlot = {
   current?: boolean; tooSmall?: boolean;
   /** Changing time: why this time can't take the party's seats (e.g. "High chair: 1 left, you need 2"). */
   seatsShort?: string;
-  /** Changing time: this time overlaps another of the person's sign-ups (e.g. "Overlaps your Pottery Wheel (10:00 AM – 11:00 AM)"). */
-  clash?: string;
+  /**
+   * Changing time: this time overlaps other sign-ups of the person. `text` says so under the time
+   * ("Overlaps your Pottery Wheel (10:00 AM – 11:00 AM)"); picking it asks whether to keep those
+   * (`names`) or cancel them (`ids`) and move here.
+   */
+  clash?: { text: string; names: string; ids: string[] };
 };
 /** A seat type the party can choose (e.g. "High chair"), with how many are left at each time. */
 export type PickerSeat = { id: string; name: string; left: Record<string, number> };
@@ -57,10 +61,10 @@ export default function SlotPicker({ lang, slots, seats, preselected, change }: 
         </div>
         {slots.length === 0 ? <p className="muted">{t.noTimes}</p> : null}
         {slots.map((s) => {
-          const blocked = s.remaining === 0 || !!s.tooSmall || !!s.seatsShort || !!s.clash;
-          const why = s.clash ?? s.seatsShort;
-          const tag = s.current ? t.yourTime : s.past ? t.started : s.clash ? t.clashTag : s.remaining === 0 ? t.full : s.seatsShort ? t.seatsTag : s.tooSmall || s.low ? t.onlyLeft(s.remaining) : t.left(s.remaining);
-          const tone = s.current ? 'open' : blocked ? 'full' : s.low ? 'low' : 'open';
+          const blocked = s.remaining === 0 || !!s.tooSmall || !!s.seatsShort;
+          const why = blocked ? s.seatsShort : s.clash?.text;
+          const tag = s.current ? t.yourTime : s.past ? t.started : s.remaining === 0 ? t.full : s.seatsShort ? t.seatsTag : s.clash ? t.clashTag : s.tooSmall || s.low ? t.onlyLeft(s.remaining) : t.left(s.remaining);
+          const tone = s.current ? 'open' : blocked ? 'full' : s.clash || s.low ? 'low' : 'open';
           return (
             <label key={s.id} className="slot" data-full={blocked}>
               <span style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -69,7 +73,7 @@ export default function SlotPicker({ lang, slots, seats, preselected, change }: 
                 <span className="radio" aria-hidden="true" />
                 <span className="stack" style={{ gap: 3 }}>
                   <span className="time">{s.range}</span>
-                  {why ? <span style={{ fontSize: 13, fontWeight: 500 }}>{why}</span> : null}
+                  {why ? <span style={{ fontSize: 13, fontWeight: 500, color: blocked ? undefined : 'var(--ochre-dark)' }}>{why}</span> : null}
                 </span>
               </span>
               <span className={`tag ${tone}`}>{tag}</span>
@@ -147,6 +151,16 @@ export default function SlotPicker({ lang, slots, seats, preselected, change }: 
 
       <div className="footer">
         {state?.error ? <p className="error" role="alert" style={{ margin: 0, textAlign: 'center' }}>{errorText(lang, state.error)}</p> : null}
+        {change && cur?.clash ? (
+          // The chosen time overlaps another sign-up: keep that one (and pick again), or cancel it and move here.
+          <>
+            <p role="status" style={{ margin: 0, fontSize: 14.5, fontWeight: 600, color: 'var(--ochre-dark)', textAlign: 'center' }}>{t.clashAsk(cur.clash.names)}</p>
+            <button className="btn" type="submit" name="replace" value={cur.clash.ids.join(',')} disabled={pending}>
+              {pending ? t.moving : t.clashReplace(cur.clash.names, cur.short)}
+            </button>
+            <button className="btn ghost" type="button" disabled={pending} onClick={() => setSelected(null)}>{t.clashKeep(cur.clash.names)}</button>
+          </>
+        ) : (
         <button className="btn" type="submit" disabled={!cur || pending || needSeats}>
           {pending
             ? change ? t.moving : t.holding
@@ -154,6 +168,7 @@ export default function SlotPicker({ lang, slots, seats, preselected, change }: 
             : needSeats ? t.moreSeats(party - seated)
             : change ? t.moveTo(cur.short) : t.continueBtn(party, cur.short)}
         </button>
+        )}
         <small>{change ? t.codeStays : t.holdNote}</small>
       </div>
     </form>

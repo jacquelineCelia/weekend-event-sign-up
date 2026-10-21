@@ -119,6 +119,19 @@ describe('overlaps when changing time and for walk-ins', () => {
     await expect(changeSlot(walkB.bookingId, walkB.personId, lateTea)).resolves.toBeUndefined();
   });
 
+  it('moves onto a clashing time when asked to cancel the clashing sign-up, in one step', async () => {
+    const yogaB = await book(yoga);
+    const walkB = await book(walk);
+    const other = await book(art, contactSchema.parse({ name: 'Sam Lee', email: 'sam@example.com', phone: '(412) 555-0148' }));
+    // Someone else's sign-up can't be cancelled this way.
+    await expect(changeSlot(walkB.bookingId, walkB.personId, tea, [other.bookingId])).rejects.toMatchObject({ code: 'overlap' });
+    await changeSlot(walkB.bookingId, walkB.personId, tea, [yogaB.bookingId]);
+    expect(await status(yogaB.bookingId)).toBe('cancelled');
+    expect(await status(other.bookingId)).toBe('confirmed');
+    const moved = await pool.query<{ slot_id: string }>('select slot_id from bookings where id = $1', [walkB.bookingId]);
+    expect(moved.rows[0].slot_id).toBe(tea);
+  });
+
   it('refuses a walk-in for someone already signed up at an overlapping time, unless staff cancel it', async () => {
     const first = await book(yoga);
     const walkInJordan = walkInContactSchema.parse({ name: 'Jordan Lee', phone: '412 555 0148', email: 'jordan@example.com' });

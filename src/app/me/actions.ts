@@ -68,7 +68,9 @@ export async function changeTimeAction(bookingId: string, _prev: ChangeState, fo
   if (!ids.length) redirect('/me/sign-in');
   if (!slot.success) return { error: { code: 'pick_time' } };
   try {
-    await changeSlot(bookingId, ids, slot.data);
+    // "Cancel <other> and move here": the clashing sign-ups to cancel in the same step.
+    const replace = String(form.get('replace') ?? '').split(',').filter((x) => uuid.safeParse(x).success);
+    await changeSlot(bookingId, ids, slot.data, replace);
   } catch (err) {
     if (err instanceof BookingError) return { error: { code: err.code, remaining: err.remaining } };
     throw err;

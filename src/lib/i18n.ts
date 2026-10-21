@@ -79,6 +79,9 @@ const en = {
   seatsTag: 'Not enough seats',
   clashTag: 'Overlaps',
   clashWith: (acts: string[]) => `Overlaps your ${acts.join(' and ')}`,
+  clashAsk: (acts: string) => `This time overlaps your ${acts}. Which would you like to keep?`,
+  clashKeep: (acts: string) => `Keep ${acts}`,
+  clashReplace: (acts: string, time: string) => `Cancel ${acts} and move to ${time}`,
   seatsShort: (parts: { name: string; left: number; need: number }[]) => parts.map((p) => `${p.name}: ${p.left} left, you need ${p.need}`).join(' · '),
 
   back: 'Back',
@@ -296,6 +299,9 @@ const zh: Dict = {
   seatsTag: '座位不足',
   clashTag: '時間重疊',
   clashWith: (acts) => `與你的${acts.join('、')}時間重疊`,
+  clashAsk: (acts) => `這個時段和你的${acts}時間重疊，要保留哪一個？`,
+  clashKeep: (acts) => `保留${acts}`,
+  clashReplace: (acts, time) => `取消${acts}，改到${time}`,
   seatsShort: (parts) => parts.map((p) => `${p.name}：剩 ${p.left} 位，你需要 ${p.need} 位`).join('；'),
 
   back: '返回',
@@ -505,6 +511,9 @@ const zhs: Dict = {
   seatsTag: '座位不足',
   clashTag: '时间重叠',
   clashWith: (acts) => `与你的${acts.join('、')}时间重叠`,
+  clashAsk: (acts) => `这个时段和你的${acts}时间重叠，要保留哪一个？`,
+  clashKeep: (acts) => `保留${acts}`,
+  clashReplace: (acts, time) => `取消${acts}，改到${time}`,
   seatsShort: (parts) => parts.map((p) => `${p.name}：剩 ${p.left} 位，你需要 ${p.need} 位`).join('；'),
 
   back: '返回',

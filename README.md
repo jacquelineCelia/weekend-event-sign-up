@@ -24,7 +24,8 @@ Built with Next.js 16 and Postgres (runs on Supabase as is).
   sign-up is only shown — and can only be cancelled — once the browser is signed in as that person;
   otherwise they're offered a 6-digit code to their email first. People sharing a phone are
   separate, so a family can do things at the same time. The same rule applies when changing time in
-  My sign-ups (overlapping times are greyed out with the reason) and to staff walk-ins (staff see the
+  My sign-ups (overlapping times are marked; picking one asks whether to keep the other sign-up or
+  cancel it and move) and to staff walk-ins (staff see the
   clash and can cancel it and sign the guest up for the new time).
 - **My sign-ups** (`/me`): remembered on the device; on a new device, sign in with a 6-digit code
   sent by text or email. Change time, cancel, and rate finished activities 1–10.
@@ -77,7 +78,7 @@ testing (sign-in codes included).
 Tests run against a real Postgres database (set `TEST_DATABASE_URL`; it is wiped on each run):
 
 ```bash
-npm test     # 82 tests: capacity, holds, overlaps, seating, login codes, reminders, schedule edits, shared phones, Chinese
+npm test     # 83 tests: capacity, holds, overlaps, seating, login codes, reminders, schedule edits, shared phones, Chinese
 ```
 
 ## Deploy (Vercel + Supabase)

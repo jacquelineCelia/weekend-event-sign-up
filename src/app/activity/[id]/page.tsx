@@ -58,10 +58,11 @@ export default async function ActivityPage({
       const left = o?.left[slotId] ?? 0;
       return left < x.count ? [{ name: o ? localText(o.name, o.nameZh, lang) : x.name, left, need: x.count }] : [];
     });
-  // Moving a sign-up: times that overlap the person's other sign-ups can't be picked (and say why).
+  // Moving a sign-up: times that overlap the person's other sign-ups say so; picking one asks whether
+  // to keep the other sign-up or cancel it and move here.
   const others = change
-    ? (await getPool().query<{ starts_at: Date; duration_min: number; name: string; name_zh: string }>(
-        `select s.starts_at, a.duration_min, a.name, a.name_zh
+    ? (await getPool().query<{ id: string; starts_at: Date; duration_min: number; name: string; name_zh: string }>(
+        `select b.id, s.starts_at, a.duration_min, a.name, a.name_zh
            from bookings b join slots s on s.id = b.slot_id join activities a on a.id = s.activity_id
           where b.person_id = $1 and b.status = 'confirmed' and b.id <> $2`,
         [change.personId, change.bookingId],
@@ -72,9 +73,16 @@ export default async function ActivityPage({
     return others
       .filter((o) => o.starts_at.getTime() < end && start.getTime() < addMinutes(o.starts_at, o.duration_min).getTime())
       .map((o) => {
+        const name = localText(o.name, o.name_zh, lang);
         const range = `${fmtTimeL(o.starts_at, lang)} – ${fmtTimeL(addMinutes(o.starts_at, o.duration_min), lang)}`;
-        return lang === 'en' ? `${localText(o.name, o.name_zh, lang)} (${range})` : `${localText(o.name, o.name_zh, lang)}（${range}）`;
+        return { id: o.id, name, label: lang === 'en' ? `${name} (${range})` : `${name}（${range}）` };
       });
+  };
+  const clashInfo = (start: Date) => {
+    const list = clashes(start);
+    if (!list.length) return undefined;
+    const join = (xs: string[]) => xs.join(lang === 'en' ? ' and ' : '、');
+    return { text: t.clashWith(list.map((x) => x.label)), names: join(list.map((x) => x.name)), ids: list.map((x) => x.id) };
   };
   const slots: PickerSlot[] = a.slots.map((s) => {
     const past = s.startsAt.getTime() <= now;
@@ -89,11 +97,12 @@ export default async function ActivityPage({
       current,
       tooSmall: !!change && !current && s.remaining > 0 && s.remaining < change.partySize,
       seatsShort: change && !current && !past && s.remaining >= change.partySize && seatsShort(s.id).length ? t.seatsShort(seatsShort(s.id)) : undefined,
-      clash: change && !current && !past && clashes(s.startsAt).length ? t.clashWith(clashes(s.startsAt)) : undefined,
+      clash: change && !current && !past ? clashInfo(s.startsAt) : undefined,
     };
   });
-  const canPick = (s: PickerSlot) => s.remaining > 0 && !s.tooSmall && !s.seatsShort && !s.clash;
-  const firstOpen = slots.find(canPick)?.id ?? null;
+  const canPick = (s: PickerSlot) => s.remaining > 0 && !s.tooSmall && !s.seatsShort;
+  // Start on a time that's free of clashes when there is one.
+  const firstOpen = slots.find((s) => canPick(s) && !s.clash)?.id ?? null;
   const preselected = change ? firstOpen : slots.find((s) => s.id === sp.slot && canPick(s))?.id ?? firstOpen;
 
   return (
