@@ -299,3 +299,9 @@ select.input { padding: 0 14px; }
 .legal p, .legal ul { margin: 0 0 10px; }
 .legal ul { padding-left: 20px; }
 :lang(zh) .legal { line-height: 1.8; }
+.legal ol { margin: 0 0 10px; padding-left: 22px; }
+.legal li { margin-bottom: 6px; }
+.legal .quote { margin: 8px 0; padding: 10px 14px; border-left: 3px solid var(--moss); background: var(--paper); border-radius: 0 12px 12px 0; font-size: 14px; color: var(--ink-2); }
+.legal .shot { margin: 14px 0 6px; }
+.legal .shot img { display: block; width: 100%; height: auto; border: 1px solid var(--line); border-radius: 16px; background: var(--paper); }
+.legal .shot figcaption { margin-top: 6px; font-size: 13px; color: var(--muted); }
