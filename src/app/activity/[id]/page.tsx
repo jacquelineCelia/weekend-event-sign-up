@@ -51,8 +51,13 @@ export default async function ActivityPage({
   const seatOpts = await seatOptions(a.id, a.slots.map((s) => s.id));
   const seats: PickerSeat[] = seatOpts.map((o) => ({ id: o.id, name: localText(o.name, o.nameZh, lang), left: o.left }));
   // Moving a sign-up: the new time needs the same seats free.
-  const seatsFit = (slotId: string) =>
-    !change || change.seats.every((x) => (seatOpts.find((o) => o.name === x.name)?.left[slotId] ?? 0) >= x.count);
+  // Seat types without enough room at a time, to say why it can't be picked.
+  const seatsShort = (slotId: string) =>
+    (change?.seats ?? []).flatMap((x) => {
+      const o = seatOpts.find((y) => y.name === x.name);
+      const left = o?.left[slotId] ?? 0;
+      return left < x.count ? [{ name: o ? localText(o.name, o.nameZh, lang) : x.name, left, need: x.count }] : [];
+    });
   const slots: PickerSlot[] = a.slots.map((s) => {
     const past = s.startsAt.getTime() <= now;
     const current = change?.currentSlotId === s.id;
@@ -64,10 +69,11 @@ export default async function ActivityPage({
       low: !past && !current && isLow(s.remaining, s.capacity),
       past,
       current,
-      tooSmall: !!change && !current && s.remaining > 0 && (s.remaining < change.partySize || !seatsFit(s.id)),
+      tooSmall: !!change && !current && s.remaining > 0 && s.remaining < change.partySize,
+      seatsShort: change && !current && !past && s.remaining >= change.partySize && seatsShort(s.id).length ? t.seatsShort(seatsShort(s.id)) : undefined,
     };
   });
-  const canPick = (s: PickerSlot) => s.remaining > 0 && !s.tooSmall;
+  const canPick = (s: PickerSlot) => s.remaining > 0 && !s.tooSmall && !s.seatsShort;
   const firstOpen = slots.find(canPick)?.id ?? null;
   const preselected = change ? firstOpen : slots.find((s) => s.id === sp.slot && canPick(s))?.id ?? firstOpen;
 

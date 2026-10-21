@@ -76,6 +76,8 @@ const en = {
   addSeat: (name: string) => `One more ${name}`,
   removeSeat: (name: string) => `One less ${name}`,
   moreSeats: (n: number): string => (n === 1 ? 'Choose 1 more seat' : `Choose ${n} more seats`),
+  seatsTag: 'Not enough seats',
+  seatsShort: (parts: { name: string; left: number; need: number }[]) => parts.map((p) => `${p.name}: ${p.left} left, you need ${p.need}`).join(' · '),
 
   back: 'Back',
   heldFor: (mmss: string) => `Held for ${mmss}`,
@@ -284,6 +286,8 @@ const zh: Dict = {
   addSeat: (name) => `增加一位：${name}`,
   removeSeat: (name) => `減少一位：${name}`,
   moreSeats: (n) => `還有 ${n} 位要選座位`,
+  seatsTag: '座位不足',
+  seatsShort: (parts) => parts.map((p) => `${p.name}：剩 ${p.left} 位，你需要 ${p.need} 位`).join('；'),
 
   back: '返回',
   heldFor: (mmss) => `保留中 ${mmss}`,
@@ -484,6 +488,8 @@ const zhs: Dict = {
   addSeat: (name) => `增加一位：${name}`,
   removeSeat: (name) => `减少一位：${name}`,
   moreSeats: (n) => `还有 ${n} 位要选座位`,
+  seatsTag: '座位不足',
+  seatsShort: (parts) => parts.map((p) => `${p.name}：剩 ${p.left} 位，你需要 ${p.need} 位`).join('；'),
 
   back: '返回',
   heldFor: (mmss) => `保留中 ${mmss}`,

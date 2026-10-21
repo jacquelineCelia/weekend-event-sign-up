@@ -9,6 +9,8 @@ import { dict, errorText, type Lang } from '@/lib/i18n';
 export type PickerSlot = {
   id: string; range: string; short: string; remaining: number; low: boolean; past: boolean;
   current?: boolean; tooSmall?: boolean;
+  /** Changing time: why this time can't take the party's seats (e.g. "High chair: 1 left, you need 2"). */
+  seatsShort?: string;
 };
 /** A seat type the party can choose (e.g. "High chair"), with how many are left at each time. */
 export type PickerSeat = { id: string; name: string; left: Record<string, number> };
@@ -53,8 +55,8 @@ export default function SlotPicker({ lang, slots, seats, preselected, change }: 
         </div>
         {slots.length === 0 ? <p className="muted">{t.noTimes}</p> : null}
         {slots.map((s) => {
-          const blocked = s.remaining === 0 || !!s.tooSmall;
-          const tag = s.current ? t.yourTime : s.past ? t.started : s.remaining === 0 ? t.full : s.tooSmall || s.low ? t.onlyLeft(s.remaining) : t.left(s.remaining);
+          const blocked = s.remaining === 0 || !!s.tooSmall || !!s.seatsShort;
+          const tag = s.current ? t.yourTime : s.past ? t.started : s.remaining === 0 ? t.full : s.seatsShort ? t.seatsTag : s.tooSmall || s.low ? t.onlyLeft(s.remaining) : t.left(s.remaining);
           const tone = s.current ? 'open' : blocked ? 'full' : s.low ? 'low' : 'open';
           return (
             <label key={s.id} className="slot" data-full={blocked}>
@@ -62,7 +64,10 @@ export default function SlotPicker({ lang, slots, seats, preselected, change }: 
                 <input type="radio" name="slotId" value={s.id} checked={selected === s.id} disabled={blocked}
                   onChange={() => setSelected(s.id)} />
                 <span className="radio" aria-hidden="true" />
-                <span className="time">{s.range}</span>
+                <span className="stack" style={{ gap: 3 }}>
+                  <span className="time">{s.range}</span>
+                  {s.seatsShort ? <span style={{ fontSize: 13, fontWeight: 500 }}>{s.seatsShort}</span> : null}
+                </span>
               </span>
               <span className={`tag ${tone}`}>{tag}</span>
             </label>
