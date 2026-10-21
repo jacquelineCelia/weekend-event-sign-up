@@ -148,9 +148,9 @@ export default function WalkInForm({ options, initialKey, initialSlot }: { optio
         ) : null}
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
-          <Field id="name" label="Name" error={err.name} autoComplete="off" />
-          <Field id="phone" label="Mobile phone" type="tel" error={err.phone} autoComplete="off" />
-          <Field id="email" label="Email (optional)" type="email" error={err.email} autoComplete="off" />
+          <Field id="name" label="Name" error={err.name} autoComplete="off" defaultValue={state?.values?.name} />
+          <Field id="phone" label="Mobile phone" type="tel" error={err.phone} autoComplete="off" defaultValue={state?.values?.phone} />
+          <Field id="email" label="Email (optional)" type="email" error={err.email} autoComplete="off" defaultValue={state?.values?.email} />
         </div>
 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px 24px' }}>
@@ -194,6 +194,20 @@ export default function WalkInForm({ options, initialKey, initialSlot }: { optio
             {pending ? 'Signing up…' : !slot ? 'Pick a time' : noParty ? 'Set the party size' : needSeats ? `Seat ${party - seated} more` : blocked ? 'Needs lead approval' : checkNow ? `Sign up & check in ${party}` : `Sign up ${party}`}
           </button>
         </div>
+        {/* Only for the time it was found at: picking another time hides it. */}
+        {state?.conflict && state.conflict.slotId === slotId ? (
+          <div role="alert" style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 14.5, borderRadius: 20, padding: '16px 20px', border: '1.5px solid #b07a2a', background: 'var(--ochre-pale)', color: 'var(--ochre-dark)' }}>
+            <span style={{ fontWeight: 600 }}>{state.conflict.name} is already signed up at an overlapping time:</span>
+            <ul style={{ margin: 0, paddingLeft: 18, color: 'var(--ink-2)' }}>
+              {state.conflict.items.map((x) => <li key={x.id}>{x.label}</li>)}
+            </ul>
+            <span style={{ color: 'var(--ink-2)' }}>One person can&apos;t be in two places at once. Pick another time, or, if they&apos;d rather do this one:</span>
+            {state.conflict.items.map((x) => <input key={x.id} type="hidden" name="clashId" value={x.id} />)}
+            <button type="submit" name="replaceClash" value="1" className="btn" disabled={pending || blocked} style={{ minHeight: 48, fontSize: 15, background: 'var(--ochre)' }}>
+              {state.conflict.items.length === 1 ? 'Cancel that sign-up and sign up for this' : 'Cancel those sign-ups and sign up for this'}
+            </button>
+          </div>
+        ) : null}
         {state?.done ? (
           <div className="note ok" role="status" style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 14.5, borderRadius: 20, padding: '16px 20px' }}>
             <span style={{ fontWeight: 600 }}>{state.done.name} is signed up{state.done.checkedIn ? ' and checked in' : ''}.</span>
@@ -205,11 +219,11 @@ export default function WalkInForm({ options, initialKey, initialSlot }: { optio
   );
 }
 
-function Field({ id, label, error, type = 'text', autoComplete }: { id: string; label: string; error?: string; type?: string; autoComplete: string }) {
+function Field({ id, label, error, type = 'text', autoComplete, defaultValue }: { id: string; label: string; error?: string; type?: string; autoComplete: string; defaultValue?: string }) {
   return (
     <div className="field">
       <label htmlFor={id}>{label}</label>
-      <input id={id} name={id} type={type} className="input" autoComplete={autoComplete} aria-invalid={!!error} aria-describedby={error ? `${id}-e` : undefined} />
+      <input id={id} name={id} type={type} className="input" autoComplete={autoComplete} defaultValue={defaultValue} aria-invalid={!!error} aria-describedby={error ? `${id}-e` : undefined} />
       {error ? <span id={`${id}-e`} className="error">{error}</span> : null}
     </div>
   );

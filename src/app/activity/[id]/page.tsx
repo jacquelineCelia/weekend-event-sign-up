@@ -37,12 +37,12 @@ export default async function ActivityPage({
   if (!a) notFound();
 
   // "Change time" mode: moving an existing booking (only the owner's own).
-  let change: { bookingId: string; partySize: number; currentSlotId: string; seats: { name: string; count: number }[] } | null = null;
+  let change: { bookingId: string; personId: string; partySize: number; currentSlotId: string; seats: { name: string; count: number }[] } | null = null;
   if (sp.change) {
     const { ids } = await currentOwners();
     const b = await getBooking(sp.change);
     if (b?.personId && ids.includes(b.personId) && b.status === 'confirmed' && b.activityId === a.id) {
-      change = { bookingId: b.id, partySize: b.partySize, currentSlotId: b.slotId, seats: b.seats.map((x) => ({ name: x.name, count: x.count })) };
+      change = { bookingId: b.id, personId: b.personId, partySize: b.partySize, currentSlotId: b.slotId, seats: b.seats.map((x) => ({ name: x.name, count: x.count })) };
     }
   }
 
@@ -58,6 +58,24 @@ export default async function ActivityPage({
       const left = o?.left[slotId] ?? 0;
       return left < x.count ? [{ name: o ? localText(o.name, o.nameZh, lang) : x.name, left, need: x.count }] : [];
     });
+  // Moving a sign-up: times that overlap the person's other sign-ups can't be picked (and say why).
+  const others = change
+    ? (await getPool().query<{ starts_at: Date; duration_min: number; name: string; name_zh: string }>(
+        `select s.starts_at, a.duration_min, a.name, a.name_zh
+           from bookings b join slots s on s.id = b.slot_id join activities a on a.id = s.activity_id
+          where b.person_id = $1 and b.status = 'confirmed' and b.id <> $2`,
+        [change.personId, change.bookingId],
+      )).rows
+    : [];
+  const clashes = (start: Date) => {
+    const end = addMinutes(start, a.durationMin).getTime();
+    return others
+      .filter((o) => o.starts_at.getTime() < end && start.getTime() < addMinutes(o.starts_at, o.duration_min).getTime())
+      .map((o) => {
+        const range = `${fmtTimeL(o.starts_at, lang)} – ${fmtTimeL(addMinutes(o.starts_at, o.duration_min), lang)}`;
+        return lang === 'en' ? `${localText(o.name, o.name_zh, lang)} (${range})` : `${localText(o.name, o.name_zh, lang)}（${range}）`;
+      });
+  };
   const slots: PickerSlot[] = a.slots.map((s) => {
     const past = s.startsAt.getTime() <= now;
     const current = change?.currentSlotId === s.id;
@@ -71,9 +89,10 @@ export default async function ActivityPage({
       current,
       tooSmall: !!change && !current && s.remaining > 0 && s.remaining < change.partySize,
       seatsShort: change && !current && !past && s.remaining >= change.partySize && seatsShort(s.id).length ? t.seatsShort(seatsShort(s.id)) : undefined,
+      clash: change && !current && !past && clashes(s.startsAt).length ? t.clashWith(clashes(s.startsAt)) : undefined,
     };
   });
-  const canPick = (s: PickerSlot) => s.remaining > 0 && !s.tooSmall && !s.seatsShort;
+  const canPick = (s: PickerSlot) => s.remaining > 0 && !s.tooSmall && !s.seatsShort && !s.clash;
   const firstOpen = slots.find(canPick)?.id ?? null;
   const preselected = change ? firstOpen : slots.find((s) => s.id === sp.slot && canPick(s))?.id ?? firstOpen;
 

@@ -10,7 +10,7 @@ import { walkInContactSchema } from '@/lib/contact';
 import { getBooking } from '@/lib/queries';
 import { sendConfirmation } from '@/lib/notify';
 import { setCheckedIn, saveSchedule, saveActivity, saveSeating, type SlotEdit } from '@/lib/staff';
-import { EVENT } from '@/lib/event';
+import { EVENT, addMinutes, dayOf, fmtTime } from '@/lib/event';
 import { errorText } from '@/lib/i18n';
 
 async function requireStaff() {
@@ -46,7 +46,13 @@ export async function checkInAction(bookingId: string, count: number) {
   revalidatePath('/staff');
 }
 
-export type WalkInState = { error?: string; fields?: Record<string, string>; done?: { name: string; code: string; to: string; checkedIn: boolean } } | null;
+export type WalkInState = {
+  error?: string; fields?: Record<string, string>; done?: { name: string; code: string; to: string; checkedIn: boolean };
+  /** What was typed, so a refused sign-up keeps the guest's details. */
+  values?: Record<string, string>;
+  /** The guest already has sign-ups at overlapping times; staff can cancel them and sign up for this one. */
+  conflict?: { name: string; slotId: string; items: { id: string; label: string }[] };
+} | null;
 
 const walkIn = z.object({
   slotId: z.string().uuid({ message: 'Pick a time' }),
@@ -55,12 +61,13 @@ const walkIn = z.object({
 
 export async function walkInAction(_prev: WalkInState, form: FormData): Promise<WalkInState> {
   await requireStaff();
+  const values = { name: String(form.get('name') ?? ''), email: String(form.get('email') ?? ''), phone: String(form.get('phone') ?? '') };
   const base = walkIn.safeParse({ slotId: form.get('slotId'), party: form.get('party') });
   const contact = walkInContactSchema.safeParse({ name: form.get('name') ?? '', email: form.get('email') ?? '', phone: form.get('phone') ?? '' });
   if (!base.success || !contact.success) {
     const fields: Record<string, string> = {};
     for (const i of [...(base.error?.issues ?? []), ...(contact.error?.issues ?? [])]) fields[String(i.path[0])] ??= errorText('en', i.message);
-    return { fields };
+    return { fields, values };
   }
   const checkInNow = form.get('checkInNow') === 'on';
   // Which language their confirmation and reminders come in.
@@ -71,16 +78,25 @@ export async function walkInAction(_prev: WalkInState, form: FormData): Promise<
     try {
       seats = z.array(z.object({ seatTypeId: z.string().uuid(), count: z.number().int().min(0).max(50) })).max(20).parse(JSON.parse(String(form.get('seats') ?? '[]')));
     } catch {
-      return { error: 'Choose a seat for everyone in the party.' };
+      return { error: 'Choose a seat for everyone in the party.', values };
     }
-    const r = await walkInBooking(base.data.slotId, base.data.party, contact.data, { allowOver: form.get('allowOver') === 'on', checkInNow, lang, seats });
+    const r = await walkInBooking(base.data.slotId, base.data.party, contact.data, { allowOver: form.get('allowOver') === 'on', checkInNow, lang, seats,
+      replace: form.get('replaceClash') === '1' ? form.getAll('clashId').map(String).filter((x) => z.string().uuid().safeParse(x).success) : undefined,
+    });
     const b = await getBooking(r.bookingId);
     if (b) await sendConfirmation(b).catch((e) => console.error('walk-in confirmation failed', e));
     await rememberSlot(base.data.slotId);
     revalidatePath('/staff', 'layout');
     return { done: { name: contact.data.name, code: r.code, to: contact.data.email ?? contact.data.phone ?? '', checkedIn: checkInNow } };
   } catch (err) {
-    if (err instanceof BookingError) return { error: errorText('en', { code: err.code, remaining: err.remaining }) };
+    if (err instanceof BookingError && err.code === 'overlap' && err.overlap) {
+      const items = err.overlap.conflicts.map((x) => {
+        const d = dayOf(x.startsAt);
+        return { id: x.bookingId, label: `${x.activityName}, ${d ? `${d.short} ` : ''}${fmtTime(x.startsAt)}–${fmtTime(addMinutes(x.startsAt, x.durationMin))}${x.partySize > 1 ? ` (party of ${x.partySize})` : ''}` };
+      });
+      return { values, conflict: { name: contact.data.name, slotId: base.data.slotId, items } };
+    }
+    if (err instanceof BookingError) return { error: errorText('en', { code: err.code, remaining: err.remaining }), values };
     throw err;
   }
 }

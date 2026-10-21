@@ -129,7 +129,9 @@ describe('changes after booking', () => {
   it('walk-ins respect capacity unless a lead approves going over', async () => {
     const walker = { name: 'Morgan Ellis', email: null, phone: '+14125550193' };
     await walkInBooking(otherSlotId, 3, walker, { checkInNow: true });
-    await expect(walkInBooking(otherSlotId, 2, walker)).rejects.toMatchObject({ code: 'not_enough_spots' });
-    await expect(walkInBooking(otherSlotId, 2, walker, { allowOver: true })).resolves.toHaveProperty('code');
+    // Different people: one person can't hold two sign-ups at the same time.
+    const friend = { name: 'Sam Ellis', email: null, phone: '+14125550194' };
+    await expect(walkInBooking(otherSlotId, 2, friend)).rejects.toMatchObject({ code: 'not_enough_spots' });
+    await expect(walkInBooking(otherSlotId, 2, friend, { allowOver: true })).resolves.toHaveProperty('code');
   });
 });

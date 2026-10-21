@@ -1,7 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { getPool } from '@/lib/db';
-import { BookingError, confirmBooking, holdSpots } from '@/lib/booking';
-import { contactSchema } from '@/lib/contact';
+import { BookingError, changeSlot, confirmBooking, holdSpots, walkInBooking } from '@/lib/booking';
+import { contactSchema, walkInContactSchema } from '@/lib/contact';
 
 const pool = getPool();
 
@@ -105,5 +105,34 @@ describe('overlapping sign-ups', () => {
   it('finds clashes with a shorter activity that starts at the same time', async () => {
     await book(art);
     await expect(book(yoga)).rejects.toMatchObject({ code: 'overlap' });
+  });
+});
+
+describe('overlaps when changing time and for walk-ins', () => {
+  it('won’t move a sign-up onto a time that overlaps another of the same person’s', async () => {
+    const yogaB = await book(yoga);
+    const walkB = await book(walk);       // 16:00–17:00, back to back with yoga
+    await expect(changeSlot(walkB.bookingId, walkB.personId, tea)).rejects.toMatchObject({ code: 'overlap' }); // tea 15:30 overlaps yoga
+    const lateTea = await makeSlot('Late tea', '2026-11-14 18:00:00+00');
+    await expect(changeSlot(yogaB.bookingId, yogaB.personId, tea)).rejects.toMatchObject({ code: 'overlap' }); // tea runs into the 16:00 walk
+    await expect(changeSlot(yogaB.bookingId, yogaB.personId, art)).resolves.toBeUndefined(); // 15:00–15:30 overlaps only yoga itself
+    await expect(changeSlot(walkB.bookingId, walkB.personId, lateTea)).resolves.toBeUndefined();
+  });
+
+  it('refuses a walk-in for someone already signed up at an overlapping time, unless staff cancel it', async () => {
+    const first = await book(yoga);
+    const walkInJordan = walkInContactSchema.parse({ name: 'Jordan Lee', phone: '412 555 0148', email: 'jordan@example.com' });
+    const err = await walkInBooking(tea, 1, walkInJordan).catch((e) => e);
+    expect(err).toMatchObject({ code: 'overlap', overlap: { personId: first.personId } });
+    expect(err.overlap.conflicts.map((c: { bookingId: string }) => c.bookingId)).toEqual([first.bookingId]);
+    const r = await walkInBooking(tea, 1, walkInJordan, { replace: [first.bookingId] });
+    expect(r.personId).toBe(first.personId);
+    expect(await status(first.bookingId)).toBe('cancelled');
+  });
+
+  it('matches walk-ins without email by phone and name', async () => {
+    await book(yoga);
+    await expect(walkInBooking(tea, 1, walkInContactSchema.parse({ name: 'jordan lee', phone: '412 555 0148', email: '' }))).rejects.toMatchObject({ code: 'overlap' });
+    await expect(walkInBooking(tea, 1, walkInContactSchema.parse({ name: 'Riley Lee', phone: '412 555 0148', email: '' }))).resolves.toBeTruthy();
   });
 });

@@ -309,9 +309,32 @@ export async function confirmBooking(holdId: string, input: ConfirmInput) {
 /** Staff walk-in: books directly (no hold). `allowOver` lets a lead approve going over capacity. Walk-ins are never texted; reminders go by email when there is one. */
 export async function walkInBooking(
   slotId: string, partySize: number, contact: Contact,
-  opts: { allowOver?: boolean; checkInNow?: boolean; lang?: Lang; seats?: SeatPick[] } = {},
+  opts: {
+    allowOver?: boolean; checkInNow?: boolean; lang?: Lang; seats?: SeatPick[];
+    /** Staff chose to cancel these overlapping sign-ups of the same person in the same step. */
+    replace?: string[];
+  } = {},
 ) {
   return withTx(async (c) => {
+    // Same rule as online: one person can't be signed up for two overlapping times.
+    // Lock the slot, then the person (the order confirmBooking uses), and cancel any clashes staff
+    // chose to replace before counting spots, since a clash at this same time frees room here.
+    await lockSlot(c, slotId);
+    await lockContact(c, contact);
+    const existing = await findPerson(c, contact);
+    if (existing) {
+      if (opts.replace?.length) {
+        await c.query(
+          `update bookings set status = 'cancelled', cancelled_at = now()
+            where id = any($1::uuid[]) and person_id = $2 and status = 'confirmed'`,
+          [opts.replace, existing.id],
+        );
+      }
+      const conflicts = await findOverlaps(c, existing.id, slotId);
+      if (conflicts.length) {
+        throw new BookingError('overlap', 'They already have a sign-up at an overlapping time.', undefined, { personId: existing.id, conflicts });
+      }
+    }
     const { remaining } = await lockSlot(c, slotId);
     if (remaining < partySize && !opts.allowOver) {
       throw new BookingError('not_enough_spots', `Only ${remaining} left at this time.`, remaining);
@@ -344,11 +367,16 @@ export async function cancelBooking(bookingId: string, personId: string | string
 /** Moves a confirmed booking to another slot of the same size, atomically. */
 export async function changeSlot(bookingId: string, personId: string | string[], newSlotId: string) {
   return withTx(async (c) => {
-    const b = await c.query<{ slot_id: string; party_size: number }>(
-      `select slot_id, party_size from bookings where id = $1 and person_id = any($2::uuid[]) and status = 'confirmed' for update`,
+    const b = await c.query<{ slot_id: string; party_size: number; person_id: string }>(
+      `select slot_id, party_size, person_id from bookings where id = $1 and person_id = any($2::uuid[]) and status = 'confirmed' for update`,
       [bookingId, ownerIds(personId)],
     );
     if (!b.rowCount) throw new BookingError('booking_not_found', 'That booking could not be found.');
+    // The new time can't overlap the person's other sign-ups.
+    const conflicts = await findOverlaps(c, b.rows[0].person_id, newSlotId, bookingId);
+    if (conflicts.length) {
+      throw new BookingError('overlap', 'That time overlaps another of your sign-ups.', undefined, { personId: b.rows[0].person_id, conflicts });
+    }
     const { remaining } = await lockSlot(c, newSlotId);
     if (remaining < b.rows[0].party_size) {
       throw new BookingError('not_enough_spots', `Only ${remaining} left at that time.`, remaining);

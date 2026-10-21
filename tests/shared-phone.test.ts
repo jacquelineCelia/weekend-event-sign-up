@@ -53,9 +53,12 @@ describe('people sharing a phone number', () => {
   });
 
   it('walk-ins without email match on phone + name, otherwise become a new person', async () => {
-    await book(anna);
+    // (Each earlier sign-up is cancelled first: one person can't hold two at the same time.)
+    const a = await book(anna);
+    await cancelBooking(a.bookingId, a.personId);
     const sameAnna = await walkInBooking(slotId, 1, walkInContactSchema.parse({ name: 'anna park', phone: PHONE, email: '' }));
     const grandma = await walkInBooking(slotId, 1, walkInContactSchema.parse({ name: 'Rose Park', phone: PHONE, email: '' }));
+    await cancelBooking(grandma.bookingId, grandma.personId);
     const grandmaAgain = await walkInBooking(slotId, 1, walkInContactSchema.parse({ name: 'Rose Park', phone: PHONE, email: '' }));
     const all = await people();
     expect(all.map((p) => p.name)).toEqual(['Anna Park', 'Rose Park']);

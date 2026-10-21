@@ -96,11 +96,11 @@ describe('seating', () => {
   });
 
   it('walk-ins choose seats; a lead can approve going over', async () => {
-    const guest = walkInContactSchema.parse({ name: 'Walk In', phone: '412 555 0199', email: '' });
-    await walkInBooking(slotA, 2, guest, { seats: [{ seatTypeId: chair, count: 2 }] });
-    await expect(walkInBooking(slotA, 1, guest, { seats: [{ seatTypeId: chair, count: 1 }] })).rejects.toMatchObject({ code: 'seats_taken' });
-    await expect(walkInBooking(slotA, 1, guest, { seats: [{ seatTypeId: chair, count: 1 }], allowOver: true })).resolves.toBeTruthy();
-    await expect(walkInBooking(slotA, 1, guest)).rejects.toMatchObject({ code: 'seats_needed' });
+    const guest = (name: string) => walkInContactSchema.parse({ name, phone: '412 555 0199', email: '' });
+    await walkInBooking(slotA, 2, guest('Walk In'), { seats: [{ seatTypeId: chair, count: 2 }] });
+    await expect(walkInBooking(slotA, 1, guest('Second'), { seats: [{ seatTypeId: chair, count: 1 }] })).rejects.toMatchObject({ code: 'seats_taken' });
+    await expect(walkInBooking(slotA, 1, guest('Second'), { seats: [{ seatTypeId: chair, count: 1 }], allowOver: true })).resolves.toBeTruthy();
+    await expect(walkInBooking(slotA, 1, guest('Third'))).rejects.toMatchObject({ code: 'seats_needed' });
   });
 
   it('staff can’t cut a seat type below what’s booked, or remove one that’s been chosen', async () => {
