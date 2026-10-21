@@ -37,15 +37,37 @@ export default async function SmsOptIn() {
           <li>On the details page they enter their name, email and mobile number.</li>
           <li>
             Under “Remind me 15 minutes before” is a separate checkbox, <b>unchecked by default</b>, labeled
-            “By text message”. Directly beneath it they see:
+            “By text message (optional)”. Directly beneath it they see:
             <blockquote className="quote">
               {dict('en').smsConsent(event)} <a href="/terms">Terms</a> · <a href="/privacy">Privacy</a>
             </blockquote>
           </li>
           <li>We text the attendee only if they tick that box themselves. Booking works whether or not they do.</li>
         </ol>
+        <p>
+          Here is that part of the sign-up form, exactly as it appears on the details page (this sample doesn’t submit;
+          the real form is reached by picking an activity and time on the home page):
+        </p>
+        <form className="sample" aria-label="Sample of the sign-up form's contact and text-message consent section">
+          <div className="field"><label htmlFor="s-name">Full name</label><input id="s-name" name="name" className="input" autoComplete="off" placeholder="Jane Doe" /></div>
+          <div className="field"><label htmlFor="s-email">Email</label><input id="s-email" name="email" type="email" className="input" autoComplete="off" placeholder="jane@example.com" /></div>
+          <div className="field">
+            <label htmlFor="s-phone">Mobile phone</label>
+            <input id="s-phone" name="phone" type="tel" className="input" autoComplete="off" placeholder="(555) 555-0100" aria-describedby="s-phone-hint" />
+            <span id="s-phone-hint" className="hint">{dict('en').phoneHint}</span>
+          </div>
+          <fieldset>
+            <legend className="legend">{dict('en').remindLegend}</legend>
+            <label className="check"><input type="checkbox" name="sms_consent" value="yes" aria-describedby="s-consent" /> {dict('en').bySms}</label>
+            <p id="s-consent" className="consent">
+              {dict('en').smsConsent(event)} <a href="/terms">Terms</a> · <a href="/privacy">Privacy</a>
+            </p>
+            <label className="check"><input type="checkbox" name="email_reminder" defaultChecked /> {dict('en').byEmail}</label>
+          </fieldset>
+          <button type="button" className="btn" disabled>Confirm 1 spot (sample, doesn’t submit)</button>
+        </form>
         <figure className="shot">
-          <img src="/sms-opt-in/sign-up-form.png" alt="The sign-up details page: name, email and mobile phone fields, then an unchecked “By text message” box with the consent wording and Terms and Privacy links beneath it." width={430} height={1035} />
+          <img src="/sms-opt-in/sign-up-form.png" alt="The sign-up details page: name, email and mobile phone fields, then an unchecked “By text message” box with the consent wording and Terms and Privacy links beneath it." width={430} height={1073} />
           <figcaption>The details page as attendees see it. The “By text message” box starts unchecked.</figcaption>
         </figure>
 

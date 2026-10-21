@@ -305,3 +305,7 @@ select.input { padding: 0 14px; }
 .legal .shot { margin: 14px 0 6px; }
 .legal .shot img { display: block; width: 100%; height: auto; border: 1px solid var(--line); border-radius: 16px; background: var(--paper); }
 .legal .shot figcaption { margin-top: 6px; font-size: 13px; color: var(--muted); }
+
+.legal .sample { display: flex; flex-direction: column; gap: 14px; margin: 12px 0 18px; padding: 18px; border: 1px dashed var(--line-strong); border-radius: 20px; background: var(--ground); }
+.legal .sample fieldset { border: 1px solid var(--line); border-radius: 16px; padding: 10px 14px; margin: 0; background: var(--paper); }
+.legal .sample .btn[disabled] { opacity: 0.6; }
