@@ -1,7 +1,7 @@
 import { bookingText, type BookingView } from './queries';
 import { addMinutes, dayOf, dayText, fmtTimeL, isChinese, type Lang } from './event';
 import { eventName as eventNameFor } from './hans';
-import { localText } from './hans';
+import { localText, seatLine } from './hans';
 import { dict, firstName } from './i18n';
 import { SmsOptedOut, sendEmail, sendSms, smsEnabled } from './messaging';
 import { getPool } from './db';
@@ -76,7 +76,8 @@ export async function sendConfirmation(b: BookingView) {
   const time = fmtTimeL(b.startsAt, lang);
   const when = isChinese(lang) ? `${dayLong}${time}` : `${dayLong}, ${time}`;
   const reminder = b.remindSms || b.remindEmail ? m.willRemind(fmtTimeL(addMinutes(b.startsAt, -15), lang)) : '';
-  const lines = [m.whenWhere(activity, when, place), m.partyFor(b.partySize, b.personName ?? '', b.code ?? ''), reminder, m.plansChanged].filter(Boolean);
+  const seating = b.seats.length ? m.seatingLine(seatLine(b.seats, lang)) : '';
+  const lines = [m.whenWhere(activity, when, place), m.partyFor(b.partySize, b.personName ?? '', b.code ?? ''), seating, reminder, m.plansChanged].filter(Boolean);
   const url = `${appUrl()}/me`;
   if (b.personEmail) {
     await sendEmail(
@@ -108,6 +109,7 @@ export async function sendReminder(b: BookingView) {
   const emailFallback = b.remindSms && !textSent;
   if (b.personEmail && (b.remindEmail || emailFallback)) {
     const lines = m.reminderLines(activity, start, place, b.partySize);
+    if (b.seats.length) lines.splice(2, 0, m.seatingLine(seatLine(b.seats, lang)));
     await sendEmail(
       b.personEmail,
       m.reminderSubject(activity, start),

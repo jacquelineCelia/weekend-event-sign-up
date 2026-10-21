@@ -41,7 +41,7 @@ export default function Roster({ rows }: { rows: RosterRow[] }) {
                   {r.lang !== 'en' ? <span className="stag" lang={r.lang === 'zh' ? 'zh-Hant-TW' : 'zh-Hans-CN'} title={r.lang === 'zh' ? 'Signed up in Traditional Chinese' : 'Signed up in Simplified Chinese'} style={{ marginLeft: 8, fontFamily: 'var(--sans)', background: 'var(--ochre-pale)', color: 'var(--ochre-dark)' }}>{r.lang === 'zh' ? '繁' : '简'}</span> : null}
                   {r.walkIn ? <span className="stag" style={{ marginLeft: 8, fontFamily: 'var(--sans)' }}>Walk-in</span> : null}</span>
                 <span className="muted" style={{ fontSize: 13.5 }}>
-                  Code <b style={{ letterSpacing: '0.08em', color: 'var(--ink-2)' }}>{r.code}</b>{r.phoneLast4 ? ` · ••${r.phoneLast4}` : ''} · party of {r.partySize}
+                  Code <b style={{ letterSpacing: '0.08em', color: 'var(--ink-2)' }}>{r.code}</b>{r.phoneLast4 ? ` · ••${r.phoneLast4}` : ''} · party of {r.partySize}{r.seats ? ` · ${r.seats}` : ''}
                 </span>
               </div>
               {r.checkedIn === 0 ? (

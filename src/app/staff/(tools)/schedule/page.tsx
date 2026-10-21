@@ -1,14 +1,15 @@
 import Link from 'next/link';
-import { activitiesWithCounts, scheduleFor } from '@/lib/staff';
+import { activitiesWithCounts, scheduleFor, seatTypesFor } from '@/lib/staff';
 import { EVENT, addMinutes, dayByKey, requestTime } from '@/lib/event';
 import { Plus } from '@/components/icons';
 import SlotEditor from './SlotEditor';
 import ActivityForm from './ActivityForm';
+import SeatingEditor from './SeatingEditor';
 import FilterList from '../FilterList';
 
 export const dynamic = 'force-dynamic';
 
-export default async function Schedule({ searchParams }: { searchParams: Promise<{ day?: string; a?: string; saved?: string; past?: string }> }) {
+export default async function Schedule({ searchParams }: { searchParams: Promise<{ day?: string; a?: string; saved?: string; past?: string; seated?: string }> }) {
   const sp = await searchParams;
   const day = dayByKey(sp.day);
   const now = requestTime();
@@ -22,6 +23,8 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
   const isNew = sp.a === 'new';
   const cur = isNew ? null : allActs.find((a) => a.id === sp.a) ?? acts[0] ?? null;
   const slots = cur ? await scheduleFor(cur.id, day.date) : [];
+  const seatTypes = cur ? await seatTypesFor(cur.id) : [];
+  const seatTotal = seatTypes.length ? seatTypes.reduce((n, s) => n + s.capacity, 0) : null;
   const href = (q: { day?: string; a?: string; past?: boolean }) =>
     `/staff/schedule?day=${q.day ?? day.key}&a=${q.a ?? cur?.id ?? ''}${(q.past ?? showPast) ? '&past=1' : ''}`;
 
@@ -85,7 +88,15 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
               dayName={day.long}
               durationMin={cur.duration_min}
               initial={slots}
+              seatTotal={seatTotal}
               justSaved={sp.saved !== undefined && sp.a === cur.id ? Number(sp.saved) || 0 : null}
+            />
+            <SeatingEditor
+              key={`${cur.id}-${seatTypes.map((s) => `${s.id}${s.name}${s.nameZh}${s.capacity}${s.minCapacity}`).join()}`}
+              activityId={cur.id}
+              dayKey={day.key}
+              initial={seatTypes}
+              justSaved={sp.seated === '1' && sp.a === cur.id}
             />
             <details className="panel" style={{ gap: 12 }}>
               <summary style={{ cursor: 'pointer', fontWeight: 600, minHeight: 32 }}>Edit activity details</summary>

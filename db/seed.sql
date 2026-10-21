@@ -75,3 +75,10 @@ update activities a set name_zh = t.name_zh, place_zh = t.place_zh, description_
     ('Cooking Demo',        '料理示範',     '農場廚房',   '')
   ) as t(name, name_zh, place_zh, description_zh)
  where a.name = t.name and a.name_zh = '';
+
+-- Tea Ceremony offers two kinds of seating; together they make the 16 spots per time.
+insert into seat_types (activity_id, name, name_zh, capacity, sort_order)
+select a.id, t.name, t.name_zh, t.cap, t.ord
+  from activities a,
+       (values ('High chair', '椅子座位', 6, 1), ('Ground seat', '席地座位', 10, 2)) as t(name, name_zh, cap, ord)
+ where a.name = 'Tea Ceremony';

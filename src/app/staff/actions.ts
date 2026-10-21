@@ -9,7 +9,7 @@ import { BookingError, walkInBooking } from '@/lib/booking';
 import { walkInContactSchema } from '@/lib/contact';
 import { getBooking } from '@/lib/queries';
 import { sendConfirmation } from '@/lib/notify';
-import { setCheckedIn, saveSchedule, saveActivity, type SlotEdit } from '@/lib/staff';
+import { setCheckedIn, saveSchedule, saveActivity, saveSeating, type SlotEdit } from '@/lib/staff';
 import { EVENT } from '@/lib/event';
 import { errorText } from '@/lib/i18n';
 
@@ -67,7 +67,13 @@ export async function walkInAction(_prev: WalkInState, form: FormData): Promise<
   const raw = form.get('lang');
   const lang = raw === 'zh' || raw === 'zhs' ? raw : 'en';
   try {
-    const r = await walkInBooking(base.data.slotId, base.data.party, contact.data, { allowOver: form.get('allowOver') === 'on', checkInNow, lang });
+    let seats: { seatTypeId: string; count: number }[] = [];
+    try {
+      seats = z.array(z.object({ seatTypeId: z.string().uuid(), count: z.number().int().min(0).max(50) })).max(20).parse(JSON.parse(String(form.get('seats') ?? '[]')));
+    } catch {
+      return { error: 'Choose a seat for everyone in the party.' };
+    }
+    const r = await walkInBooking(base.data.slotId, base.data.party, contact.data, { allowOver: form.get('allowOver') === 'on', checkInNow, lang, seats });
     const b = await getBooking(r.bookingId);
     if (b) await sendConfirmation(b).catch((e) => console.error('walk-in confirmation failed', e));
     await rememberSlot(base.data.slotId);
@@ -121,4 +127,22 @@ export async function saveActivityAction(activityId: string | null, _prev: Sched
   revalidatePath('/');
   if (!activityId) redirect(`/staff/schedule?a=${id}`);
   return { saved: true };
+}
+
+/** Seating choices for an activity (names and how many of each per time slot). */
+export async function saveSeatingAction(activityId: string, dayKey: string, _prev: ScheduleState, form: FormData): Promise<ScheduleState> {
+  await requireStaff();
+  const parsed = z.array(z.object({
+    id: z.string().uuid().nullable(),
+    name: z.string().trim().min(1).max(40),
+    nameZh: z.string().trim().max(40),
+    capacity: z.number().int().min(0).max(1000),
+  })).max(10).safeParse((() => { try { return JSON.parse(String(form.get('seats') ?? '[]')); } catch { return null; } })());
+  if (!parsed.success) return { error: 'Each seat type needs a name and a number.' };
+  const r = await saveSeating(activityId, parsed.data);
+  if ('error' in r) return { error: r.error };
+  revalidatePath('/staff', 'layout');
+  revalidatePath('/');
+  const key = EVENT.days.some((d) => d.key === dayKey) ? dayKey : EVENT.days[0].key;
+  redirect(`/staff/schedule?day=${key}&a=${activityId}&seated=1`);
 }

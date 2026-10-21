@@ -3,7 +3,8 @@ import { redirect } from 'next/navigation';
 import { getPool } from '@/lib/db';
 import { currentOwners } from '@/lib/viewer';
 import { EVENT, addMinutes, dayOf, dayText, fmtTimeL, isChinese, requestTime } from '@/lib/event';
-import { localText } from '@/lib/hans';
+import { localText, seatLine } from '@/lib/hans';
+import { seatsForBookings } from '@/lib/queries';
 import { getLang } from '@/lib/lang';
 import { dict, zhBold } from '@/lib/i18n';
 import LangToggle from '@/components/LangToggle';
@@ -39,6 +40,9 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
       order by s.starts_at, p.created_at`,
     [ids],
   );
+  // How each party is seated, for activities with seating choices ("High chair × 1 · Ground seat × 2").
+  const seatMap = await seatsForBookings(rows.map((r) => r.id));
+  const seatsOf = (id: string) => seatLine(seatMap.get(id) ?? [], lang);
   for (const r of rows) {
     r.activity_name = localText(r.activity_name, r.name_zh, lang);
     r.place_en = r.place;
@@ -104,6 +108,7 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
           <div className="stack" style={{ gap: 4, position: 'relative' }}>
             <span className={`serif${zhBold(next.activity_name)}`} style={{ fontSize: 24 }}>{next.activity_name}</span>
             <span className="sub">{fmtTimeL(next.starts_at, lang)} · {next.place} · {t.spots(next.party_size)}{household ? ` · ${next.person_name}` : ''}</span>
+            {seatsOf(next.id) ? <span className="sub">{t.seatingIs(seatsOf(next.id))}</span> : null}
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, position: 'relative' }}>
             {next.remind_sms || next.remind_email ? (
@@ -131,6 +136,7 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
                     <span className={`serif${zhBold(r.activity_name)}`} style={{ fontSize: 17, color: started ? 'var(--muted-2)' : undefined }}>{r.activity_name}</span>
                     {household ? <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--ochre)' }}>{r.person_name}</span> : null}
                     <span className="muted" style={{ fontSize: 13.5 }}>{r.place} · {t.spots(r.party_size)} · {t.code(r.code)}</span>
+                    {seatsOf(r.id) ? <span style={{ fontSize: 13.5, color: started ? 'var(--muted-2)' : 'var(--ink-2)' }}>{t.seatingIs(seatsOf(r.id))}</span> : null}
                     <span style={{ fontSize: 12.5, fontWeight: 600, marginTop: 4, color: started ? 'var(--muted-2)' : 'var(--moss-dark)' }}>
                       {done ? t.done : started ? t.happening
                         : r.id === next?.id ? upNextStatus(r)

@@ -15,8 +15,10 @@ const fmt = (m: number) => {
   return `${((h + 11) % 12) + 1}:${String(m % 60).padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`;
 };
 
-export default function SlotEditor({ activityId, day, dayName, durationMin, initial, justSaved }: {
-  activityId: string; day: string; dayName: string; durationMin: number; initial: ScheduleSlot[]; justSaved: number | null;
+export default function SlotEditor({ activityId, day, dayName, durationMin, initial, seatTotal, justSaved }: {
+  activityId: string; day: string; dayName: string; durationMin: number; initial: ScheduleSlot[];
+  /** With seating choices, every slot's capacity is the seats' total (set under Seating). */
+  seatTotal: number | null; justSaved: number | null;
 }) {
   const start: Row[] = initial.map((s) => ({ key: s.id, id: s.id, time: s.time, capacity: s.capacity, booked: s.booked, held: s.held, origTime: s.time }));
   const [rows, setRows] = useState<Row[]>(start);
@@ -37,7 +39,7 @@ export default function SlotEditor({ activityId, day, dayName, durationMin, init
   const set = (key: string, patch: Partial<Row>) => setRows(rows.map((r) => (r.key === key ? { ...r, ...patch } : r)));
   const add = () => {
     const last = rows.length ? Math.max(...rows.map((r) => toMin(r.time))) + durationMin + 30 : 10 * 60;
-    setRows([...rows, { key: `n${seq}`, id: null, time: pad(Math.min(last, 22 * 60)), capacity: defCap, booked: 0, held: 0, origTime: null }]);
+    setRows([...rows, { key: `n${seq}`, id: null, time: pad(Math.min(last, 22 * 60)), capacity: seatTotal ?? defCap, booked: 0, held: 0, origTime: null }]);
     setSeq(seq + 1);
   };
   const totalCap = rows.reduce((n, r) => n + r.capacity, 0);
@@ -73,6 +75,9 @@ export default function SlotEditor({ activityId, day, dayName, durationMin, init
                     <input type="time" step={300} className="input" style={{ minHeight: 46, fontWeight: 600 }} value={r.time}
                       aria-label={`Start time, slot ${i + 1}`} onChange={(e) => e.target.value && set(r.key, { time: e.target.value })} />
                     <span style={{ color: 'var(--ink-2)' }}>{fmt(toMin(r.time) + durationMin)}</span>
+                    {seatTotal !== null ? (
+                      <span style={{ fontSize: 14, color: 'var(--ink-2)' }} title="Set by the seat types under Seating"><b style={{ fontFamily: 'var(--serif)', fontSize: 20, fontWeight: 400 }}>{r.capacity}</b> · from seating</span>
+                    ) : (
                     <div className="stepper">
                       <button type="button" style={{ ...circle, opacity: r.capacity <= minCap ? 0.4 : 1 }} disabled={r.capacity <= minCap}
                         aria-label={`Lower capacity for the ${fmt(toMin(r.time))} slot`} onClick={() => set(r.key, { capacity: r.capacity - 1 })}>−</button>
@@ -81,6 +86,7 @@ export default function SlotEditor({ activityId, day, dayName, durationMin, init
                         style={{ width: 70, minHeight: 40, textAlign: 'center', padding: 0, fontFamily: 'var(--serif)', fontSize: 20 }} />
                       <button type="button" style={circle} aria-label={`Raise capacity for the ${fmt(toMin(r.time))} slot`} onClick={() => set(r.key, { capacity: r.capacity + 1 })}>+</button>
                     </div>
+                    )}
                     <span style={{ fontSize: 14, fontWeight: 600, color: r.booked === 0 ? 'var(--muted)' : r.booked >= r.capacity ? 'var(--ochre)' : 'var(--moss-dark)' }}>
                       {r.booked === 0 ? 'No bookings yet' : `${r.booked} booked · ${r.booked >= r.capacity ? 'full' : `${r.capacity - r.booked} open`}`}
                     </span>
@@ -102,15 +108,18 @@ export default function SlotEditor({ activityId, day, dayName, durationMin, init
           <button type="button" onClick={add} className="btn ghost" style={{ minHeight: 48, border: '1.5px dashed #8c9688', background: 'transparent', color: 'var(--moss-dark)' }}>
             <Plus size={18} /> Add a time slot
           </button>
+          {seatTotal === null ? (
           <label style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 14, color: 'var(--ink-2)' }}>
             New slots start with capacity
             <input type="number" min={1} max={1000} value={defCap} onChange={(e) => setDefCap(Math.max(1, Number(e.target.value) || 1))} className="input" style={{ width: 80, minHeight: 40, textAlign: 'center', padding: 0 }} />
           </label>
+          ) : null}
         </div>
       </section>
 
       <p className="muted" style={{ margin: 0, fontSize: 13.5 }}>
-        Capacity can&apos;t drop below the number already booked, and slots with bookings can&apos;t be deleted. If you move a booked slot, those guests get a message with the new time.
+        {seatTotal !== null ? 'Capacity comes from the seat types under Seating, the same for every slot. ' : 'Capacity can\u2019t drop below the number already booked, and '}
+        {seatTotal !== null ? 'Slots' : 'slots'} with bookings can&apos;t be deleted. If you move a booked slot, those guests get a message with the new time.
       </p>
 
       <div style={{ position: 'sticky', bottom: 0, background: 'var(--paper)', border: '1px solid var(--line)', borderRadius: 18, padding: '12px 18px', display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', alignItems: 'center', gap: 12 }}>

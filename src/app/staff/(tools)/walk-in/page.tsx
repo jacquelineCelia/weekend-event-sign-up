@@ -1,4 +1,4 @@
-import { activitiesForDay } from '@/lib/queries';
+import { activitiesForDay, seatOptions } from '@/lib/queries';
 import { EVENT, fmtTime, requestTime } from '@/lib/event';
 import WalkInForm, { type WalkInActivity } from './WalkInForm';
 
@@ -13,8 +13,10 @@ export default async function WalkIn({ searchParams }: { searchParams: Promise<{
       if (!a.slots.length) continue;
       // Leave out activities whose times have all ended.
       if (a.slots.every((s) => s.startsAt.getTime() + a.durationMin * 60000 <= now)) continue;
+      const seats = (await seatOptions(a.id, a.slots.map((s) => s.id))).map((o) => ({ id: o.id, name: o.name, left: o.left }));
       options.push({
         key: `${d.key}:${a.id}`,
+        seats,
         label: `${d.short} · ${a.name}`,
         dayShort: d.short,
         name: a.name,

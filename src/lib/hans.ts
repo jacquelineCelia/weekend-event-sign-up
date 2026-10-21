@@ -46,3 +46,8 @@ export function eventName(lang: Lang) {
   if (lang === 'zhs') return process.env.NEXT_PUBLIC_EVENT_NAME_ZHS || toSimplified(EVENT.nameZh);
   return eventNameL(lang);
 }
+
+/** "High chair × 1 · Ground seat × 2" (Chinese: "椅子座位 × 1、席地座位 × 2"); empty without seating. */
+export function seatLine(seats: { name: string; nameZh: string; count: number }[], lang: Lang) {
+  return seats.map((x) => `${localText(x.name, x.nameZh, lang)}\u00a0×\u00a0${x.count}`).join(lang === 'en' ? ' · ' : '、');
+}

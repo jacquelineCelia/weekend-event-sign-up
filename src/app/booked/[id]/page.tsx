@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { bookingText, getBooking } from '@/lib/queries';
+import { seatLine } from '@/lib/hans';
 import { addMinutes, dayOf, dayText, fmtTimeL } from '@/lib/event';
 import { getLang } from '@/lib/lang';
 import { dict, firstName, zhBold } from '@/lib/i18n';
@@ -48,6 +49,7 @@ export default async function Booked({ params }: { params: Promise<{ id: string 
             <div className="stack" style={{ gap: 2 }}>
               <span className="muted" style={{ fontSize: 12.5 }}>{t.party}</span>
               <span style={{ fontSize: 17, fontWeight: 600 }}>{t.spots(b.partySize)}</span>
+              {b.seats.length ? <span style={{ fontSize: 13.5, color: 'var(--ink-2)' }}>{seatLine(b.seats, lang)}</span> : null}
             </div>
             <div className="stack" style={{ gap: 2 }}>
               <span className="muted" style={{ fontSize: 12.5 }}>{t.checkInCode}</span>

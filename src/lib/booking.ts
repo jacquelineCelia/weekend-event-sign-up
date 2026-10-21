@@ -8,7 +8,7 @@ export const HOLD_MINUTES = 10;
 
 export class BookingError extends Error {
   constructor(
-    public readonly code: 'slot_not_found' | 'not_enough_spots' | 'hold_not_found' | 'hold_expired' | 'booking_not_found' | 'overlap',
+    public readonly code: 'slot_not_found' | 'not_enough_spots' | 'hold_not_found' | 'hold_expired' | 'booking_not_found' | 'overlap' | 'seats_needed' | 'seats_taken',
     message: string,
     public readonly remaining?: number,
     /** For 'overlap': who is signing up, and their sign-ups that clash with the new one. */
@@ -64,20 +64,89 @@ async function lockSlot(c: PoolClient, slotId: string, excludeBookingId?: string
   return { capacity, taken: taken.rows[0].taken, remaining: Math.max(capacity - taken.rows[0].taken, 0) };
 }
 
-/** Reserves spots for HOLD_MINUTES while the attendee fills in their details. */
-export async function holdSpots(slotId: string, partySize: number) {
+// ---------- Seating ----------
+// Some activities offer kinds of seating (e.g. "High chair" and "Ground seat"), each with its own
+// capacity, the same in every time slot. A party says how many of each it needs; the counts add up
+// to the party size. Activities without seat types work exactly as before.
+
+/** How many of one seat type a party needs. */
+export type SeatPick = { seatTypeId: string; count: number };
+
+/** The slot's activity's seat types, with how many of each are taken in that slot (live holds count). */
+async function seatState(c: PoolClient, slotId: string, excludeBookingId?: string) {
+  const r = await c.query<{ id: string; name: string; capacity: number; taken: number }>(
+    `select st.id, st.name, st.capacity,
+            coalesce(sum(bs.count) filter (where b.status = 'confirmed' or (b.status = 'held' and b.hold_expires_at > now())), 0)::int as taken
+       from slots s
+       join seat_types st on st.activity_id = s.activity_id
+       left join booking_seats bs on bs.seat_type_id = st.id
+       left join bookings b on b.id = bs.booking_id and b.slot_id = s.id and ($2::uuid is null or b.id <> $2::uuid)
+      where s.id = $1
+      group by st.id
+      order by st.sort_order, st.name`,
+    [slotId, excludeBookingId ?? null],
+  );
+  return r.rows;
+}
+
+/**
+ * Checks a party's seating for a slot (call with the slot locked). Without seat types: nothing to
+ * choose. With them: every person needs a seat, and each type needs room (unless `allowOver`).
+ */
+async function checkSeats(
+  c: PoolClient, slotId: string, partySize: number, seats: SeatPick[] | undefined,
+  opts: { exclude?: string; allowOver?: boolean } = {},
+): Promise<SeatPick[]> {
+  const types = await seatState(c, slotId, opts.exclude);
+  if (!types.length) return [];
+  const want = new Map<string, number>();
+  for (const p of seats ?? []) {
+    if (!Number.isInteger(p.count) || p.count < 0) throw new BookingError('seats_needed', 'Please choose seating for everyone.');
+    if (p.count > 0) want.set(p.seatTypeId, (want.get(p.seatTypeId) ?? 0) + p.count);
+  }
+  const total = [...want.values()].reduce((n, x) => n + x, 0);
+  if (total !== partySize || [...want.keys()].some((id) => !types.some((t) => t.id === id))) {
+    throw new BookingError('seats_needed', 'Please choose seating for everyone.');
+  }
+  if (!opts.allowOver) {
+    for (const t of types) {
+      const n = want.get(t.id) ?? 0;
+      const left = Math.max(t.capacity - t.taken, 0);
+      if (n > left) {
+        throw new BookingError('seats_taken', left === 0 ? `No ${t.name} seats are left at this time.` : `Only ${left} ${t.name} left at this time.`, left);
+      }
+    }
+  }
+  return [...want].map(([seatTypeId, count]) => ({ seatTypeId, count }));
+}
+
+async function saveSeats(c: PoolClient, bookingId: string, picks: SeatPick[]) {
+  for (const p of picks) {
+    await c.query('insert into booking_seats (booking_id, seat_type_id, count) values ($1, $2, $3)', [bookingId, p.seatTypeId, p.count]);
+  }
+}
+
+async function seatsOf(c: PoolClient, bookingId: string): Promise<SeatPick[]> {
+  const r = await c.query<{ seat_type_id: string; count: number }>('select seat_type_id, count from booking_seats where booking_id = $1', [bookingId]);
+  return r.rows.map((x) => ({ seatTypeId: x.seat_type_id, count: x.count }));
+}
+
+/** Reserves spots (and seats, if the activity has seat types) for HOLD_MINUTES while the attendee fills in their details. */
+export async function holdSpots(slotId: string, partySize: number, seats?: SeatPick[]) {
   if (!Number.isInteger(partySize) || partySize < 1) throw new RangeError('partySize must be a positive integer');
   return withTx(async (c) => {
     const { remaining } = await lockSlot(c, slotId);
     if (remaining < partySize) {
       throw new BookingError('not_enough_spots', remaining === 0 ? 'This time just filled up.' : `Only ${remaining} left at this time.`, remaining);
     }
+    const picks = await checkSeats(c, slotId, partySize, seats);
     const res = await c.query<{ id: string; hold_expires_at: Date }>(
       `insert into bookings (slot_id, party_size, status, hold_expires_at)
        values ($1, $2, 'held', now() + make_interval(mins => $3))
        returning id, hold_expires_at`,
       [slotId, partySize, HOLD_MINUTES],
     );
+    await saveSeats(c, res.rows[0].id, picks);
     return { holdId: res.rows[0].id, expiresAt: res.rows[0].hold_expires_at };
   });
 }
@@ -202,6 +271,13 @@ export async function confirmBooking(holdId: string, input: ConfirmInput) {
       if (remaining < row.party_size) {
         throw new BookingError('hold_expired', 'Your hold ran out and those spots were taken. Please pick another time.', remaining);
       }
+      const picks = await seatsOf(c, holdId);
+      if (picks.length) {
+        await checkSeats(c, row.slot_id, row.party_size, picks, { exclude: holdId }).catch((e) => {
+          if (e instanceof BookingError) throw new BookingError('hold_expired', 'Your hold ran out and those seats were taken. Please pick another time.');
+          throw e;
+        });
+      }
     }
     await lockContact(c, input.contact);
     const existing = await findPerson(c, input.contact);
@@ -231,12 +307,16 @@ export async function confirmBooking(holdId: string, input: ConfirmInput) {
 }
 
 /** Staff walk-in: books directly (no hold). `allowOver` lets a lead approve going over capacity. Walk-ins are never texted; reminders go by email when there is one. */
-export async function walkInBooking(slotId: string, partySize: number, contact: Contact, opts: { allowOver?: boolean; checkInNow?: boolean; lang?: Lang } = {}) {
+export async function walkInBooking(
+  slotId: string, partySize: number, contact: Contact,
+  opts: { allowOver?: boolean; checkInNow?: boolean; lang?: Lang; seats?: SeatPick[] } = {},
+) {
   return withTx(async (c) => {
     const { remaining } = await lockSlot(c, slotId);
     if (remaining < partySize && !opts.allowOver) {
       throw new BookingError('not_enough_spots', `Only ${remaining} left at this time.`, remaining);
     }
+    const picks = await checkSeats(c, slotId, partySize, opts.seats, { allowOver: opts.allowOver });
     const personId = await upsertPerson(c, contact, opts.lang);
     const code = await uniqueCode(c);
     const res = await c.query<{ id: string }>(
@@ -244,6 +324,7 @@ export async function walkInBooking(slotId: string, partySize: number, contact: 
        values ($1, $2, $3, 'confirmed', 'walk_in', $4, $5, $6, $7, now()) returning id`,
       [slotId, personId, partySize, code, false, !!contact.email, opts.checkInNow ? partySize : 0],
     );
+    await saveSeats(c, res.rows[0].id, picks);
     return { bookingId: res.rows[0].id, personId, code };
   });
 }
@@ -272,6 +353,9 @@ export async function changeSlot(bookingId: string, personId: string | string[],
     if (remaining < b.rows[0].party_size) {
       throw new BookingError('not_enough_spots', `Only ${remaining} left at that time.`, remaining);
     }
+    // The same seats are needed at the new time (sign-ups from before seating was set up have none).
+    const picks = await seatsOf(c, bookingId);
+    if (picks.length) await checkSeats(c, newSlotId, b.rows[0].party_size, picks, { exclude: bookingId });
     await c.query('update bookings set slot_id = $2, reminder_sent_at = null where id = $1', [bookingId, newSlotId]);
   });
 }

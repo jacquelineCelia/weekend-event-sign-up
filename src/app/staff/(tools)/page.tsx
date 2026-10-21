@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { roster, sessionsForDay } from '@/lib/staff';
+import { roster, seatCounts, sessionsForDay } from '@/lib/staff';
 import { EVENT, addMinutes, dayByKey, dayOf, fmtTime, requestTime } from '@/lib/event';
 import { Plus } from '@/components/icons';
 import Roster from './Roster';
@@ -38,6 +38,7 @@ export default async function CheckIn({ searchParams }: { searchParams: Promise<
   const sessions = showPast ? all : all.filter((s) => ends(s) > now);
   const sel = all.find((s) => s.slotId === slotId) ?? sessions[0] ?? (showPast ? all[0] : undefined);
   const people = sel ? await roster(sel.slotId) : [];
+  const seating = sel ? await seatCounts(sel.slotId) : [];
 
   const tag = (s: (typeof sessions)[number]) => {
     const start = s.startsAt.getTime();
@@ -116,6 +117,11 @@ export default async function CheckIn({ searchParams }: { searchParams: Promise<
             <div className="stack"><span>Checked in</span><span style={{ color: 'var(--moss)' }}>{sel.arrived}</span></div>
             <div className="stack"><span>Open spots</span><span style={{ color: 'var(--ochre)' }}>{Math.max(0, sel.capacity - sel.booked)}</span></div>
           </div>
+          {seating.length ? (
+            <p style={{ margin: 0, fontSize: 14, color: 'var(--ink-2)' }}>
+              <b>Seating booked:</b> {seating.map((x) => `${x.name} ${x.booked}/${x.capacity}`).join(' · ')}
+            </p>
+          ) : null}
           {note ? <div className="note" role="status" style={{ fontSize: 14 }}>{note}</div> : null}
           <Roster key={sel.slotId} rows={people} />
         </main>

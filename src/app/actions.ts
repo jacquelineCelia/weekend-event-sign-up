@@ -33,13 +33,25 @@ const holdInput = z.object({
   slotId: z.string().uuid({ message: 'pick_time' }),
   guests: z.coerce.number().int().min(0).max(49),
 });
+// How the party is seated, for activities with seat types: [{ seatTypeId, count }].
+const seatsInput = z.array(z.object({ seatTypeId: z.string().uuid(), count: z.number().int().min(0).max(50) })).max(20);
+const parseSeats = (raw: FormDataEntryValue | null) => {
+  try {
+    const r = seatsInput.safeParse(JSON.parse(String(raw ?? '[]')));
+    return r.success ? r.data : null;
+  } catch {
+    return null;
+  }
+};
 
 export async function holdAction(_prev: FormState, form: FormData): Promise<FormState> {
   const parsed = holdInput.safeParse({ slotId: form.get('slotId'), guests: form.get('guests') ?? 0 });
   if (!parsed.success) return { error: { code: parsed.error.issues[0].path[0] === 'slotId' ? 'pick_time' : 'slot_not_found' } };
+  const seats = parseSeats(form.get('seats'));
+  if (!seats) return { error: { code: 'seats_needed' } };
   let holdId: string;
   try {
-    ({ holdId } = await holdSpots(parsed.data.slotId, parsed.data.guests + 1));
+    ({ holdId } = await holdSpots(parsed.data.slotId, parsed.data.guests + 1, seats));
   } catch (err) {
     if (err instanceof BookingError) return { error: { code: err.code, remaining: err.remaining } };
     throw err;

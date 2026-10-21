@@ -54,7 +54,54 @@ export type BookingView = {
   personName: string | null; personEmail: string | null; personPhone: string | null; personLang: Lang;
   slotId: string; startsAt: Date; activityId: string; activityName: string; place: string; durationMin: number;
   activityNameZh: string; placeZh: string;
+  /** How the party is seated, for activities with seat types (empty otherwise). */
+  seats: BookedSeat[];
 };
+
+/** One seat type in a sign-up: its names and how many of the party sit there. */
+export type BookedSeat = { name: string; nameZh: string; count: number };
+
+/** The seating of several sign-ups at once, by booking id. */
+export async function seatsForBookings(ids: string[]): Promise<Map<string, BookedSeat[]>> {
+  const out = new Map<string, BookedSeat[]>();
+  if (!ids.length) return out;
+  const { rows } = await getPool().query<{ booking_id: string; name: string; name_zh: string; count: number }>(
+    `select bs.booking_id, st.name, st.name_zh, bs.count
+       from booking_seats bs join seat_types st on st.id = bs.seat_type_id
+      where bs.booking_id = any($1::uuid[]) order by st.sort_order, st.name`,
+    [ids],
+  );
+  for (const r of rows) {
+    const list = out.get(r.booking_id) ?? [];
+    list.push({ name: r.name, nameZh: r.name_zh, count: r.count });
+    out.set(r.booking_id, list);
+  }
+  return out;
+}
+
+/** An activity's seat types with what's left of each in the given slots (live holds count). */
+export type SeatOption = { id: string; name: string; nameZh: string; capacity: number; left: Record<string, number> };
+
+export async function seatOptions(activityId: string, slotIds: string[]): Promise<SeatOption[]> {
+  const { rows } = await getPool().query<{ id: string; name: string; name_zh: string; capacity: number; slot_id: string | null; taken: number | null }>(
+    `select st.id, st.name, st.name_zh, st.capacity, s.id as slot_id,
+            (select coalesce(sum(bs.count), 0)::int from booking_seats bs join bookings b on b.id = bs.booking_id
+              where bs.seat_type_id = st.id and b.slot_id = s.id
+                and (b.status = 'confirmed' or (b.status = 'held' and b.hold_expires_at > now()))) as taken
+       from seat_types st
+       left join slots s on s.id = any($2::uuid[])
+      where st.activity_id = $1
+      order by st.sort_order, st.name`,
+    [activityId, slotIds],
+  );
+  const map = new Map<string, SeatOption>();
+  for (const r of rows) {
+    let o = map.get(r.id);
+    if (!o) map.set(r.id, (o = { id: r.id, name: r.name, nameZh: r.name_zh, capacity: r.capacity, left: {} }));
+    if (r.slot_id) o.left[r.slot_id] = Math.max(0, r.capacity - (r.taken ?? 0));
+  }
+  return [...map.values()];
+}
 
 /** The activity's name and place in a language (Chinese when filled in, else English). */
 export const bookingText = (b: BookingView, lang: Lang) => ({
@@ -85,6 +132,7 @@ export async function getBooking(id: string): Promise<BookingView | null> {
     personName: r.person_name, personEmail: r.person_email, personPhone: r.person_phone, personLang: r.person_lang,
     slotId: r.slot_id, startsAt: r.starts_at, activityId: r.activity_id, activityName: r.activity_name,
     place: r.place, durationMin: r.duration_min, activityNameZh: r.name_zh, placeZh: r.place_zh,
+    seats: (await seatsForBookings([r.id])).get(r.id) ?? [],
   };
 }
 

@@ -5,6 +5,8 @@ import { walkInAction, type WalkInState } from '../../actions';
 
 export type WalkInActivity = {
   key: string; label: string; dayShort: string; name: string;
+  /** Seating choices, with how many of each are left per slot (empty when the activity has none). */
+  seats: { id: string; name: string; left: Record<string, number> }[];
   slots: { id: string; time: string; remaining: number; capacity: number; soon: boolean; ended: boolean }[];
 };
 
@@ -18,6 +20,7 @@ export default function WalkInForm({ options, initialKey, initialSlot }: { optio
   const [party, setParty] = useState(1);
   const [approved, setApproved] = useState(false);
   const [checkNow, setCheckNow] = useState(true);
+  const [seatWanted, setSeatWanted] = useState<Record<string, number>>({});
   const [state, action, pending] = useActionState<WalkInState, FormData>(walkInAction, null);
 
   // After each successful sign-up: party size back to 0 (staff set it for the next guest), and a fresh
@@ -27,19 +30,33 @@ export default function WalkInForm({ options, initialKey, initialSlot }: { optio
   const [formKey, setFormKey] = useState(0);
   if (state !== seen) {
     setSeen(state);
-    if (state?.done) { setParty(0); setApproved(false); setFormKey((k) => k + 1); }
+    if (state?.done) { setParty(0); setSeatWanted({}); setApproved(false); setFormKey((k) => k + 1); }
   }
 
   const slot = usable.find((s) => s.id === slotId) ?? null;
-  const over = !!slot && party > slot.remaining;
+  // Seating: how many of the party sit in each type (never more than the party).
+  const seatCount: Record<string, number> = {};
+  let room = party;
+  for (const x of act?.seats ?? []) {
+    const n = Math.max(0, Math.min(seatWanted[x.id] ?? 0, room));
+    seatCount[x.id] = n;
+    room -= n;
+  }
+  const seated = party - room;
+  const hasSeats = (act?.seats.length ?? 0) > 0;
+  const needSeats = hasSeats && seated !== party;
+  const seatLeft = (id: string) => (slot ? act?.seats.find((x) => x.id === id)?.left[slot.id] ?? 0 : 0);
+  const seatsOver = hasSeats && !!slot && act!.seats.filter((x) => seatCount[x.id] > seatLeft(x.id));
+  const over = !!slot && (party > slot.remaining || (!!seatsOver && seatsOver.length > 0));
   const noParty = party < 1;
-  const blocked = !slot || noParty || (over && !approved);
+  const blocked = !slot || noParty || needSeats || (over && !approved);
   const err = state?.fields ?? {};
 
   const pickActivity = (k: string) => {
     setKey(k);
     const a = options.find((o) => o.key === k);
     setSlotId(a?.slots.find((s) => !s.ended)?.id ?? null);
+    setSeatWanted({});
     setApproved(false);
   };
 
@@ -91,11 +108,37 @@ export default function WalkInForm({ options, initialKey, initialSlot }: { optio
           <input type="hidden" name="party" value={party} />
         </div>
 
+        {hasSeats ? (
+          <fieldset style={{ border: '1px solid var(--line)', borderRadius: 20, padding: '14px 20px 16px', margin: 0, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <legend className="legend" style={{ padding: '0 6px' }}>Seating <span className="muted" style={{ fontWeight: 400 }}>· {seated} of {party} seated</span></legend>
+            {act.seats.map((x) => {
+              const n = seatCount[x.id];
+              const left = seatLeft(x.id);
+              return (
+                <div key={x.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+                  <div className="stack" style={{ gap: 2 }}>
+                    <span style={{ fontWeight: 600 }} id={`seat-${x.id}`}>{x.name}</span>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: !slot ? 'var(--muted)' : left === 0 ? 'var(--muted-2)' : 'var(--moss-dark)' }}>{!slot ? '' : left === 0 ? 'Full' : `${left} left`}</span>
+                  </div>
+                  <div className="stepper" role="group" aria-labelledby={`seat-${x.id}`}>
+                    <button type="button" className="round" aria-label={`One fewer ${x.name}`} disabled={n <= 0} onClick={() => { setSeatWanted({ ...seatCount, [x.id]: n - 1 }); setApproved(false); }}>−</button>
+                    <output aria-live="polite">{n}</output>
+                    <button type="button" className="round" aria-label={`One more ${x.name}`} disabled={seated >= party} onClick={() => { setSeatWanted({ ...seatCount, [x.id]: n + 1 }); setApproved(false); }}>+</button>
+                  </div>
+                </div>
+              );
+            })}
+            <input type="hidden" name="seats" value={JSON.stringify(act.seats.map((x) => ({ seatTypeId: x.id, count: seatCount[x.id] })).filter((x) => x.count > 0))} />
+          </fieldset>
+        ) : null}
+
         {over && slot ? (
           <div role="alert" style={{ border: '1.5px solid #b07a2a', background: 'var(--ochre-pale)', borderRadius: 20, padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
             <span style={{ fontWeight: 600, color: 'var(--ochre-dark)' }}>
-              {slot.remaining === 0 ? `This time is full. Adding ${party} would put it ${party} over capacity.`
-                : `Only ${spots(slot.remaining)} left. This party would put it ${party - slot.remaining} over capacity.`}
+              {party > slot.remaining
+                ? slot.remaining === 0 ? `This time is full. Adding ${party} would put it ${party} over capacity.`
+                  : `Only ${spots(slot.remaining)} left. This party would put it ${party - slot.remaining} over capacity.`
+                : `Not enough ${(seatsOver || []).map((x) => `${x.name} (${seatLeft(x.id)} left)`).join(' or ')} at this time.`}
             </span>
             <label className="check" style={{ fontSize: 14 }}>
               <input type="checkbox" name="allowOver" checked={approved} onChange={(e) => setApproved(e.target.checked)} style={{ accentColor: 'var(--ochre)' }} />
@@ -135,6 +178,11 @@ export default function WalkInForm({ options, initialKey, initialSlot }: { optio
           <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #4b6152', paddingTop: 12 }}>
             <span>Party</span><span style={{ fontWeight: 600 }}>{spots(party)}</span>
           </div>
+          {hasSeats && seated > 0 ? (
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, fontSize: 14, color: 'var(--on-dark-2)' }}>
+              <span>Seating</span><span style={{ fontWeight: 600, textAlign: 'right' }}>{act.seats.filter((x) => seatCount[x.id] > 0).map((x) => `${x.name} × ${seatCount[x.id]}`).join(', ')}</span>
+            </div>
+          ) : null}
           {slot ? (
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, color: 'var(--on-dark-2)' }}>
               <span>Spots left after this</span><span style={{ fontWeight: 600 }}>{slot.remaining - party}{over ? ' (over)' : ''}</span>
@@ -143,7 +191,7 @@ export default function WalkInForm({ options, initialKey, initialSlot }: { optio
           {state?.error ? <span role="alert" style={{ color: 'var(--sun)', fontWeight: 600 }}>{state.error}</span> : null}
           <button type="submit" disabled={blocked || pending} className="btn"
             style={{ background: blocked ? '#3b5644' : 'var(--paper)', color: blocked ? '#a9b8a6' : 'var(--ink)', marginTop: 4 }}>
-            {pending ? 'Signing up…' : !slot ? 'Pick a time' : noParty ? 'Set the party size' : blocked ? 'Needs lead approval' : checkNow ? `Sign up & check in ${party}` : `Sign up ${party}`}
+            {pending ? 'Signing up…' : !slot ? 'Pick a time' : noParty ? 'Set the party size' : needSeats ? `Seat ${party - seated} more` : blocked ? 'Needs lead approval' : checkNow ? `Sign up & check in ${party}` : `Sign up ${party}`}
           </button>
         </div>
         {state?.done ? (

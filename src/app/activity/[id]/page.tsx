@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { activityForDay, getBooking } from '@/lib/queries';
+import { activityForDay, getBooking, seatOptions } from '@/lib/queries';
+import { localText } from '@/lib/hans';
 import { EVENT, addMinutes, dayByKey, dayOf, dayText, fmtDurationL, fmtTimeL, isLow, requestTime } from '@/lib/event';
 import { getLang } from '@/lib/lang';
 import { dict, zhBold } from '@/lib/i18n';
@@ -8,7 +9,7 @@ import LangToggle from '@/components/LangToggle';
 import { getPool } from '@/lib/db';
 import { currentOwners } from '@/lib/viewer';
 import { Back, Leaf } from '@/components/icons';
-import SlotPicker, { type PickerSlot } from './SlotPicker';
+import SlotPicker, { type PickerSlot, type PickerSeat } from './SlotPicker';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,16 +37,22 @@ export default async function ActivityPage({
   if (!a) notFound();
 
   // "Change time" mode: moving an existing booking (only the owner's own).
-  let change: { bookingId: string; partySize: number; currentSlotId: string } | null = null;
+  let change: { bookingId: string; partySize: number; currentSlotId: string; seats: { name: string; count: number }[] } | null = null;
   if (sp.change) {
     const { ids } = await currentOwners();
     const b = await getBooking(sp.change);
     if (b?.personId && ids.includes(b.personId) && b.status === 'confirmed' && b.activityId === a.id) {
-      change = { bookingId: b.id, partySize: b.partySize, currentSlotId: b.slotId };
+      change = { bookingId: b.id, partySize: b.partySize, currentSlotId: b.slotId, seats: b.seats.map((x) => ({ name: x.name, count: x.count })) };
     }
   }
 
   const now = requestTime();
+  // Seating choices (for activities that have them), with what's left of each type at each time.
+  const seatOpts = await seatOptions(a.id, a.slots.map((s) => s.id));
+  const seats: PickerSeat[] = seatOpts.map((o) => ({ id: o.id, name: localText(o.name, o.nameZh, lang), left: o.left }));
+  // Moving a sign-up: the new time needs the same seats free.
+  const seatsFit = (slotId: string) =>
+    !change || change.seats.every((x) => (seatOpts.find((o) => o.name === x.name)?.left[slotId] ?? 0) >= x.count);
   const slots: PickerSlot[] = a.slots.map((s) => {
     const past = s.startsAt.getTime() <= now;
     const current = change?.currentSlotId === s.id;
@@ -57,7 +64,7 @@ export default async function ActivityPage({
       low: !past && !current && isLow(s.remaining, s.capacity),
       past,
       current,
-      tooSmall: !!change && !current && s.remaining > 0 && s.remaining < change.partySize,
+      tooSmall: !!change && !current && s.remaining > 0 && (s.remaining < change.partySize || !seatsFit(s.id)),
     };
   });
   const canPick = (s: PickerSlot) => s.remaining > 0 && !s.tooSmall;
@@ -87,7 +94,7 @@ export default async function ActivityPage({
           </p>
         ) : null}
       </section>
-      <SlotPicker lang={lang} slots={slots} preselected={preselected} change={change ? { bookingId: change.bookingId, partySize: change.partySize } : null} />
+      <SlotPicker lang={lang} slots={slots} seats={seats} preselected={preselected} change={change ? { bookingId: change.bookingId, partySize: change.partySize } : null} />
     </div>
   );
 }

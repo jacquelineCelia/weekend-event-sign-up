@@ -8,7 +8,7 @@ import LangToggle from '@/components/LangToggle';
 import { currentPersonId } from '@/lib/session';
 import { Back } from '@/components/icons';
 import DetailsForm from './DetailsForm';
-import { smsSender } from '@/lib/hans';
+import { seatLine, smsSender } from '@/lib/hans';
 
 export const dynamic = 'force-dynamic';
 
@@ -46,7 +46,7 @@ export default async function Details({ params }: { params: Promise<{ holdId: st
       summary={{
         activity,
         when: `${day ? dayText(day, 'short', lang) : ''} · ${fmtTimeL(b.startsAt, lang)} · ${place}`,
-        spots: t.spots(b.partySize),
+        spots: [t.spots(b.partySize), seatLine(b.seats, lang)].filter(Boolean).join(' · '),
         partySize: b.partySize,
       }}
       known={person ? { name: person.name, first: firstName(person.name), email: person.email ?? '', phone: person.phone ?? '' } : null}

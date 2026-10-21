@@ -27,19 +27,36 @@ export async function sessionsForDay(date: string): Promise<StaffSession[]> {
   }));
 }
 
-export type RosterRow = { bookingId: string; name: string; phoneLast4: string; code: string; partySize: number; checkedIn: number; walkIn: boolean; lang: 'en' | 'zh' | 'zhs' };
+export type RosterRow = { bookingId: string; name: string; phoneLast4: string; code: string; partySize: number; checkedIn: number; walkIn: boolean; lang: 'en' | 'zh' | 'zhs'; seats: string };
 
 export async function roster(slotId: string): Promise<RosterRow[]> {
   const { rows } = await getPool().query(
-    `select b.id, p.name, coalesce(right(p.phone, 4), '') as last4, b.code, b.party_size, b.checked_in, b.source, p.lang
+    `select b.id, p.name, coalesce(right(p.phone, 4), '') as last4, b.code, b.party_size, b.checked_in, b.source, p.lang,
+            coalesce((select string_agg(st.name || ' × ' || bs.count, ', ' order by st.sort_order, st.name)
+                        from booking_seats bs join seat_types st on st.id = bs.seat_type_id where bs.booking_id = b.id), '') as seats
        from bookings b join people p on p.id = b.person_id
       where b.slot_id = $1 and b.status = 'confirmed'
       order by lower(p.name)`,
     [slotId],
   );
   return rows.map((r) => ({
-    bookingId: r.id, name: r.name, phoneLast4: r.last4, code: r.code, partySize: r.party_size, checkedIn: r.checked_in, walkIn: r.source === 'walk_in', lang: r.lang,
+    bookingId: r.id, name: r.name, phoneLast4: r.last4, code: r.code, partySize: r.party_size, checkedIn: r.checked_in, walkIn: r.source === 'walk_in', lang: r.lang, seats: r.seats,
   }));
+}
+
+/** For the check-in screen: each seat type's capacity and how many are booked in this slot. */
+export async function seatCounts(slotId: string) {
+  const { rows } = await getPool().query<{ name: string; capacity: number; booked: number }>(
+    `select st.name, st.capacity,
+            coalesce(sum(bs.count) filter (where b.status = 'confirmed'), 0)::int as booked
+       from slots s join seat_types st on st.activity_id = s.activity_id
+       left join booking_seats bs on bs.seat_type_id = st.id
+       left join bookings b on b.id = bs.booking_id and b.slot_id = s.id
+      where s.id = $1
+      group by st.id order by st.sort_order, st.name`,
+    [slotId],
+  );
+  return rows;
 }
 
 export async function setCheckedIn(bookingId: string, count: number) {
@@ -93,6 +110,11 @@ export async function saveSchedule(activityId: string, date: string, edits: Slot
     if (!act.rowCount) return { error: 'That activity no longer exists.' };
     nameZh = act.rows[0].name_zh;
     const dur = act.rows[0].duration_min;
+    // With seat types, every slot's capacity is their total (set under Seating, not per slot).
+    const seatTotal = (await c.query<{ n: number | null; k: number }>(
+      'select sum(capacity)::int as n, count(*)::int as k from seat_types where activity_id = $1', [activityId],
+    )).rows[0];
+    if (seatTotal.k > 0) edits = edits.map((e) => ({ ...e, capacity: seatTotal.n ?? 0 }));
     // Lock this day's slots so no hold or booking can land while we edit them.
     await c.query(
       `select id from slots where activity_id = $2 and (starts_at at time zone $1)::date = $3::date for update`,
@@ -195,4 +217,90 @@ export async function saveActivity(id: string | null, a: ActivityInput) {
     v,
   );
   return r.rows[0].id;
+}
+
+// ---------- Seating ----------
+
+export type SeatTypeRow = { id: string; name: string; nameZh: string; capacity: number; minCapacity: number; inUse: boolean };
+export type SeatTypeEdit = { id: string | null; name: string; nameZh: string; capacity: number };
+
+/**
+ * An activity's seat types. `minCapacity` is the most booked (or on hold) of that type in any one
+ * slot, so capacity can't go below it; `inUse` means sign-ups have chosen it, so it can't be removed.
+ */
+export async function seatTypesFor(activityId: string): Promise<SeatTypeRow[]> {
+  const { rows } = await getPool().query(
+    `select st.id, st.name, st.name_zh, st.capacity,
+            coalesce((select max(n) from (
+               select sum(bs.count) as n from booking_seats bs join bookings b on b.id = bs.booking_id
+                where bs.seat_type_id = st.id and (b.status = 'confirmed' or (b.status = 'held' and b.hold_expires_at > now()))
+                group by b.slot_id) x), 0)::int as min_cap
+       from seat_types st where st.activity_id = $1 order by st.sort_order, st.name`,
+    [activityId],
+  );
+  return rows.map((r) => ({ id: r.id, name: r.name, nameZh: r.name_zh, capacity: r.capacity, minCapacity: r.min_cap, inUse: r.min_cap > 0 }));
+}
+
+/**
+ * Replaces an activity's seat types, then sets every one of its slots' capacity to their total.
+ * Refuses to drop a type below what's booked in any slot, to remove a type someone has chosen,
+ * or to leave any slot with less room than it has sign-ups.
+ */
+export async function saveSeating(activityId: string, edits: SeatTypeEdit[]): Promise<{ ok: true } | { error: string }> {
+  return withTx(async (c) => {
+    const act = await c.query('select 1 from activities where id = $1 for update', [activityId]);
+    if (!act.rowCount) return { error: 'That activity no longer exists.' };
+    // Lock the activity's slots so no hold or booking lands while seating changes.
+    await c.query('select id from slots where activity_id = $1 for update', [activityId]);
+    const names = edits.map((e) => e.name.trim().toLowerCase());
+    if (new Set(names).size !== names.length) return { error: 'Two seat types have the same name.' };
+
+    const current = await c.query<{ id: string; name: string }>('select id, name from seat_types where activity_id = $1', [activityId]);
+    const known = new Map(current.rows.map((r) => [r.id, r.name]));
+    for (const e of edits) if (e.id && !known.has(e.id)) return { error: 'Someone else changed the seating. Reload and try again.' };
+
+    // Booked (or held) per type per slot.
+    const used = await c.query<{ seat_type_id: string; slot_id: string; n: number }>(
+      `select bs.seat_type_id, b.slot_id, sum(bs.count)::int as n
+         from booking_seats bs join bookings b on b.id = bs.booking_id join seat_types st on st.id = bs.seat_type_id
+        where st.activity_id = $1 and (b.status = 'confirmed' or (b.status = 'held' and b.hold_expires_at > now()))
+        group by bs.seat_type_id, b.slot_id`,
+      [activityId],
+    );
+    const keep = new Set(edits.filter((e) => e.id).map((e) => e.id!));
+    for (const [id, name] of known) {
+      if (!keep.has(id) && used.rows.some((u) => u.seat_type_id === id)) return { error: `People have chosen “${name}”, so it can't be removed.` };
+    }
+    for (const e of edits) {
+      const most = Math.max(0, ...used.rows.filter((u) => u.seat_type_id === e.id).map((u) => u.n));
+      if (e.capacity < most) return { error: `${most} ${e.name} already booked in one time slot; capacity can't go below that.` };
+    }
+    const total = edits.reduce((n, e) => n + e.capacity, 0);
+    if (edits.length) {
+      const busy = await c.query<{ time: string; taken: number }>(
+        `select to_char(s.starts_at at time zone $3, 'Dy HH24:MI') as time, coalesce(sum(b.party_size), 0)::int as taken
+           from slots s join bookings b on b.slot_id = s.id
+          where s.activity_id = $1 and (b.status = 'confirmed' or (b.status = 'held' and b.hold_expires_at > now()))
+          group by s.id having sum(b.party_size) > $2 limit 1`,
+        [activityId, total, EVENT.timeZone],
+      );
+      if (busy.rowCount) return { error: `The ${busy.rows[0].time} slot has ${busy.rows[0].taken} people signed up; the seats must add up to at least that.` };
+    }
+
+    // Remove dropped types (only ever-cancelled or expired sign-ups point at them).
+    for (const id of known.keys()) {
+      if (keep.has(id)) continue;
+      await c.query('delete from booking_seats where seat_type_id = $1', [id]);
+      await c.query('delete from seat_types where id = $1', [id]);
+    }
+    for (const [i, e] of edits.entries()) {
+      if (e.id) {
+        await c.query('update seat_types set name = $2, name_zh = $3, capacity = $4, sort_order = $5 where id = $1', [e.id, e.name.trim(), e.nameZh.trim(), e.capacity, i + 1]);
+      } else {
+        await c.query('insert into seat_types (activity_id, name, name_zh, capacity, sort_order) values ($1, $2, $3, $4, $5)', [activityId, e.name.trim(), e.nameZh.trim(), e.capacity, i + 1]);
+      }
+    }
+    if (edits.length) await c.query('update slots set capacity = $2 where activity_id = $1', [activityId, total]);
+    return { ok: true as const };
+  });
 }
