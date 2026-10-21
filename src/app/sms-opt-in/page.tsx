@@ -7,10 +7,8 @@ import { Back } from '@/components/icons';
 import { smsSender } from '@/lib/hans';
 import { LegalFoot } from '@/components/LegalPage';
 
-// Public page for text-message carriers (A2P 10DLC review): how people opt in, with screenshots.
-// In English, the language reviewers read. Plain <img> on purpose: two static screenshots.
-/* eslint-disable @next/next/no-img-element */
-// Screenshots live in public/sms-opt-in/.
+// Public page for text-message carriers (A2P 10DLC review): how people opt in, with a live sample of the form.
+// In English, the language reviewers read.
 export const metadata: Metadata = { title: `How people opt in to texts · ${EVENT.name}` };
 
 export default async function SmsOptIn() {
@@ -67,10 +65,6 @@ export default async function SmsOptIn() {
           </fieldset>
           <button type="button" className="btn" disabled>Confirm 1 spot (sample, doesn’t submit)</button>
         </form>
-        <figure className="shot">
-          <img src="/sms-opt-in/sign-up-form.png" alt="The sign-up details page: name, email and mobile phone fields, then an unchecked “By text message” box with the consent wording and Terms and Privacy links beneath it." width={430} height={1200} />
-          <figcaption>The details page as attendees see it. The “By text message” box starts unchecked.</figcaption>
-        </figure>
 
         <h2>2. What we send</h2>
         <ul>
