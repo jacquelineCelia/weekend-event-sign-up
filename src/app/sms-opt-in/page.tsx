@@ -70,7 +70,7 @@ export default async function SmsOptIn() {
         <ul>
           <li>Message frequency varies with how many activities someone signs up for, usually 2–3 texts per activity.</li>
           <li>Message and data rates may apply.</li>
-          <li>Every text starts with “{event}:” or names {event}. The first text (the booking confirmation) also says “Msg frequency varies. Msg &amp; data rates may apply. Reply HELP for help, STOP to opt out.”</li>
+          <li>Every text starts with “{event}:”. The first text (the booking confirmation) also says “Msg frequency varies. Msg &amp; data rates may apply. Reply HELP for help, STOP to opt out.”</li>
           <li>Reply <b>STOP</b> at any time to stop texts; reply <b>HELP</b> for help, or email <a href={`mailto:${mail}`}>{mail}</a>.</li>
           <li>Phone numbers and text-message consent are never shared with third parties or sold. See our <a href="/privacy">Privacy policy</a> and <a href="/terms">Terms</a>.</li>
         </ul>

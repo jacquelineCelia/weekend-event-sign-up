@@ -32,7 +32,7 @@ Built with Next.js 16 and Postgres (runs on Supabase as is).
 - Confirmation message right away, reminder 15 minutes before each activity.
 - **Texting follows carrier (A2P 10DLC) rules**: the "By text message" box starts unticked, with the
   consent wording and Terms/Privacy links beside it; only people who tick it get texts (walk-ins
-  signed up by staff are never texted); every text names the event and the first (the booking confirmation) gives
+  signed up by staff are never texted); every text starts with the event name and the first (the booking confirmation) gives
   message frequency, "Msg & data rates may apply" and "Reply HELP for help, STOP to opt out"; sign-in codes go by text only to numbers that opted in (else email); and
   if someone replies STOP, their reminders switch to email. Terms (`/terms`) and Privacy (`/privacy`)
   pages are in all three languages; set `NEXT_PUBLIC_ORG_NAME` and `NEXT_PUBLIC_SUPPORT_EMAIL`.

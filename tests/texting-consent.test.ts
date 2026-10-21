@@ -93,7 +93,7 @@ describe('texting only with consent', () => {
     await book(true);
     const r2 = await startLogin(PHONE);
     expect(r2.via).toBe('sms');
-    expect(texts[0].body).toMatch(/^\d{6} is your Mindfulness Weekend sign-in code/);
+    expect(texts[0].body).toMatch(/^Mindfulness Weekend: \d{6} is your sign-in code/);
   });
 });
 

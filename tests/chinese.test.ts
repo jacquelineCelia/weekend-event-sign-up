@@ -124,7 +124,7 @@ describe('messages in the attendee’s saved language', () => {
     outbox.length = 0;
     await startLogin('mei@example.com', 'zh');
     expect(outbox[0].subject).toMatch(/^你的登入代碼：\d{6}$/);
-    expect(outbox[0].text).toMatch(/是你的正念週末登入代碼，10 分鐘內有效。$/);
+    expect(outbox[0].text).toMatch(/^正念週末：\d{6} 是你的登入代碼，10 分鐘內有效。$/);
   });
 
   it('walk-ins get messages in the language staff picked', async () => {
