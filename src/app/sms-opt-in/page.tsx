@@ -72,14 +72,7 @@ export default async function SmsOptIn() {
           <figcaption>The details page as attendees see it. The “By text message” box starts unchecked.</figcaption>
         </figure>
 
-        <h2>2. Walk-in guests at the event</h2>
-        <p>
-          Staff can sign up walk-in guests on a staff device. Walk-in sign-ups never receive text messages; their
-          confirmation and reminder go by email if they give one. The only way to get texts is to tick the box on the
-          sign-up form shown above.
-        </p>
-
-        <h2>3. What we send</h2>
+        <h2>2. What we send</h2>
         <ul>
           <li>Message frequency varies with how many activities someone signs up for, usually 2–3 texts per activity.</li>
           <li>Message and data rates may apply.</li>
