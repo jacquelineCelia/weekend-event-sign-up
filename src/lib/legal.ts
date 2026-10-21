@@ -24,7 +24,7 @@ export function terms(lang: Lang, event: string): LegalDoc {
         'If you can’t come, please cancel from My sign-ups so someone else can take your spots. Staff may change an activity’s time or size; if your time changes, we’ll let you know.',
       ] },
       { h: `${event} text messages`, p: [
-        `If you tick “By text message” when you sign up, we’ll send you text messages about your own sign-ups: a confirmation, a reminder 15 minutes before each activity, notice of schedule changes, and sign-in codes you ask for. We don’t send marketing texts.`,
+        `If you tick “By text message” when you sign up, ${EVENT.parentOrg} will send you text messages about your own sign-ups: a confirmation, a reminder 15 minutes before each activity, notice of schedule changes, and sign-in codes you ask for. We don’t send marketing texts.`,
         [
           'Message frequency varies with how many activities you sign up for — usually 2–3 texts per activity.',
           'Message and data rates may apply.',
@@ -48,7 +48,7 @@ export function terms(lang: Lang, event: string): LegalDoc {
         '如無法參加，請在「我的報名」取消，讓其他人遞補。工作人員可能調整活動時間或人數；你的時段若有異動，我們會通知你。',
       ] },
       { h: `${event}簡訊`, p: [
-        '若你在報名時勾選「以簡訊提醒」，我們會傳送與你的報名相關的簡訊：報名確認、每項活動開始前 15 分鐘的提醒、時段異動通知，以及你申請的登入代碼。我們不會傳送行銷簡訊。',
+        `若你在報名時勾選「以簡訊提醒」，${EVENT.parentOrg} 會傳送與你的報名相關的簡訊：報名確認、每項活動開始前 15 分鐘的提醒、時段異動通知，以及你申請的登入代碼。我們不會傳送行銷簡訊。`,
         [
           '簡訊數量視你報名的活動而定，每項活動通常 2–3 則。',
           '可能產生簡訊及數據傳輸費用。',
@@ -72,7 +72,7 @@ export function terms(lang: Lang, event: string): LegalDoc {
         '如无法参加，请在“我的报名”取消，让其他人递补。工作人员可能调整活动时间或人数；你的时段如有变更，我们会通知你。',
       ] },
       { h: `${event}短信`, p: [
-        '如你在报名时勾选“以短信提醒”，我们会发送与你的报名相关的短信：报名确认、每项活动开始前 15 分钟的提醒、时段变更通知，以及你申请的登录验证码。我们不会发送营销短信。',
+        `如你在报名时勾选“以短信提醒”，${EVENT.parentOrg} 会发送与你的报名相关的短信：报名确认、每项活动开始前 15 分钟的提醒、时段变更通知，以及你申请的登录验证码。我们不会发送营销短信。`,
         [
           '短信数量视你报名的活动而定，每项活动通常 2–3 条。',
           '可能产生短信和数据流量费用。',

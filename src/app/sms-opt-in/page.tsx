@@ -45,7 +45,8 @@ export default async function SmsOptIn() {
   return (
     <SignUpSample
       lang={lang}
-      smsFrom={smsSender(lang)}
+      smsFrom={smsSender()}
+      eventName={eventName(lang)}
       summary={{
         activity,
         when: `${day ? dayText(day, 'short', lang) : ''} · ${start} · ${place}`,

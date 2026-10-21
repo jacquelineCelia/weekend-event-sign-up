@@ -11,6 +11,7 @@ import { useCountdown } from '@/app/book/[holdId]/DetailsForm';
 type Props = {
   lang: Lang;
   smsFrom: string;
+  eventName: string;
   summary: { activity: string; when: string; spots: string; partySize: number };
   ticket: { day: string; time: string; remindAt: string };
   calendar: { title: string; place: string; start: string; end: string };
@@ -23,7 +24,7 @@ const makeCode = () => Array.from(crypto.getRandomValues(new Uint32Array(4)), (n
 type Done = { first: string; email: string; code: string; how: 'sms' | 'email' | 'both' | null };
 
 /** The sign-up details page with the activity already picked; Confirm shows the success page. */
-export default function SignUpSample({ lang, smsFrom, summary, ticket, calendar }: Props) {
+export default function SignUpSample({ lang, smsFrom, eventName, summary, ticket, calendar }: Props) {
   const t = dict(lang);
   // Carriers require texting to be opted in to, never pre-ticked.
   const [sms, setSms] = useState(false);
@@ -92,7 +93,7 @@ export default function SignUpSample({ lang, smsFrom, summary, ticket, calendar 
             <div className="stack" style={{ border: '1px solid var(--line)', background: 'var(--paper)', borderRadius: 20, padding: '10px 18px', gap: 4 }}>
               <label className="check"><input type="checkbox" name="remindSms" checked={sms} onChange={(e) => setSms(e.target.checked)} aria-describedby="sms-consent" /> {t.bySms}</label>
               <p id="sms-consent" className="consent">
-                {t.smsConsent(smsFrom)}{' '}
+                {t.smsConsent(smsFrom, eventName)}{' '}
                 <a href="/terms" target="_blank" rel="noopener">{t.terms}</a> · <a href="/privacy" target="_blank" rel="noopener">{t.privacy}</a>
               </p>
               <label className="check"><input type="checkbox" name="remindEmail" checked={mail} onChange={(e) => setMail(e.target.checked)} /> {t.byEmail}</label>

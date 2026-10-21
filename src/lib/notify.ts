@@ -1,6 +1,6 @@
 import { bookingText, type BookingView } from './queries';
 import { addMinutes, dayOf, dayText, fmtTimeL, isChinese, type Lang } from './event';
-import { eventName as eventNameFor } from './hans';
+import { eventName as eventNameFor, smsSender } from './hans';
 import { localText, seatLine } from './hans';
 import { dict, firstName } from './i18n';
 import { SmsOptedOut, sendEmail, sendSms, smsEnabled } from './messaging';
@@ -87,9 +87,9 @@ export async function sendConfirmation(b: BookingView) {
       emailHtml(lang, m.youreInTitle(activity), lines, b.code, { href: url, label: dict(lang).mySignups }),
     );
   }
-  // The first text anyone gets names the event and gives frequency, rates, HELP and STOP (carrier rules).
+  // The first text anyone gets names the sender and gives frequency, rates, HELP and STOP (carrier rules).
   if (b.remindSms && b.personPhone && smsEnabled()) {
-    await trySms(b.personPhone, m.confirmSms(eventName(lang), firstName(b.personName), activity, when, place, b.partySize, b.code ?? '', reminder));
+    await trySms(b.personPhone, m.confirmSms(smsSender(), firstName(b.personName), activity, when, place, b.partySize, b.code ?? '', reminder));
   }
 }
 
@@ -103,7 +103,7 @@ export async function sendReminder(b: BookingView) {
   const sent: string[] = [];
   let textSent = false;
   if (b.remindSms && b.personPhone && smsEnabled()) {
-    textSent = await trySms(b.personPhone, m.reminderSms(eventName(lang), firstName(b.personName), activity, start, place, b.partySize, b.code ?? '', url));
+    textSent = await trySms(b.personPhone, m.reminderSms(smsSender(), firstName(b.personName), activity, start, place, b.partySize, b.code ?? '', url));
     if (textSent) sent.push('sms');
   }
   const emailFallback = b.remindSms && !textSent;
@@ -123,7 +123,7 @@ export async function sendReminder(b: BookingView) {
 
 export async function sendLoginCode(to: { email: string | null; phone: string | null }, code: string, via: 'email' | 'sms', lang: Lang = 'en') {
   const m = dict(lang).msg;
-  const text = m.loginText(code, eventName(lang));
+  const text = m.loginText(code, smsSender(), eventName(lang));
   if (via === 'sms' && to.phone) return sendSms(to.phone, text);
   if (to.email) return sendEmail(to.email, m.loginSubject(code), text, emailHtml(lang, m.loginTitle, [text], code));
 }
@@ -137,7 +137,7 @@ export async function sendTimeChange(
 ) {
   const m = dict(p.lang).msg;
   const activity = localText(act.name, act.nameZh, p.lang);
-  const text = m.timeChange(eventName(p.lang), activity, fmtTimeL(to, p.lang), fmtTimeL(from, p.lang), p.code);
+  const text = m.timeChange(smsSender(), activity, fmtTimeL(to, p.lang), fmtTimeL(from, p.lang), p.code);
   if (p.sms && p.phone && smsEnabled() && (await trySms(p.phone, text))) return;
   if (p.email) return sendEmail(p.email, m.timeChangeSubject(activity, fmtTimeL(to, p.lang)), text);
 }

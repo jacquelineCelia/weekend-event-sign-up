@@ -103,7 +103,7 @@ describe('messages in the attendee’s saved language', () => {
     try {
       await sendReminder((await getBooking(r.bookingId))!);
       const body = new URLSearchParams(String((fetchSpy.mock.calls[0][1] as RequestInit).body)).get('Body')!;
-      expect(body).toMatch(/^正念週末：王美玲，拉坯體驗 15 分鐘後開始（上午 11:30，穀倉工作室）。2位，代碼 /);
+      expect(body).toMatch(/^The Oneness Truth Foundation：王美玲，拉坯體驗 15 分鐘後開始（上午 11:30，穀倉工作室）。2位，代碼 /);
       expect(body.length).toBeLessThanOrEqual(134); // 2 × 67-character parts for Chinese text
     } finally {
       fetchSpy.mockRestore();
@@ -124,7 +124,7 @@ describe('messages in the attendee’s saved language', () => {
     outbox.length = 0;
     await startLogin('mei@example.com', 'zh');
     expect(outbox[0].subject).toMatch(/^你的登入代碼：\d{6}$/);
-    expect(outbox[0].text).toMatch(/^正念週末：\d{6} 是你的登入代碼，10 分鐘內有效。$/);
+    expect(outbox[0].text).toMatch(/^The Oneness Truth Foundation：\d{6} 是你的正念週末登入代碼，10 分鐘內有效。$/);
   });
 
   it('walk-ins get messages in the language staff picked', async () => {
@@ -137,7 +137,7 @@ describe('messages in the attendee’s saved language', () => {
     outbox.length = 0;
     const [s] = await scheduleFor(actId, DAY);
     expect(await saveSchedule(actId, DAY, [{ id: s.id, time: '13:00', capacity: 10 }])).toEqual({ notified: 1 });
-    expect(outbox[0].text).toBe(`正念週末：時段異動。拉坯體驗改為下午 1:00 開始（原為上午 11:30）。名額與代碼 ${outbox[0].text.match(/代碼 (\w{4})/)![1]} 不變。`);
+    expect(outbox[0].text).toBe(`The Oneness Truth Foundation：時段異動。拉坯體驗改為下午 1:00 開始（原為上午 11:30）。名額與代碼 ${outbox[0].text.match(/代碼 (\w{4})/)![1]} 不變。`);
   });
 });
 

@@ -64,7 +64,7 @@ describe('texting only with consent', () => {
     await sendConfirmation((await getBooking(r.bookingId))!);
     expect(texts).toHaveLength(1);
     expect(texts[0].to).toBe(E164);
-    expect(texts[0].body).toMatch(/^Mindfulness Weekend: Mei is in for Pottery Wheel, .* Msg frequency varies\. Msg & data rates may apply\. Reply HELP for help, STOP to opt out\.$/);
+    expect(texts[0].body).toMatch(/^The Oneness Truth Foundation: Mei is in for Pottery Wheel, .* Msg frequency varies\. Msg & data rates may apply\. Reply HELP for help, STOP to opt out\.$/);
     expect(outbox.map((m) => m.channel)).toEqual(['email']); // the email confirmation still goes too
   });
 
@@ -93,7 +93,7 @@ describe('texting only with consent', () => {
     await book(true);
     const r2 = await startLogin(PHONE);
     expect(r2.via).toBe('sms');
-    expect(texts[0].body).toMatch(/^Mindfulness Weekend: \d{6} is your sign-in code/);
+    expect(texts[0].body).toMatch(/^The Oneness Truth Foundation: \d{6} is your Mindfulness Weekend sign-in code/);
   });
 });
 

@@ -26,15 +26,12 @@ export function localText(en: string, zhTraditional: string, lang: 'en' | 'zh' |
 }
 
 /**
- * Who texts come from, with the full organizational chain so carriers can verify the sender:
- * "Mindfulness Weekend (run by Yellow Flower Meditation Academy, part of The Oneness Truth Foundation)".
- * The organizations keep their registered (English) names in every language.
+ * Who texts come from: the business registered with the carriers (The Oneness Truth Foundation), alone,
+ * so the consent covers only that business. Every text starts with it, and it keeps its registered
+ * (English) name in every language.
  */
-export function smsSender(lang: Lang) {
-  const event = eventName(lang);
-  if (lang === 'zh') return `${event}（由 ${EVENT.org} 主辦，隸屬 ${EVENT.parentOrg}）`;
-  if (lang === 'zhs') return `${event}（由 ${EVENT.org} 主办，隶属于 ${EVENT.parentOrg}）`;
-  return `${event} (run by ${EVENT.org}, part of ${EVENT.parentOrg})`;
+export function smsSender() {
+  return EVENT.parentOrg;
 }
 
 /**

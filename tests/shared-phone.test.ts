@@ -112,7 +112,7 @@ describe('people sharing a phone number', () => {
       await sendReminder((await getBooking(b.bookingId))!);
       const body = new URLSearchParams(String((fetchSpy.mock.calls[0][1] as RequestInit).body));
       expect(body.get('To')).toBe(E164);
-      expect(body.get('Body')).toMatch(/^Mindfulness Weekend: Ben, Pottery Wheel starts in 15 min/);
+      expect(body.get('Body')).toMatch(/^The Oneness Truth Foundation: Ben, Pottery Wheel starts in 15 min/);
     } finally {
       fetchSpy.mockRestore();
       delete process.env.TWILIO_ACCOUNT_SID; delete process.env.TWILIO_AUTH_TOKEN; delete process.env.TWILIO_FROM;

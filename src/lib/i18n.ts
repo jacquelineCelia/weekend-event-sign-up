@@ -100,9 +100,9 @@ const en = {
   byEmail: 'By email',
   noReminderWarn: 'You won’t get a reminder for this activity.',
   rememberMe: 'Remember me on this device so my next sign-up is quicker.',
-  /** `sender` is smsSender(lang): the event with the organizations behind it. */
-  smsConsent: (sender: string) =>
-    `By checking this box, you agree to receive text messages from ${sender} about your sign-ups: confirmations, reminders, schedule changes and sign-in codes you request. Message frequency varies (usually 2–3 per activity). Msg & data rates may apply. Reply STOP to cancel, HELP for help. Texting is optional and not required to sign up.`,
+  /** `sender` is smsSender(): the registered business; `event` is the event's name. */
+  smsConsent: (sender: string, event: string) =>
+    `By checking this box, you agree to receive text messages from ${sender} about your ${event} sign-ups: confirmations, reminders, schedule changes and sign-in codes you request. Message frequency varies (usually 2–3 per activity). Msg & data rates may apply. Reply STOP to cancel, HELP for help. Texting is optional and not required to sign up.`,
   terms: 'Terms',
   organizedBy: (org: string, parent: string) => `Organized by ${org}, part of ${parent}.`,
   privacy: 'Privacy',
@@ -220,10 +220,10 @@ const en = {
       `${n} ${n === 1 ? 'spot' : 'spots'} for ${name}. Show your code ${code}, your name or your phone number at the door.`,
     willRemind: (t: string) => `We'll remind you at ${t}.`,
     plansChanged: 'Plans changed? Cancel from My sign-ups so someone else can take your spots.',
-    confirmSms: (event: string, first: string, act: string, when: string, place: string, n: number, code: string, reminder: string) =>
-      `${event}: ${first} is in for ${act}, ${when}, ${place}. ${n} ${n === 1 ? 'spot' : 'spots'}, code ${code}. ${reminder} Msg frequency varies. Msg & data rates may apply. Reply HELP for help, STOP to opt out.`.replace(/\s+/g, ' ').trim(),
-    reminderSms: (event: string, first: string, act: string, time: string, place: string, n: number, code: string, url: string) =>
-      `${event}: ${first}, ${act} starts in 15 min (${time}, ${place}). ${n} ${n === 1 ? 'spot' : 'spots'}, code ${code}.\n\nCan't make it? Let us know so someone else can take your spots: ${url}`,
+    confirmSms: (from: string, first: string, act: string, when: string, place: string, n: number, code: string, reminder: string) =>
+      `${from}: ${first} is in for ${act}, ${when}, ${place}. ${n} ${n === 1 ? 'spot' : 'spots'}, code ${code}. ${reminder} Msg frequency varies. Msg & data rates may apply. Reply HELP for help, STOP to opt out.`.replace(/\s+/g, ' ').trim(),
+    reminderSms: (from: string, first: string, act: string, time: string, place: string, n: number, code: string, url: string) =>
+      `${from}: ${first}, ${act} starts in 15 min (${time}, ${place}). ${n} ${n === 1 ? 'spot' : 'spots'}, code ${code}.\n\nCan't make it? Let us know so someone else can take your spots: ${url}`,
     reminderSubject: (act: string, time: string) => `In 15 minutes: ${act}, ${time}`,
     reminderTitle: (act: string) => `In 15 minutes: ${act}`,
     reminderLines: (act: string, time: string, place: string, n: number) => [
@@ -232,12 +232,12 @@ const en = {
       "Can't make it? Cancel so someone else can enjoy your spots.",
     ],
     cantMakeIt: "I can't make it",
-    loginText: (code: string, event: string) => `${event}: ${code} is your sign-in code. It expires in 10 minutes.`,
+    loginText: (code: string, from: string, event: string) => `${from}: ${code} is your ${event} sign-in code. It expires in 10 minutes.`,
     loginSubject: (code: string) => `Your sign-in code: ${code}`,
     loginTitle: 'Your sign-in code',
     seatingLine: (seats: string) => `Seating: ${seats}.`,
-    timeChange: (event: string, act: string, to: string, from: string, code: string) =>
-      `${event}: time change. ${act} now starts at ${to} (was ${from}). Your spots and code ${code} stay the same.`,
+    timeChange: (sender: string, act: string, to: string, from: string, code: string) =>
+      `${sender}: time change. ${act} now starts at ${to} (was ${from}). Your spots and code ${code} stay the same.`,
     timeChangeSubject: (act: string, to: string) => `Time change: ${act} now at ${to}`,
   },
 };
@@ -320,8 +320,8 @@ const zh: Dict = {
   byEmail: '以電子郵件提醒',
   noReminderWarn: '這個活動將不會收到提醒。',
   rememberMe: '在這台裝置上記住我，下次報名更快。',
-  smsConsent: (sender) =>
-    `勾選此方框，即表示你同意接收${sender}傳送與你的報名相關的簡訊：報名確認、活動提醒、時段異動，以及你申請的登入代碼。簡訊頻率不一（每項活動通常 2–3 則）。可能產生簡訊及數據傳輸費用。回覆 STOP 取消，回覆 HELP 取得協助。簡訊為選擇性服務，不勾選也能報名。`,
+  smsConsent: (sender, event) =>
+    `勾選此方框，即表示你同意接收 ${sender} 傳送與你的${event}報名相關的簡訊：報名確認、活動提醒、時段異動，以及你申請的登入代碼。簡訊頻率不一（每項活動通常 2–3 則）。可能產生簡訊及數據傳輸費用。回覆 STOP 取消，回覆 HELP 取得協助。簡訊為選擇性服務，不勾選也能報名。`,
   terms: '使用條款',
   organizedBy: (org, parent) => `由 ${org} 主辦，隸屬 ${parent}。`,
   privacy: '隱私權政策',
@@ -437,8 +437,8 @@ const zh: Dict = {
     willRemind: (t) => `我們會在${t} 提醒你。`,
     plansChanged: '行程有變？請到「我的報名」取消，把名額留給其他人。',
     // Kept short: a Chinese text message holds about 70 characters per part.
-    confirmSms: (event, first, act, when, place, n, code, reminder) => `${event}：${first}已報名${act}，${when}，${place}。${n}位，代碼 ${code}。${reminder}簡訊頻率不一。可能產生簡訊及數據傳輸費用。回覆 HELP 取得協助，回覆 STOP 取消簡訊。`,
-    reminderSms: (event, first, act, time, place, n, code, url) => `${event}：${first}，${act} 15 分鐘後開始（${time}，${place}）。${n}位，代碼 ${code}。無法參加請取消：${url}`,
+    confirmSms: (from, first, act, when, place, n, code, reminder) => `${from}：${first}已報名${act}，${when}，${place}。${n}位，代碼 ${code}。${reminder}簡訊頻率不一。可能產生簡訊及數據傳輸費用。回覆 HELP 取得協助，回覆 STOP 取消簡訊。`,
+    reminderSms: (from, first, act, time, place, n, code, url) => `${from}：${first}，${act} 15 分鐘後開始（${time}，${place}）。${n}位，代碼 ${code}。無法參加請取消：${url}`,
     reminderSubject: (act, time) => `15 分鐘後開始：${act}，${time}`,
     reminderTitle: (act) => `15 分鐘後開始：${act}`,
     reminderLines: (act, time, place, n) => [
@@ -447,11 +447,11 @@ const zh: Dict = {
       '無法參加嗎？請取消，把名額留給其他人。',
     ],
     cantMakeIt: '我無法參加',
-    loginText: (code, event) => `${event}：${code} 是你的登入代碼，10 分鐘內有效。`,
+    loginText: (code, from, event) => `${from}：${code} 是你的${event}登入代碼，10 分鐘內有效。`,
     loginSubject: (code) => `你的登入代碼：${code}`,
     loginTitle: '你的登入代碼',
     seatingLine: (seats) => `座位：${seats}。`,
-    timeChange: (event, act, to, from, code) => `${event}：時段異動。${act}改為${to} 開始（原為${from}）。名額與代碼 ${code} 不變。`,
+    timeChange: (sender, act, to, from, code) => `${sender}：時段異動。${act}改為${to} 開始（原為${from}）。名額與代碼 ${code} 不變。`,
     timeChangeSubject: (act, to) => `時段異動：${act}改為${to}`,
   },
 };
@@ -532,8 +532,8 @@ const zhs: Dict = {
   byEmail: '以邮件提醒',
   noReminderWarn: '这个活动将不会收到提醒。',
   rememberMe: '在这台设备上记住我，下次报名更快。',
-  smsConsent: (sender) =>
-    `勾选此方框，即表示你同意接收${sender}发送的与你的报名相关的短信：报名确认、活动提醒、时段变更，以及你申请的登录验证码。短信频率不一（每项活动通常 2–3 条）。可能产生短信和数据流量费用。回复 STOP 退订，回复 HELP 获取帮助。短信为可选服务，不勾选也能报名。`,
+  smsConsent: (sender, event) =>
+    `勾选此方框，即表示你同意接收 ${sender} 发送的与你的${event}报名相关的短信：报名确认、活动提醒、时段变更，以及你申请的登录验证码。短信频率不一（每项活动通常 2–3 条）。可能产生短信和数据流量费用。回复 STOP 退订，回复 HELP 获取帮助。短信为可选服务，不勾选也能报名。`,
   terms: '使用条款',
   organizedBy: (org, parent) => `由 ${org} 主办，隶属于 ${parent}。`,
   privacy: '隐私政策',
@@ -649,8 +649,8 @@ const zhs: Dict = {
     willRemind: (t) => `我们会在${t} 提醒你。`,
     plansChanged: '行程有变？请到“我的报名”取消，把名额留给其他人。',
     // Kept short: a Chinese text message holds about 70 characters per part.
-    confirmSms: (event, first, act, when, place, n, code, reminder) => `${event}：${first}已报名${act}，${when}，${place}。${n}位，签到码 ${code}。${reminder}短信频率不一。可能产生短信和数据流量费用。回复 HELP 获取帮助，回复 STOP 退订短信。`,
-    reminderSms: (event, first, act, time, place, n, code, url) => `${event}：${first}，${act} 15 分钟后开始（${time}，${place}）。${n}位，签到码 ${code}。无法参加请取消：${url}`,
+    confirmSms: (from, first, act, when, place, n, code, reminder) => `${from}：${first}已报名${act}，${when}，${place}。${n}位，签到码 ${code}。${reminder}短信频率不一。可能产生短信和数据流量费用。回复 HELP 获取帮助，回复 STOP 退订短信。`,
+    reminderSms: (from, first, act, time, place, n, code, url) => `${from}：${first}，${act} 15 分钟后开始（${time}，${place}）。${n}位，签到码 ${code}。无法参加请取消：${url}`,
     reminderSubject: (act, time) => `15 分钟后开始：${act}，${time}`,
     reminderTitle: (act) => `15 分钟后开始：${act}`,
     reminderLines: (act, time, place, n) => [
@@ -659,11 +659,11 @@ const zhs: Dict = {
       '无法参加吗？请取消，把名额留给其他人。',
     ],
     cantMakeIt: '我无法参加',
-    loginText: (code, event) => `${event}：${code} 是你的登录验证码，10 分钟内有效。`,
+    loginText: (code, from, event) => `${from}：${code} 是你的${event}登录验证码，10 分钟内有效。`,
     loginSubject: (code) => `你的登录验证码：${code}`,
     loginTitle: '你的登录验证码',
     seatingLine: (seats) => `座位：${seats}。`,
-    timeChange: (event, act, to, from, code) => `${event}：时段变更。${act}改为${to} 开始（原为${from}）。名额与签到码 ${code} 不变。`,
+    timeChange: (sender, act, to, from, code) => `${sender}：时段变更。${act}改为${to} 开始（原为${from}）。名额与签到码 ${code} 不变。`,
     timeChangeSubject: (act, to) => `时段变更：${act}改为${to}`,
   },
 };
