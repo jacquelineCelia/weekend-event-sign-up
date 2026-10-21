@@ -93,7 +93,9 @@ button, input, select { font: inherit; color: inherit; }
 .chip b { font-weight: 700; font-variant-numeric: tabular-nums; }
 .chip.open { background: var(--sage); color: var(--moss-dark); }
 .chip.low { background: var(--ochre-pale); color: var(--ochre); }
-.chip:hover { filter: brightness(0.96); }
+.chip.full { background: var(--stone); color: var(--muted); }
+.chip.full b { font-weight: 600; text-decoration: line-through; text-decoration-thickness: 1px; }
+a.chip:hover { filter: brightness(0.96); }
 .list { padding: 6px 20px 32px; display: flex; flex-direction: column; gap: 12px; }
 .empty { padding: 28px 16px; text-align: center; color: var(--muted); font-size: 15px; }
 

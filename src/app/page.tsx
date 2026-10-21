@@ -23,7 +23,7 @@ export default async function Browse({ searchParams }: { searchParams: Promise<{
   const acts = all
     .map((a) => {
       const upcoming = a.slots.filter((s) => s.startsAt.getTime() > now);
-      return { ...a, open: upcoming.filter((s) => s.remaining > 0), hasSlots: a.slots.length > 0 };
+      return { ...a, upcoming, open: upcoming.filter((s) => s.remaining > 0), hasSlots: a.slots.length > 0 };
     })
     .filter((a) => a.hasSlots)
     .filter((a) => !onlyOpen || a.open.length > 0);
@@ -78,9 +78,18 @@ export default async function Browse({ searchParams }: { searchParams: Promise<{
               </div>
               {a.open.length === 0 ? <span className="badge">{t.fullyBooked}</span> : null}
             </div>
-            {a.open.length > 0 ? (
+            {a.upcoming.length > 0 ? (
               <div className="chips">
-                {a.open.map((s) => {
+                {a.upcoming.map((s) => {
+                  // Full times stay in the list, greyed out, so people can see when the activity runs.
+                  if (s.remaining === 0) {
+                    return (
+                      <span key={s.id} className="chip full" aria-label={t.chipFullAria(a.name, fmtTimeL(s.startsAt, lang))}>
+                        <b>{fmtTimeL(s.startsAt, lang)}</b>
+                        <span>{t.full}</span>
+                      </span>
+                    );
+                  }
                   const low = isLow(s.remaining, s.capacity);
                   return (
                     <Link key={s.id} className={`chip ${low ? 'low' : 'open'}`} href={`/activity/${a.id}?day=${day.key}&slot=${s.id}`}
