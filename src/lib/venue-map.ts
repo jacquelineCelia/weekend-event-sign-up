@@ -14,7 +14,7 @@ export const MAP_POINTS: Record<string, { x: number; y: number; label: Label }> 
   'Lake Path': { x: 316, y: 318, label: 'below' },
   'Barn Studio': { x: 70, y: 316, label: 'right' },
   'Farm Kitchen': { x: 122, y: 360, label: 'right' },
-  Cellar: { x: 62, y: 398, label: 'right' },
+  'Tea House': { x: 62, y: 398, label: 'right' },
   'Sports Field': { x: 252, y: 372, label: 'below' },
   'Range B': { x: 330, y: 400, label: 'above' },
 };

@@ -12,7 +12,7 @@ insert into activities (name, place, duration_min, sort_order, description) valu
   ('Stargazing',          'Hilltop',         60,  7, ''),
   ('Watercolor Basics',   'Barn Studio',     90,  8, ''),
   ('Kids'' Craft Corner', 'Pavilion',        45,  9, ''),
-  ('Wine Tasting',        'Cellar',          60, 10, ''),
+  ('Tea Ceremony',        'Tea House',       60, 10, ''),
   ('Climbing Wall',       'Sports Field',    30, 11, ''),
   ('Photography Walk',    'Lake Path',       75, 12, ''),
   ('Cooking Demo',        'Farm Kitchen',    60, 13, '');
@@ -41,8 +41,8 @@ with s(name, day, t, cap) as (values
   ('Kids'' Craft Corner','2026-11-14','09:30',15), ('Kids'' Craft Corner','2026-11-14','11:00',15),
   ('Kids'' Craft Corner','2026-11-15','09:30',15), ('Kids'' Craft Corner','2026-11-15','11:00',15),
   ('Kids'' Craft Corner','2026-11-15','14:00',15),
-  ('Wine Tasting','2026-11-14','16:00',16),
-  ('Wine Tasting','2026-11-15','14:00',16), ('Wine Tasting','2026-11-15','16:00',16),
+  ('Tea Ceremony','2026-11-14','16:00',16),
+  ('Tea Ceremony','2026-11-15','14:00',16), ('Tea Ceremony','2026-11-15','16:00',16),
   ('Climbing Wall','2026-11-14','10:00',8), ('Climbing Wall','2026-11-14','11:00',8),
   ('Climbing Wall','2026-11-14','14:00',8),
   ('Climbing Wall','2026-11-15','10:00',8), ('Climbing Wall','2026-11-15','11:00',8),
@@ -69,7 +69,7 @@ update activities a set name_zh = t.name_zh, place_zh = t.place_zh, description_
     ('Stargazing',          '星空觀察',     '山頂',       ''),
     ('Watercolor Basics',   '水彩入門',     '穀倉工作室', ''),
     ('Kids'' Craft Corner', '兒童手作區',   '涼亭',       ''),
-    ('Wine Tasting',        '品酒',         '酒窖',       ''),
+    ('Tea Ceremony',        '茶道體驗',     '茶屋',       ''),
     ('Climbing Wall',       '攀岩牆',       '運動場',     ''),
     ('Photography Walk',    '攝影散步',     '湖畔步道',   ''),
     ('Cooking Demo',        '料理示範',     '農場廚房',   '')
