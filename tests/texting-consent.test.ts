@@ -87,10 +87,11 @@ describe('texting only with consent', () => {
   });
 
   it('sends sign-in codes by text only to numbers that opted in; others get email', async () => {
-    await book(false);
+    const first = await book(false);
     const r1 = await startLogin(PHONE);
     expect(r1.via).toBe('email');
     expect(texts).toEqual([]);
+    await pool.query(`update bookings set status = 'cancelled' where id = $1`, [first.bookingId]); // no overlapping sign-ups
     await book(true);
     const r2 = await startLogin(PHONE);
     expect(r2.via).toBe('sms');

@@ -6,7 +6,9 @@ import { outbox } from '@/lib/messaging';
 
 vi.spyOn(console, 'info').mockImplementation(() => {});
 const pool = getPool();
-const contact = { name: 'Jordan Lee', email: 'jordan@example.com', phone: '+14125550148' };
+let n = 0;
+// A different email each time: one person can't have two sign-ups that overlap.
+const nextContact = () => ({ name: 'Jordan Lee', email: ++n === 1 ? 'jordan@example.com' : `jordan+${n}@example.com`, phone: '+14125550148' });
 
 async function bookAt(minutesFromNow: number, remind = { remindSms: true, remindEmail: true }) {
   const a = await pool.query<{ id: string }>(`insert into activities (name, place, duration_min) values ('Pottery Wheel', 'Barn Studio', 60) returning id`);
@@ -15,12 +17,13 @@ async function bookAt(minutesFromNow: number, remind = { remindSms: true, remind
     [a.rows[0].id, minutesFromNow],
   );
   const { holdId } = await holdSpots(s.rows[0].id, 2);
-  return (await confirmBooking(holdId, { contact, ...remind })).bookingId;
+  return (await confirmBooking(holdId, { contact: nextContact(), ...remind })).bookingId;
 }
 
 beforeEach(async () => {
   await pool.query('truncate login_codes, ratings, bookings, people, slots, activities cascade');
   outbox.length = 0;
+  n = 0;
 });
 afterAll(() => pool.end());
 

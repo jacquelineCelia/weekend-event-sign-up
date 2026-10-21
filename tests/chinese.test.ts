@@ -112,7 +112,9 @@ describe('messages in the attendee’s saved language', () => {
   });
 
   it('switches language when the same person later signs up in English', async () => {
-    await book('zh');
+    const first = await book('zh');
+    // The same person can't hold two sign-ups at once, so the first is cancelled.
+    await pool.query(`update bookings set status = 'cancelled' where id = $1`, [first.bookingId]);
     const r = await book('en');
     expect((await getBooking(r.bookingId))!.personLang).toBe('en');
   });

@@ -1,7 +1,7 @@
 'use client';
 
-import { useActionState, useEffect, useState } from 'react';
-import { changeTimeAction, confirmAction, type FormState } from '@/app/actions';
+import { useActionState, useEffect, useRef, useState } from 'react';
+import { changeTimeAction, confirmAction, type Conflict, type FormState } from '@/app/actions';
 import { Back, Clock } from '@/components/icons';
 import { dict, errorText, type Lang, zhBold } from '@/lib/i18n';
 import LangToggle from '@/components/LangToggle';
@@ -98,6 +98,8 @@ export default function DetailsForm({ lang, eventName, holdId, secondsLeft, summ
       </section>
 
       <form action={action} noValidate style={{ display: 'contents' }}>
+        {/* Pressing Enter in a field means "confirm", never one of the overlap panel's buttons further down. */}
+        <button type="submit" tabIndex={-1} aria-hidden="true" style={{ position: 'absolute', width: 1, height: 1, opacity: 0, pointerEvents: 'none', border: 0, padding: 0 }} />
         <div className="pad stack" style={{ gap: 18, paddingBottom: 20 }}>
           <Field id="name" label={t.fullName} autoComplete="name" defaultValue={v.name} error={err.name && errorText(lang, err.name)} />
           <Field id="email" label={t.email} type="email" inputMode="email" autoComplete="email" defaultValue={v.email} error={err.email && errorText(lang, err.email)}
@@ -121,6 +123,8 @@ export default function DetailsForm({ lang, eventName, holdId, secondsLeft, summ
           <label className="check" style={{ alignItems: 'flex-start', fontSize: 14, color: 'var(--ink-2)' }}>
             <input type="checkbox" name="remember" defaultChecked /> {t.rememberMe}
           </label>
+
+          {state?.conflict ? <OverlapPanel lang={lang} holdId={holdId} conflict={state.conflict} email={v.email} pending={pending} /> : null}
         </div>
 
         <div className="footer">
@@ -129,6 +133,76 @@ export default function DetailsForm({ lang, eventName, holdId, secondsLeft, summ
           <small>{t.freeNote}</small>
         </div>
       </form>
+    </div>
+  );
+}
+
+/**
+ * Shown when the person already has a sign-up at an overlapping time. Signed in as them: the clashing
+ * sign-ups and a button to cancel them and take this one instead. Otherwise: a sign-in code to the
+ * email first, so nobody can see or cancel someone else's sign-ups by typing their email.
+ * Its buttons submit the details form with an "intent".
+ */
+function OverlapPanel({ lang, holdId, conflict, email, pending }: { lang: Lang; holdId: string; conflict: Conflict; email: string; pending: boolean }) {
+  const t = dict(lang);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    ref.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [conflict]);
+  const keep = (
+    <button className="btn ghost" type="submit" formAction={changeTimeAction.bind(null, holdId)} disabled={pending}>{t.keepOld}</button>
+  );
+  return (
+    <div ref={ref} className="note stack" role="alert" style={{ gap: 12, padding: '16px 16px 18px' }}>
+      <strong style={{ fontSize: 15.5 }}>{t.overlapTitle}</strong>
+      {conflict.owned ? (
+        <>
+          <p style={{ margin: 0 }}>{t.overlapOwned}</p>
+          <ul className="stack" style={{ listStyle: 'none', margin: 0, padding: 0, gap: 8 }}>
+            {conflict.items.map((c) => (
+              <li key={c.id} className="stack" style={{ gap: 2, background: 'var(--paper)', color: 'var(--ink)', borderRadius: 14, padding: '10px 14px' }}>
+                <span className={`serif${zhBold(c.activity)}`} style={{ fontSize: 17 }}>{c.activity}</span>
+                <span style={{ fontSize: 13, color: 'var(--muted)' }}>{c.when} · {c.place} · {t.spots(c.partySize)}</span>
+                <input type="hidden" name="replace" value={c.id} />
+              </li>
+            ))}
+          </ul>
+          <button className="btn" type="submit" name="intent" value="replace" disabled={pending}>
+            {pending ? t.updating : t.cancelAndSignUp(conflict.items.length)}
+          </button>
+          {keep}
+        </>
+      ) : (
+        <>
+          <p style={{ margin: 0 }}>{t.overlapOther(email)}</p>
+          {conflict.ticket ? (
+            <>
+              <p style={{ margin: 0 }}>{t.codeSentTo(conflict.masked ?? '')}</p>
+              <div className="field">
+                <label htmlFor="code" style={{ color: 'var(--ink)' }}>{t.codeLabel}</label>
+                <input id="code" name="code" className="input" inputMode="numeric" autoComplete="one-time-code" maxLength={7}
+                  onKeyDown={(e) => {
+                    if (e.key !== 'Enter') return;
+                    e.preventDefault();
+                    const f = e.currentTarget.form;
+                    const verify = f?.querySelector<HTMLButtonElement>('button[name="intent"][value="verify"]');
+                    if (f && verify) f.requestSubmit(verify);
+                  }}
+                  aria-invalid={!!conflict.codeError} aria-describedby={conflict.codeError ? 'code-err' : undefined} />
+                {conflict.codeError ? <span id="code-err" className="error">{errorText(lang, conflict.codeError)}</span> : null}
+              </div>
+              <button className="btn" type="submit" name="intent" value="verify" disabled={pending}>{pending ? t.checking : t.verifyBtn}</button>
+              <button className="btn ghost" type="submit" name="intent" value="send_code" disabled={pending}>{t.resend}</button>
+            </>
+          ) : (
+            <>
+              {conflict.codeError ? <span className="error">{errorText(lang, conflict.codeError)}</span> : null}
+              <button className="btn" type="submit" name="intent" value="send_code" disabled={pending}>{pending ? t.sending : t.sendCode}</button>
+            </>
+          )}
+          {keep}
+        </>
+      )}
     </div>
   );
 }

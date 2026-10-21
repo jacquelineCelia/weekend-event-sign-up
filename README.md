@@ -12,6 +12,12 @@ Built with Next.js 16 and Postgres (runs on Supabase as is).
 - Browse 13 activities by day, see spots left per time, pick a time and party size.
 - Spots are held for 10 minutes while they enter name, email and phone.
 - Confirmation page with a check-in code and a calendar file (with a 15-minute alarm).
+- **No overlapping sign-ups**: one person (one email) can't sign up for two activities whose times
+  overlap (back-to-back is fine). The details screen explains the clash and offers to cancel the
+  other sign-up and take this one, in one step, or keep it and pick another time. The clashing
+  sign-up is only shown — and can only be cancelled — once the browser is signed in as that person;
+  otherwise they're offered a 6-digit code to their email first. People sharing a phone are
+  separate, so a family can do things at the same time.
 - **My sign-ups** (`/me`): remembered on the device; on a new device, sign in with a 6-digit code
   sent by text or email. Change time, cancel, and rate finished activities 1–10.
 - Confirmation message right away, reminder 15 minutes before each activity.
@@ -63,7 +69,7 @@ testing (sign-in codes included).
 Tests run against a real Postgres database (set `TEST_DATABASE_URL`; it is wiped on each run):
 
 ```bash
-npm test     # 58 tests: capacity, holds, login codes, reminders, schedule edits, shared phones, Chinese
+npm test     # 68 tests: capacity, holds, overlaps, login codes, reminders, schedule edits, shared phones, Chinese
 ```
 
 ## Deploy (Vercel + Supabase)

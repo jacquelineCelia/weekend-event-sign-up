@@ -8,12 +8,44 @@ export const HOLD_MINUTES = 10;
 
 export class BookingError extends Error {
   constructor(
-    public readonly code: 'slot_not_found' | 'not_enough_spots' | 'hold_not_found' | 'hold_expired' | 'booking_not_found',
+    public readonly code: 'slot_not_found' | 'not_enough_spots' | 'hold_not_found' | 'hold_expired' | 'booking_not_found' | 'overlap',
     message: string,
     public readonly remaining?: number,
+    /** For 'overlap': who is signing up, and their sign-ups that clash with the new one. */
+    public readonly overlap?: { personId: string; conflicts: OverlapConflict[] },
   ) {
     super(message);
   }
+}
+
+/** One of a person's confirmed sign-ups whose time overlaps the one they are adding. */
+export type OverlapConflict = {
+  bookingId: string; startsAt: Date; durationMin: number; partySize: number;
+  activityName: string; activityNameZh: string; place: string; placeZh: string;
+};
+
+/**
+ * This person's confirmed sign-ups that overlap the slot (start before it ends and end after it
+ * starts). Back-to-back activities don't count. `exclude` skips one booking (the one being moved).
+ */
+export async function findOverlaps(c: PoolClient, personId: string, slotId: string, exclude?: string): Promise<OverlapConflict[]> {
+  const r = await c.query(
+    `select b.id, s.starts_at, a.duration_min, b.party_size, a.name, a.name_zh, a.place, a.place_zh
+       from slots n
+       join activities na on na.id = n.activity_id
+       join bookings b on b.person_id = $1 and b.status = 'confirmed' and ($3::uuid is null or b.id <> $3::uuid)
+       join slots s on s.id = b.slot_id
+       join activities a on a.id = s.activity_id
+      where n.id = $2
+        and s.starts_at < n.starts_at + make_interval(mins => na.duration_min)
+        and n.starts_at < s.starts_at + make_interval(mins => a.duration_min)
+      order by s.starts_at`,
+    [personId, slotId, exclude ?? null],
+  );
+  return r.rows.map((x) => ({
+    bookingId: x.id, startsAt: x.starts_at, durationMin: x.duration_min, partySize: x.party_size,
+    activityName: x.name, activityNameZh: x.name_zh ?? '', place: x.place, placeZh: x.place_zh ?? '',
+  }));
 }
 
 /** Locks the slot row and returns its capacity and spots taken (confirmed + live holds). */
@@ -77,7 +109,12 @@ async function uniqueCode(c: PoolClient) {
  *    the same phone and name but no email yet (the email is added to it), else a new person.
  *  - Without an email (walk-ins): someone with the same phone and the same name, else a new person.
  */
-export async function upsertPerson(c: PoolClient, contact: Contact, lang: Lang = 'en'): Promise<string> {
+/**
+ * The existing person a sign-up's contact details belong to, without changing anything.
+ * Mirrors upsertPerson: by email; else a walk-in record with the same phone and name but no email;
+ * without an email, someone with the same phone and the same name.
+ */
+async function findPerson(c: PoolClient, contact: Contact): Promise<{ id: string; via: 'email' | 'walk_in' | 'phone' } | null> {
   const sameNameOnPhone = async (onlyWithoutEmail: boolean) =>
     contact.phone
       ? (await c.query<{ id: string }>(
@@ -86,29 +123,44 @@ export async function upsertPerson(c: PoolClient, contact: Contact, lang: Lang =
           [contact.phone, contact.name],
         )).rows[0]?.id ?? null
       : null;
-
-  // Serialise sign-ups for the same email (or, without one, the same phone) so two at once
-  // can't both create a new person.
-  const key = contact.email ?? contact.phone;
-  if (key) await c.query('select pg_advisory_xact_lock(hashtext($1))', [key]);
-
   if (contact.email) {
     const byEmail = (await c.query<{ id: string }>('select id from people where lower(email) = $1', [contact.email])).rows[0]?.id;
-    if (byEmail) {
-      await c.query('update people set name = $2, phone = coalesce($3, phone), lang = $4 where id = $1', [byEmail, contact.name, contact.phone, lang]);
-      return byEmail;
-    }
+    if (byEmail) return { id: byEmail, via: 'email' };
     const walkIn = await sameNameOnPhone(true);
-    if (walkIn) {
-      await c.query('update people set email = $2, name = $3, lang = $4 where id = $1', [walkIn, contact.email, contact.name, lang]);
-      return walkIn;
-    }
-  } else {
-    const existing = await sameNameOnPhone(false);
-    if (existing) {
-      await c.query('update people set lang = $2 where id = $1', [existing, lang]);
-      return existing;
-    }
+    return walkIn ? { id: walkIn, via: 'walk_in' } : null;
+  }
+  const existing = await sameNameOnPhone(false);
+  return existing ? { id: existing, via: 'phone' } : null;
+}
+
+// Serialise sign-ups for the same email (or, without one, the same phone) so two at once
+// can't both create a new person, or both slip past the overlap check.
+async function lockContact(c: PoolClient, contact: Contact) {
+  const key = contact.email ?? contact.phone;
+  if (key) await c.query('select pg_advisory_xact_lock(hashtext($1))', [key]);
+}
+
+/**
+ * Finds or creates the person behind a sign-up. People are told apart by email; a phone number
+ * can be shared (a family, a couple), so it only identifies someone together with their name.
+ *  - With an email: that email's person (name and phone kept current), else a walk-in record with
+ *    the same phone and name but no email yet (the email is added to it), else a new person.
+ *  - Without an email (walk-ins): someone with the same phone and the same name, else a new person.
+ */
+export async function upsertPerson(c: PoolClient, contact: Contact, lang: Lang = 'en'): Promise<string> {
+  await lockContact(c, contact);
+  const found = await findPerson(c, contact);
+  if (found?.via === 'email') {
+    await c.query('update people set name = $2, phone = coalesce($3, phone), lang = $4 where id = $1', [found.id, contact.name, contact.phone, lang]);
+    return found.id;
+  }
+  if (found?.via === 'walk_in') {
+    await c.query('update people set email = $2, name = $3, lang = $4 where id = $1', [found.id, contact.email, contact.name, lang]);
+    return found.id;
+  }
+  if (found) {
+    await c.query('update people set lang = $2 where id = $1', [found.id, lang]);
+    return found.id;
   }
   const res = await c.query<{ id: string }>('insert into people (name, email, phone, lang) values ($1, $2, $3, $4) returning id', [
     contact.name,
@@ -122,9 +174,21 @@ export async function upsertPerson(c: PoolClient, contact: Contact, lang: Lang =
 /** A booking's owner check: one person, or everyone signed in through a shared phone number. */
 const ownerIds = (who: string | string[]) => (Array.isArray(who) ? who : [who]);
 
-export type ConfirmInput = { contact: Contact; remindSms: boolean; remindEmail: boolean; lang?: Lang };
+export type ConfirmInput = {
+  contact: Contact; remindSms: boolean; remindEmail: boolean; lang?: Lang;
+  /**
+   * Cancel these overlapping sign-ups in the same step. `owners` is who the browser is signed in as;
+   * only that person's (or household's) bookings, and only the signer-up's own, are cancelled.
+   */
+  replace?: { bookingIds: string[]; owners: string[] };
+};
 
-/** Turns a hold into a confirmed booking. If the hold lapsed, re-checks capacity before confirming. */
+/**
+ * Turns a hold into a confirmed booking. If the hold lapsed, re-checks capacity before confirming.
+ * Refuses ('overlap') when the same person already has a sign-up at an overlapping time, unless
+ * those are listed in `replace` and the signed-in viewer owns them, in which case they are
+ * cancelled in the same transaction (both happen, or neither).
+ */
 export async function confirmBooking(holdId: string, input: ConfirmInput) {
   return withTx(async (c) => {
     const b = await c.query<{ slot_id: string; party_size: number; status: string; expired: boolean }>(
@@ -137,6 +201,21 @@ export async function confirmBooking(holdId: string, input: ConfirmInput) {
       const { remaining } = await lockSlot(c, row.slot_id, holdId);
       if (remaining < row.party_size) {
         throw new BookingError('hold_expired', 'Your hold ran out and those spots were taken. Please pick another time.', remaining);
+      }
+    }
+    await lockContact(c, input.contact);
+    const existing = await findPerson(c, input.contact);
+    if (existing) {
+      if (input.replace?.bookingIds.length && input.replace.owners.includes(existing.id)) {
+        await c.query(
+          `update bookings set status = 'cancelled', cancelled_at = now()
+            where id = any($1::uuid[]) and person_id = $2 and status = 'confirmed'`,
+          [input.replace.bookingIds, existing.id],
+        );
+      }
+      const conflicts = await findOverlaps(c, existing.id, row.slot_id);
+      if (conflicts.length) {
+        throw new BookingError('overlap', 'You already have a sign-up at an overlapping time.', undefined, { personId: existing.id, conflicts });
       }
     }
     const personId = await upsertPerson(c, input.contact, input.lang);
