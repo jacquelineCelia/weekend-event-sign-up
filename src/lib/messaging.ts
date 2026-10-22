@@ -1,4 +1,5 @@
-// Email (Twilio SendGrid) and text messages (Twilio), called over plain HTTPS.
+// Email (Resend; Twilio SendGrid still works as a fallback) and text messages (Twilio), called over
+// plain HTTPS.
 // Without credentials, messages are written to the server log instead, so
 // every flow can be tested before the accounts exist.
 
@@ -18,12 +19,29 @@ function parseFrom(from: string): { email: string; name?: string } {
   return m ? { email: m[2].trim(), ...(m[1] ? { name: m[1].replace(/^"|"$/g, '') } : {}) } : { email: from.trim() };
 }
 
+/**
+ * Sends one email. Uses Resend when RESEND_API_KEY is set, otherwise SendGrid when SENDGRID_API_KEY
+ * is set (so the switch-over needs no code change), otherwise just logs it.
+ */
 export async function sendEmail(to: string, subject: string, text: string, html?: string): Promise<Sent> {
-  const key = process.env.SENDGRID_API_KEY;
   const from = process.env.EMAIL_FROM;
-  if (!key || !from) {
+  const resendKey = process.env.RESEND_API_KEY;
+  const key = process.env.SENDGRID_API_KEY;
+  if (!from || (!resendKey && !key)) {
     capture('email', to, text, subject);
     return { channel: 'email', to, delivered: false };
+  }
+  if (resendKey) {
+    // Resend: POST /emails, JSON in, { id } out. EMAIL_FROM ("Name <address>") is accepted as is,
+    // and must be on a domain verified in Resend.
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from, to: [to], subject, text, ...(html ? { html } : {}) }),
+    });
+    if (!res.ok) throw new Error(`Email failed (${res.status}): ${await res.text()}`);
+    const body = (await res.json().catch(() => ({}))) as { id?: string };
+    return { channel: 'email', to, delivered: true, id: body.id };
   }
   // Twilio SendGrid v3 Mail Send. Success is 202 with an empty body.
   const res = await fetch('https://api.sendgrid.com/v3/mail/send', {

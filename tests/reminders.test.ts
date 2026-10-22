@@ -56,6 +56,31 @@ describe('15-minute reminders', () => {
     expect(await runReminders()).toHaveLength(0);
   });
 
+  it('sends email through Resend when it is set up (in preference to SendGrid)', async () => {
+    await bookAt(10, { remindSms: false, remindEmail: true });
+    process.env.RESEND_API_KEY = 're_test';
+    process.env.SENDGRID_API_KEY = 'sg_test';
+    process.env.EMAIL_FROM = 'Mindfulness Weekend <hello@example.com>';
+    process.env.MESSAGING_CAPTURE = '0';
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('{"id":"em_1"}', { status: 200 }));
+    try {
+      const [r] = await runReminders();
+      expect(r.sent).toEqual(['email']);
+      const [url, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
+      expect(url).toBe('https://api.resend.com/emails');
+      expect((init.headers as Record<string, string>).Authorization).toBe('Bearer re_test');
+      const body = JSON.parse(String(init.body));
+      expect(body).toMatchObject({ from: 'Mindfulness Weekend <hello@example.com>', to: ['jordan@example.com'] });
+      expect(body.subject).toMatch(/^In 15 minutes: Pottery Wheel/);
+      expect(body.text).toBeTruthy();
+      expect(body.html).toContain('<!doctype html>');
+    } finally {
+      fetchSpy.mockRestore();
+      delete process.env.RESEND_API_KEY; delete process.env.SENDGRID_API_KEY; delete process.env.EMAIL_FROM;
+      process.env.MESSAGING_CAPTURE = '1';
+    }
+  });
+
   it('retries next run if sending fails', async () => {
     await bookAt(10);
     process.env.SENDGRID_API_KEY = 'bad';

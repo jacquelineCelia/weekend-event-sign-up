@@ -74,13 +74,13 @@ node --env-file=.env.local scripts/migrate.mjs --seed   # tables + the placehold
 npm run dev
 ```
 
-Without Twilio/SendGrid keys, every email and text is printed to the server log instead — handy for
+Without Resend/Twilio keys, every email and text is printed to the server log instead — handy for
 testing (sign-in codes included).
 
 Tests run against a real Postgres database (set `TEST_DATABASE_URL`; it is wiped on each run):
 
 ```bash
-npm test     # 83 tests: capacity, holds, overlaps, seating, login codes, reminders, schedule edits, shared phones, Chinese
+npm test     # 85 tests: capacity, holds, overlaps, seating, login codes, reminders, schedule edits, shared phones, Chinese
 ```
 
 ## Deploy (Vercel + Supabase)
@@ -90,12 +90,13 @@ npm test     # 83 tests: capacity, holds, overlaps, seating, login codes, remind
    `node --env-file=.env.production scripts/migrate.mjs --seed` once from your machine.
 2. **App** — import the repo in Vercel and set the environment variables from `.env.example`:
    `DATABASE_URL`, `DATABASE_SSL`, `SESSION_SECRET` (32+ random chars), `STAFF_PASSCODE`,
-   `APP_URL` (your public URL), `CRON_SECRET`, `SENDGRID_API_KEY`, `EMAIL_FROM`, and the three
+   `APP_URL` (your public URL), `CRON_SECRET`, `RESEND_API_KEY`, `EMAIL_FROM`, and the three
    `TWILIO_*` values for texts.
-3. **Twilio (email and texts)**
-   - *Email:* in SendGrid (Twilio's email service), authenticate your sending domain under
-     Settings → Sender Authentication (add the DNS records it shows), then create an API key with
-     "Mail Send" permission → `SENDGRID_API_KEY`. Use an address on that domain in `EMAIL_FROM`.
+3. **Email (Resend) and texts (Twilio)**
+   - *Email:* in Resend, add your sending domain under Domains and add the DNS records it shows
+     (at your DNS host, e.g. Namecheap); wait for it to say Verified. Then create an API key with
+     "Sending access" → `RESEND_API_KEY`, and use an address on that domain in `EMAIL_FROM`.
+     (SendGrid still works: with `RESEND_API_KEY` empty, a `SENDGRID_API_KEY` is used instead.)
    - *Texts:* in the Twilio console, copy the Account SID and Auth Token, and buy a phone number
      (or create a Messaging Service) → `TWILIO_FROM`. US numbers need A2P 10DLC registration
      before carriers deliver texts reliably, which can take a few days to a couple of weeks —
@@ -121,7 +122,7 @@ npm test     # 83 tests: capacity, holds, overlaps, seating, login codes, remind
 5. **Preview site (optional)** — push a `dev` branch and Vercel deploys it at a stable address like
    `<project>-git-dev-<you>.vercel.app`. Give Vercel's **Preview** environment the dev database's
    `DATABASE_URL`, its own `SESSION_SECRET` / `STAFF_PASSCODE`, and leave out `APP_URL`,
-   `SENDGRID_API_KEY` and `TWILIO_*` (messages then go to the Vercel logs, and links point at the
+   `RESEND_API_KEY`, `SENDGRID_API_KEY` and `TWILIO_*` (messages then go to the Vercel logs, and links point at the
    preview). Previews require a Vercel login by default — turn that off under Settings →
    Deployment Protection if testers without Vercel accounts need in.
 6. **Real activities** — replace the placeholders in **Staff → Schedule & capacity**
