@@ -103,7 +103,7 @@ export async function sendReminder(b: BookingView) {
   const sent: string[] = [];
   let textSent = false;
   if (b.remindSms && b.personPhone && smsEnabled()) {
-    textSent = await trySms(b.personPhone, m.reminderSms(smsSender(), firstName(b.personName), activity, start, place, b.partySize, b.code ?? '', url));
+    textSent = await trySms(b.personPhone, m.reminderSms(smsSender(), firstName(b.personName), activity, start, place, b.partySize, b.code ?? ''));
     if (textSent) sent.push('sms');
   }
   const emailFallback = b.remindSms && !textSent;
@@ -121,11 +121,11 @@ export async function sendReminder(b: BookingView) {
   return sent;
 }
 
-export async function sendLoginCode(to: { email: string | null; phone: string | null }, code: string, via: 'email' | 'sms', lang: Lang = 'en') {
+/** Sign-in codes go by email only (never by text). */
+export async function sendLoginCode(email: string, code: string, lang: Lang = 'en') {
   const m = dict(lang).msg;
-  const text = m.loginText(code, smsSender(), eventName(lang));
-  if (via === 'sms' && to.phone) return sendSms(to.phone, text);
-  if (to.email) return sendEmail(to.email, m.loginSubject(code), text, emailHtml(lang, m.loginTitle, [text], code));
+  const text = m.loginText(code, eventName(lang));
+  return sendEmail(email, m.loginSubject(code), text, emailHtml(lang, m.loginTitle, [text], code));
 }
 
 /** Staff moved a booked time slot: tell the guest, in their language. */

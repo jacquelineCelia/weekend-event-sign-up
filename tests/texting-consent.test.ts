@@ -84,16 +84,23 @@ describe('texting only with consent', () => {
     expect(outbox[0].channel).toBe('email');
   });
 
-  it('sends sign-in codes by text only to numbers that opted in; others get email', async () => {
-    const first = await book(false);
-    const r1 = await startLogin(PHONE);
-    expect(r1.via).toBe('email');
-    expect(texts).toEqual([]);
-    await pool.query(`update bookings set status = 'cancelled' where id = $1`, [first.bookingId]); // no overlapping sign-ups
+  it('sends sign-in codes by email only, even to numbers that opted in to texts', async () => {
     await book(true);
-    const r2 = await startLogin(PHONE);
-    expect(r2.via).toBe('sms');
-    expect(texts[0].body).toMatch(/^The Oneness Truth Foundation: \d{6} is your Mindfulness Weekend sign-in code/);
+    texts = [];
+    outbox.length = 0;
+    const r = await startLogin(PHONE);
+    expect(r.via).toBe('email');
+    expect(texts).toEqual([]);
+    expect(outbox.at(-1)!.to).toBe('mei@example.com');
+    expect(outbox.at(-1)!.text).toMatch(/^\d{6} is your Mindfulness Weekend sign-in code/);
+  });
+
+  it('sends reminder texts without a link', async () => {
+    const r = await book(true);
+    texts = [];
+    await sendReminder((await getBooking(r.bookingId))!);
+    expect(texts[0].body).toMatch(/^The Oneness Truth Foundation: Mei, Pottery Wheel starts in 15 min .* Can't make it\? Cancel in My sign-ups\.$/);
+    expect(texts[0].body).not.toMatch(/https?:/);
   });
 });
 

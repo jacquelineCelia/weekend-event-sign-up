@@ -28,13 +28,14 @@ Built with Next.js 16 and Postgres (runs on Supabase as is).
   cancel it and move) and to staff walk-ins (staff see the
   clash and can cancel it and sign the guest up for the new time).
 - **My sign-ups** (`/me`): remembered on the device; on a new device, sign in with a 6-digit code
-  sent by text or email. Change time, cancel, and rate finished activities 1–10.
+  sent by email (to every email on a shared phone). Change time, cancel, and rate finished activities 1–10.
 - Confirmation message right away, reminder 15 minutes before each activity.
 - **Texting follows carrier (A2P 10DLC) rules**: the "By text message" box starts unticked, with the
   consent wording and Terms/Privacy links beside it; only people who tick it get texts (walk-ins
   signed up by staff are never texted); every text starts with "The Oneness Truth Foundation:" (the business registered with
   carriers, and the only sender named in the consent) and the first (the booking confirmation) gives
-  message frequency, "Msg & data rates may apply" and "Reply HELP for help, STOP to opt out"; sign-in codes go by text only to numbers that opted in (else email); and
+  message frequency, "Msg & data rates may apply" and "Reply HELP for help, STOP to opt out"; sign-in codes always go by email, never by text, and reminder texts carry no link,
+  so every text is an account notification; and
   if someone replies STOP, their reminders switch to email. Terms (`/terms`) and Privacy (`/privacy`)
   pages are in all three languages; set `NEXT_PUBLIC_ORG_NAME` and `NEXT_PUBLIC_SUPPORT_EMAIL`.
 - **Map**: a Map button on the Up next card opens a map of the grounds with the next activity's place
