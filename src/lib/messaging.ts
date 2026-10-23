@@ -66,10 +66,12 @@ export class SmsOptedOut extends Error {
 }
 
 /**
- * Which Twilio sender a text goes out on. Each is its own A2P 10DLC campaign:
+ * Which Twilio sender a text goes out on:
  *  - 'notify': confirmations, reminders and time changes (Account Notification), TWILIO_FROM;
  *  - 'codes': sign-in codes people ask for (2FA), TWILIO_CODES_FROM.
- * A number can belong to only one campaign, so the two must be different Messaging Services.
+ * With one verified toll-free number covering both use cases, set both to the same Messaging
+ * Service (MG…). A STOP then stops every text to that number: reminders switch to email
+ * (markOptedOut) and sign-in codes fall back to email (startLogin).
  */
 export type SmsSender = 'notify' | 'codes';
 const senderFrom = (s: SmsSender) => (s === 'codes' ? process.env.TWILIO_CODES_FROM : process.env.TWILIO_FROM);

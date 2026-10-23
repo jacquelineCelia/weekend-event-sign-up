@@ -9,7 +9,7 @@ import { EVENT, type Lang } from './event';
 type Section = { h: string; p: (string | string[])[] };
 export type LegalDoc = { title: string; updated: string; intro: string; sections: Section[]; note?: string };
 
-const UPDATED = { en: 'Last updated October 22, 2026', zh: '最後更新：2026 年 10 月 22 日', zhs: '最后更新：2026 年 10 月 22 日' };
+const UPDATED = { en: 'Last updated October 23, 2026', zh: '最後更新：2026 年 10 月 23 日', zhs: '最后更新：2026 年 10 月 23 日' };
 const NOTE = { zh: '本頁為中文譯本，如與英文版本有出入，以英文版本為準。', zhs: '本页为中文译本，如与英文版本有出入，以英文版本为准。' };
 
 export function terms(lang: Lang, event: string): LegalDoc {
@@ -28,17 +28,17 @@ export function terms(lang: Lang, event: string): LegalDoc {
         [
           'Message frequency varies with how many activities you sign up for — usually 2–3 texts per activity.',
           'Message and data rates may apply.',
-          'Reply STOP at any time to stop texts. We’ll send one message to confirm, then no more. Your reminders will then come by email if you gave us one.',
+          'Reply STOP at any time to stop all texts from us, including sign-in codes. We’ll send one message to confirm, then no more. Your reminders will then come by email if you gave us one, and you can still sign in with your email.',
           `Reply HELP for help, or email ${mail}.`,
           'Texting is optional. You can choose email reminders instead, and signing up works either way.',
           'Carriers are not liable for delayed or undelivered messages.',
         ],
       ] },
       { h: 'Sign-in codes by text', p: [
-        `If you enter your mobile number on the My sign-ups sign-in page, ${EVENT.parentOrg} will text you a one-time code to sign in. This is separate from the texts above.`,
+        `If you enter your mobile number on the My sign-ups sign-in page, ${EVENT.parentOrg} will text you a one-time code to sign in, from the same number as the texts above. Asking for a code doesn’t sign you up for those texts.`,
         [
           'One message each time you ask for a code. Message and data rates may apply.',
-          'Reply STOP to stop sign-in code texts; you can still sign in with your email. Reply HELP for help, or email ' + mail + '.',
+          'Reply STOP to stop all texts from us, including reminders; you can still sign in with your email. Reply HELP for help, or email ' + mail + '.',
           'Carriers are not liable for delayed or undelivered messages.',
         ],
       ] },
@@ -60,17 +60,17 @@ export function terms(lang: Lang, event: string): LegalDoc {
         [
           '簡訊數量視你報名的活動而定，每項活動通常 2–3 則。',
           '可能產生簡訊及數據傳輸費用。',
-          '隨時回覆 STOP 即可停止接收簡訊。我們會傳送一則確認訊息，之後不再傳送；如你有提供電子郵件，提醒將改以電子郵件寄送。',
+          '隨時回覆 STOP 即可停止接收我們的所有簡訊，包括登入代碼。我們會傳送一則確認訊息，之後不再傳送；如你有提供電子郵件，提醒將改以電子郵件寄送，你也仍可用電子郵件登入。',
           `回覆 HELP 取得協助，或寫信至 ${mail}。`,
           '簡訊為選擇性服務。你可以改選電子郵件提醒，不影響報名。',
           '電信業者對延遲或未送達的訊息不負責任。',
         ],
       ] },
       { h: '以簡訊接收登入代碼', p: [
-        `若你在「我的報名」登入頁輸入手機號碼，${EVENT.parentOrg} 會以簡訊傳送一次性登入代碼。這與上述簡訊是分開的。`,
+        `若你在「我的報名」登入頁輸入手機號碼，${EVENT.parentOrg} 會以簡訊傳送一次性登入代碼，發送號碼與上述簡訊相同。申請代碼不代表你同意接收上述簡訊。`,
         [
           '每次申請代碼傳送一則簡訊。可能產生簡訊及數據傳輸費用。',
-          '回覆 STOP 即可停止接收登入代碼簡訊，你仍可用電子郵件登入。回覆 HELP 取得協助，或寫信至 ' + mail + '。',
+          '回覆 STOP 即可停止接收我們的所有簡訊，包括活動提醒，你仍可用電子郵件登入。回覆 HELP 取得協助，或寫信至 ' + mail + '。',
           '電信業者對延遲或未送達的訊息不負責任。',
         ],
       ] },
@@ -92,17 +92,17 @@ export function terms(lang: Lang, event: string): LegalDoc {
         [
           '短信数量视你报名的活动而定，每项活动通常 2–3 条。',
           '可能产生短信和数据流量费用。',
-          '随时回复 STOP 即可退订。我们会发送一条确认消息，之后不再发送；如你提供了邮箱，提醒将改为邮件发送。',
+          '随时回复 STOP 即可退订我们的所有短信，包括登录验证码。我们会发送一条确认消息，之后不再发送；如你提供了邮箱，提醒将改为邮件发送，你也仍可用邮箱登录。',
           `回复 HELP 获取帮助，或发邮件至 ${mail}。`,
           '短信为可选服务。你可以改选邮件提醒，不影响报名。',
           '运营商对延迟或未送达的消息不承担责任。',
         ],
       ] },
       { h: '通过短信接收登录验证码', p: [
-        `如你在“我的报名”登录页输入手机号码，${EVENT.parentOrg} 会通过短信发送一次性登录验证码。这与上述短信是分开的。`,
+        `如你在“我的报名”登录页输入手机号码，${EVENT.parentOrg} 会通过短信发送一次性登录验证码，发送号码与上述短信相同。申请验证码不代表你同意接收上述短信。`,
         [
           '每次申请验证码发送一条短信。可能产生短信和数据流量费用。',
-          '回复 STOP 即可退订登录验证码短信，你仍可用邮箱登录。回复 HELP 获取帮助，或发邮件至 ' + mail + '。',
+          '回复 STOP 即可退订我们的所有短信，包括活动提醒，你仍可用邮箱登录。回复 HELP 获取帮助，或发邮件至 ' + mail + '。',
           '运营商对延迟或未送达的消息不承担责任。',
         ],
       ] },
