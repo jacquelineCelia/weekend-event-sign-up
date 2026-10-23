@@ -23,7 +23,7 @@ export function terms(lang: Lang, event: string): LegalDoc {
         'Signing up is free. Spots are limited; we hold the spots you pick for 10 minutes while you enter your details.',
         'If you can’t come, please cancel from My sign-ups so someone else can take your spots. Staff may change an activity’s time or size; if your time changes, we’ll let you know.',
       ] },
-      { h: `${event} text messages`, p: [
+      { h: `${event} sign-up texts (confirmations, reminders and schedule changes)`, p: [
         `If you tick “By text message” when you sign up, ${EVENT.parentOrg} will send you text messages about your own sign-ups: a confirmation, a reminder 15 minutes before each activity, and notice of schedule changes. We don’t send marketing texts.`,
         [
           'Message frequency varies with how many activities you sign up for — usually 2–3 texts per activity.',
@@ -35,7 +35,7 @@ export function terms(lang: Lang, event: string): LegalDoc {
         ],
       ] },
       { h: 'Sign-in codes by text', p: [
-        `If you enter your mobile number on the My sign-ups sign-in page, ${EVENT.parentOrg} will text you a one-time code to sign in. This is separate from the texts above.`,
+        `If you enter your mobile number on the My sign-ups sign-in page, ${EVENT.parentOrg} will text you a one-time code to sign in. This is separate from the sign-up texts above: asking for a code doesn’t sign you up for them, and they don’t include sign-in codes.`,
         [
           'One message each time you ask for a code. Message and data rates may apply.',
           'Reply STOP to stop sign-in code texts; you can still sign in with your email. Reply HELP for help, or email ' + mail + '.',
@@ -55,7 +55,7 @@ export function terms(lang: Lang, event: string): LegalDoc {
         '報名免費。名額有限；你在填寫資料時，我們會為你保留所選名額 10 分鐘。',
         '如無法參加，請在「我的報名」取消，讓其他人遞補。工作人員可能調整活動時間或人數；你的時段若有異動，我們會通知你。',
       ] },
-      { h: `${event}簡訊`, p: [
+      { h: `${event}報名簡訊（報名確認、提醒與時段異動）`, p: [
         `若你在報名時勾選「以簡訊提醒」，${EVENT.parentOrg} 會傳送與你的報名相關的簡訊：報名確認、每項活動開始前 15 分鐘的提醒，以及時段異動通知。我們不會傳送行銷簡訊。`,
         [
           '簡訊數量視你報名的活動而定，每項活動通常 2–3 則。',
@@ -67,7 +67,7 @@ export function terms(lang: Lang, event: string): LegalDoc {
         ],
       ] },
       { h: '以簡訊接收登入代碼', p: [
-        `若你在「我的報名」登入頁輸入手機號碼，${EVENT.parentOrg} 會以簡訊傳送一次性登入代碼。這與上述簡訊是分開的。`,
+        `若你在「我的報名」登入頁輸入手機號碼，${EVENT.parentOrg} 會以簡訊傳送一次性登入代碼。這與上述報名簡訊是分開的：申請代碼不代表你同意接收報名簡訊，報名簡訊也不包含登入代碼。`,
         [
           '每次申請代碼傳送一則簡訊。可能產生簡訊及數據傳輸費用。',
           '回覆 STOP 即可停止接收登入代碼簡訊，你仍可用電子郵件登入。回覆 HELP 取得協助，或寫信至 ' + mail + '。',
@@ -87,7 +87,7 @@ export function terms(lang: Lang, event: string): LegalDoc {
         '报名免费。名额有限；你填写信息时，我们会为你保留所选名额 10 分钟。',
         '如无法参加，请在“我的报名”取消，让其他人递补。工作人员可能调整活动时间或人数；你的时段如有变更，我们会通知你。',
       ] },
-      { h: `${event}短信`, p: [
+      { h: `${event}报名短信（报名确认、提醒和时段变更）`, p: [
         `如你在报名时勾选“以短信提醒”，${EVENT.parentOrg} 会发送与你的报名相关的短信：报名确认、每项活动开始前 15 分钟的提醒，以及时段变更通知。我们不会发送营销短信。`,
         [
           '短信数量视你报名的活动而定，每项活动通常 2–3 条。',
@@ -99,7 +99,7 @@ export function terms(lang: Lang, event: string): LegalDoc {
         ],
       ] },
       { h: '通过短信接收登录验证码', p: [
-        `如你在“我的报名”登录页输入手机号码，${EVENT.parentOrg} 会通过短信发送一次性登录验证码。这与上述短信是分开的。`,
+        `如你在“我的报名”登录页输入手机号码，${EVENT.parentOrg} 会通过短信发送一次性登录验证码。这与上述报名短信是分开的：申请验证码不代表你同意接收报名短信，报名短信也不包含登录验证码。`,
         [
           '每次申请验证码发送一条短信。可能产生短信和数据流量费用。',
           '回复 STOP 即可退订登录验证码短信，你仍可用邮箱登录。回复 HELP 获取帮助，或发邮件至 ' + mail + '。',
