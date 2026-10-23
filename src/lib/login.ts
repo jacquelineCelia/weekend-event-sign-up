@@ -15,8 +15,8 @@ const hash = (code: string) => createHmac('sha256', process.env.SESSION_SECRET ?
  * Starts a sign-in. Always returns the same shape, so it never reveals who has signed up.
  * A phone number signs in everyone who uses it (families share phones); an email signs in one person.
  *
- * Where the code goes: with `allowText` (the sign-in page, where the texting disclosure sits next to
- * the button) and the sign-in codes (2FA) sender set up, a phone number gets the code by text.
+ * Where the code goes: with `allowText` (the sign-in page, when the person ticked "Text me the code")
+ * and the sign-in codes (2FA) sender set up, a phone number gets the code by text.
  * Otherwise codes go by email (on a shared phone, to every email on that number). Codes never go
  * through the notifications sender, so that campaign stays account notifications only.
  */

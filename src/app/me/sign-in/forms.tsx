@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useActionState } from 'react';
+import { useActionState, useState } from 'react';
 import { startLoginAction, verifyLoginAction, type LoginState } from '../actions';
 import { Leaf } from '@/components/icons';
 import { dict, errorText, type Lang } from '@/lib/i18n';
@@ -12,10 +12,12 @@ const Bubble = () => (
   </svg>
 );
 
-/** `codesByText`: the sender's name when sign-in codes can be texted (2FA campaign set up), else null. */
+/** `codesByText`: the sender's name when the "Text me the code" box is shown (2FA campaign set up or under review), else null. */
 export function AskForm({ lang, codesByText }: { lang: Lang; codesByText: string | null }) {
   const t = dict(lang);
   const [state, action, pending] = useActionState<LoginState, FormData>(startLoginAction, null);
+  // Carriers require texting consent to be opted in to, never pre-ticked.
+  const [textCode, setTextCode] = useState(false);
   return (
     <form action={action} className="pad stack" style={{ gap: 18, padding: '20px 20px 24px' }}>
       <span className="leafmark" style={{ width: 52, height: 52 }}><Leaf size={26} /></span>
@@ -28,12 +30,17 @@ export function AskForm({ lang, codesByText }: { lang: Lang; codesByText: string
         {state?.error ? <span id="who-err" className="error">{errorText(lang, state.error)}</span> : null}
         {codesByText ? null : <span className="hint">{t.signinSmsNote} <a href="/terms">{t.terms}</a> · <a href="/privacy">{t.privacy}</a></span>}
       </div>
-      <button className="btn" type="submit" disabled={pending} aria-describedby={codesByText ? 'code-consent' : undefined}>{pending ? t.sending : t.sendCode}</button>
       {codesByText ? (
-        <p id="code-consent" className="consent" style={{ margin: '-6px 0 0' }}>
-          {t.codeTextConsent(codesByText)} <a href="/terms">{t.terms}</a> · <a href="/privacy">{t.privacy}</a>
-        </p>
+        <div className="stack" style={{ border: '1px solid var(--line)', background: 'var(--paper)', borderRadius: 20, padding: '10px 18px', gap: 4 }}>
+          <label className="check">
+            <input type="checkbox" name="textCode" checked={textCode} onChange={(e) => setTextCode(e.target.checked)} aria-describedby="code-consent" /> {t.textCodeBox}
+          </label>
+          <p id="code-consent" className="consent">
+            {t.codeTextConsent(codesByText)} <a href="/terms">{t.terms}</a> · <a href="/privacy">{t.privacy}</a>
+          </p>
+        </div>
       ) : null}
+      <button className="btn" type="submit" disabled={pending}>{pending ? t.sending : t.sendCode}</button>
     </form>
   );
 }

@@ -15,8 +15,9 @@ export type LoginState = { error?: { code: string; left?: number }; value?: stri
 export async function startLoginAction(_prev: LoginState, form: FormData): Promise<LoginState> {
   const value = String(form.get('who') ?? '').trim();
   if (!value) return { error: { code: 'enter_who' }, value };
-  // The sign-in page shows the texting disclosure next to its button, so codes may be texted here.
-  const r = await startLogin(value, await getLang(), { allowText: true });
+  // Codes are texted only when the person ticked the unticked-by-default "Text me the code" box,
+  // whose consent wording sits right under it. Otherwise they go by email.
+  const r = await startLogin(value, await getLang(), { allowText: form.get('textCode') === 'on' });
   if (r.limited) return { error: { code: 'too_many_codes' }, value };
   if (!r.ticket) return { error: { code: 'bad_who' }, value };
   const p = new URLSearchParams({ t: r.ticket, to: r.masked ?? '', via: r.via ?? 'email', ...(r.many ? { m: '1' } : {}) });
