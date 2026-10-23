@@ -15,7 +15,8 @@ export type LoginState = { error?: { code: string; left?: number }; value?: stri
 export async function startLoginAction(_prev: LoginState, form: FormData): Promise<LoginState> {
   const value = String(form.get('who') ?? '').trim();
   if (!value) return { error: { code: 'enter_who' }, value };
-  const r = await startLogin(value, await getLang());
+  // The sign-in page shows the texting disclosure next to its button, so codes may be texted here.
+  const r = await startLogin(value, await getLang(), { allowText: true });
   if (r.limited) return { error: { code: 'too_many_codes' }, value };
   if (!r.ticket) return { error: { code: 'bad_who' }, value };
   const p = new URLSearchParams({ t: r.ticket, to: r.masked ?? '', via: r.via ?? 'email', ...(r.many ? { m: '1' } : {}) });

@@ -121,11 +121,15 @@ export async function sendReminder(b: BookingView) {
   return sent;
 }
 
-/** Sign-in codes go by email only (never by text). */
-export async function sendLoginCode(email: string, code: string, lang: Lang = 'en') {
+/**
+ * Sends a sign-in code: by email, or by text on the sign-in codes (2FA) sender when the person typed
+ * their phone number on the sign-in page. Texted codes never go through the notifications sender.
+ */
+export async function sendLoginCode(to: { email: string } | { phone: string }, code: string, lang: Lang = 'en') {
   const m = dict(lang).msg;
+  if ('phone' in to) return sendSms(to.phone, m.loginSms(smsSender(), code, eventName(lang)), 'codes');
   const text = m.loginText(code, eventName(lang));
-  return sendEmail(email, m.loginSubject(code), text, emailHtml(lang, m.loginTitle, [text], code));
+  return sendEmail(to.email, m.loginSubject(code), text, emailHtml(lang, m.loginTitle, [text], code));
 }
 
 /** Staff moved a booked time slot: tell the guest, in their language. */

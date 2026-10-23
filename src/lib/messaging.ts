@@ -65,10 +65,19 @@ export class SmsOptedOut extends Error {
   constructor(public phone: string) { super(`${phone} has opted out of texts (replied STOP)`); }
 }
 
-export async function sendSms(to: string, text: string): Promise<Sent> {
+/**
+ * Which Twilio sender a text goes out on. Each is its own A2P 10DLC campaign:
+ *  - 'notify': confirmations, reminders and time changes (Account Notification), TWILIO_FROM;
+ *  - 'codes': sign-in codes people ask for (2FA), TWILIO_CODES_FROM.
+ * A number can belong to only one campaign, so the two must be different Messaging Services.
+ */
+export type SmsSender = 'notify' | 'codes';
+const senderFrom = (s: SmsSender) => (s === 'codes' ? process.env.TWILIO_CODES_FROM : process.env.TWILIO_FROM);
+
+export async function sendSms(to: string, text: string, sender: SmsSender = 'notify'): Promise<Sent> {
   const sid = process.env.TWILIO_ACCOUNT_SID;
   const token = process.env.TWILIO_AUTH_TOKEN;
-  const from = process.env.TWILIO_FROM; // a phone number, or a Messaging Service SID (MG…)
+  const from = senderFrom(sender); // a phone number, or a Messaging Service SID (MG…)
   if (!sid || !token || !from) {
     capture('sms', to, text);
     return { channel: 'sms', to, delivered: false };
@@ -96,3 +105,13 @@ export async function sendSms(to: string, text: string): Promise<Sent> {
 
 /** True when real text messages can be sent. When false, reminders fall back to email. */
 export const smsEnabled = () => !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_FROM);
+
+/** True when sign-in codes can be texted (the 2FA campaign's Messaging Service is set). Otherwise codes go by email. */
+export const codesBySmsEnabled = () => !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_CODES_FROM);
+
+/**
+ * Whether the sign-in page shows the texting disclosure for sign-in codes: whenever codes are texted,
+ * and also with SHOW_CODE_TEXT_DISCLOSURE=1, so carrier reviewers can see it while the 2FA campaign is
+ * being reviewed (codes still go by email until TWILIO_CODES_FROM is set).
+ */
+export const showCodeTextDisclosure = () => codesBySmsEnabled() || process.env.SHOW_CODE_TEXT_DISCLOSURE === '1';

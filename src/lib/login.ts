@@ -2,6 +2,7 @@ import { createHmac, randomInt, randomUUID, timingSafeEqual } from 'node:crypto'
 import { getPool, withTx } from './db';
 import { normalizeEmail, normalizePhone } from './contact';
 import { sendLoginCode } from './notify';
+import { SmsOptedOut, codesBySmsEnabled } from './messaging';
 import type { Viewer } from './session';
 
 export const CODE_TTL_MIN = 10;
@@ -13,9 +14,13 @@ const hash = (code: string) => createHmac('sha256', process.env.SESSION_SECRET ?
 /**
  * Starts a sign-in. Always returns the same shape, so it never reveals who has signed up.
  * A phone number signs in everyone who uses it (families share phones); an email signs in one person.
- * Codes always go by email, never by text, so every text stays an account notification (carrier rules).
+ *
+ * Where the code goes: with `allowText` (the sign-in page, where the texting disclosure sits next to
+ * the button) and the sign-in codes (2FA) sender set up, a phone number gets the code by text.
+ * Otherwise codes go by email (on a shared phone, to every email on that number). Codes never go
+ * through the notifications sender, so that campaign stays account notifications only.
  */
-export async function startLogin(identifier: string, lang: 'en' | 'zh' | 'zhs' = 'en'): Promise<{ ticket: string | null; via: 'email' | 'sms' | null; masked: string | null; limited?: boolean; many?: boolean }> {
+export async function startLogin(identifier: string, lang: 'en' | 'zh' | 'zhs' = 'en', opts: { allowText?: boolean } = {}): Promise<{ ticket: string | null; via: 'email' | 'sms' | null; masked: string | null; limited?: boolean; many?: boolean }> {
   const phone = normalizePhone(identifier);
   const email = phone ? null : normalizeEmail(identifier);
   if (!phone && !email) return { ticket: null, via: null, masked: null };
@@ -28,13 +33,13 @@ export async function startLogin(identifier: string, lang: 'en' | 'zh' | 'zhs' =
   );
   // Unknown people get the same answer as everyone else (a ticket that can never match),
   // so the form can't be used to find out who has signed up.
-  if (!people.length) return { ticket: randomUUID(), via: 'email', masked: mask(phone ?? email!) };
+  const byText = !!phone && !!opts.allowText && codesBySmsEnabled();
+  if (!people.length) return { ticket: randomUUID(), via: byText ? 'sms' : 'email', masked: mask(phone ?? email!) };
 
-  // The code goes by email. On a shared phone, every email on that number gets it. A number with no
-  // email on file (a walk-in) gets the same answer as an unknown one: there is nowhere to send a code.
   const emails = [...new Set(people.map((p) => p.email).filter((e): e is string => !!e))].slice(0, 5);
-  if (phone && !emails.length) return { ticket: randomUUID(), via: 'email', masked: mask(phone) };
-  const via = 'email' as const;
+  // By email, a number with no email on file (a walk-in) gets the same answer as an unknown one.
+  if (phone && !byText && !emails.length) return { ticket: randomUUID(), via: 'email', masked: mask(phone) };
+  let via: 'email' | 'sms' = byText ? 'sms' : 'email';
 
   const recent = await getPool().query<{ n: number }>(
     phone
@@ -50,8 +55,19 @@ export async function startLogin(identifier: string, lang: 'en' | 'zh' | 'zhs' =
      values ($1, $2, $3, $4, now() + make_interval(mins => $5)) returning id`,
     [phone ? null : people[0].id, phone, hash(code), via, CODE_TTL_MIN],
   );
+  if (via === 'sms') {
+    try {
+      await sendLoginCode({ phone: phone! }, code, lang);
+      return { ticket: ins.rows[0].id, via, masked: mask(phone!) };
+    } catch (e) {
+      // The number replied STOP to the sign-in codes sender: use email if there is one.
+      if (!(e instanceof SmsOptedOut) || !emails.length) throw e;
+      via = 'email';
+      await getPool().query(`update login_codes set sent_via = 'email' where id = $1`, [ins.rows[0].id]);
+    }
+  }
   const to = phone ? emails : [people[0].email!];
-  for (const e of to) await sendLoginCode(e, code, lang);
+  for (const e of to) await sendLoginCode({ email: e }, code, lang);
   return { ticket: ins.rows[0].id, via, masked: to.map(mask).join(' / '), many: to.length > 1 };
 }
 

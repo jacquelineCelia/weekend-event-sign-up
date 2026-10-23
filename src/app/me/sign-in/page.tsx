@@ -4,6 +4,8 @@ import { AskForm, CodeForm } from './forms';
 import { getLang } from '@/lib/lang';
 import { dict } from '@/lib/i18n';
 import LangToggle from '@/components/LangToggle';
+import { showCodeTextDisclosure } from '@/lib/messaging';
+import { smsSender } from '@/lib/hans';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,7 +19,7 @@ export default async function SignIn({ searchParams }: { searchParams: Promise<{
         <Link className="back" href="/"><Back /> {dict(lang).activities}</Link>
         <LangToggle lang={lang} />
       </div>
-      {step === 'ask' ? <AskForm lang={lang} /> : <CodeForm lang={lang} ticket={sp.t!} to={sp.to ?? ''} many={sp.m === '1'} via={sp.via === 'sms' ? 'sms' : 'email'} />}
+      {step === 'ask' ? <AskForm lang={lang} codesByText={showCodeTextDisclosure() ? smsSender() : null} /> : <CodeForm lang={lang} ticket={sp.t!} to={sp.to ?? ''} many={sp.m === '1'} via={sp.via === 'sms' ? 'sms' : 'email'} />}
     </div>
   );
 }

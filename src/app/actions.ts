@@ -98,7 +98,8 @@ export async function confirmAction(holdId: string, prev: FormState, form: FormD
   const remember = form.get('remember') === 'on';
 
   if (intent === 'send_code' && prev?.conflict && !prev.conflict.owned) {
-    // The code goes to the email they typed (or, for a walk-in record with no email yet, the phone).
+    // The code goes to the email they typed (or, for a walk-in record with no email yet, the emails on
+    // that phone). Never by text here: this screen has no texting disclosure for sign-in codes.
     const byEmail = await getPool().query('select 1 from people where lower(email) = $1', [parsed.data.email]);
     const r = await startLogin((byEmail.rowCount ? parsed.data.email : parsed.data.phone) ?? '', lang);
     if (r.limited || !r.ticket) {

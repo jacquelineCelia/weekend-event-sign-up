@@ -107,6 +107,9 @@ const en = {
   organizedBy: (org: string, parent: string) => `Organized by ${org}, part of ${parent}.`,
   privacy: 'Privacy',
   signinSmsNote: 'We’ll email the code to the address on your sign-ups.',
+  /** Shown under "Send me a code" when sign-in codes can be texted (the 2FA campaign's disclosure). */
+  codeTextConsent: (sender: string) =>
+    `If you enter a mobile number, you agree to receive a one-time sign-in code by text from ${sender}. One message per request. Msg & data rates may apply. Reply STOP to cancel, HELP for help. Enter your email instead to get the code by email.`,
   confirming: 'Confirming…',
   confirmBtn: (n: number) => `Confirm ${n} ${n === 1 ? 'spot' : 'spots'}`,
   freeNote: 'Free · Cancel any time from My sign-ups',
@@ -233,6 +236,9 @@ const en = {
     ],
     cantMakeIt: "I can't make it",
     loginText: (code: string, event: string) => `${code} is your ${event} sign-in code. It expires in 10 minutes.`,
+    /** The texted sign-in code (sign-in codes / 2FA sender). */
+    loginSms: (from: string, code: string, event: string) =>
+      `${from}: ${code} is your ${event} sign-in code. It expires in 10 minutes. Didn't ask for it? Ignore this text. Reply STOP to opt out.`,
     loginSubject: (code: string) => `Your sign-in code: ${code}`,
     loginTitle: 'Your sign-in code',
     seatingLine: (seats: string) => `Seating: ${seats}.`,
@@ -326,6 +332,8 @@ const zh: Dict = {
   organizedBy: (org, parent) => `由 ${org} 主辦，隸屬 ${parent}。`,
   privacy: '隱私權政策',
   signinSmsNote: '我們會將代碼寄到你報名時填寫的電子郵件。',
+  codeTextConsent: (sender) =>
+    `若輸入手機號碼，即表示你同意接收 ${sender} 以簡訊傳送的一次性登入代碼。每次申請一則簡訊。可能產生簡訊及數據傳輸費用。回覆 STOP 取消，回覆 HELP 取得協助。若想以電子郵件收到代碼，請改輸入電子郵件。`,
   confirming: '送出中…',
   confirmBtn: (n) => `確認報名 ${n} 位`,
   freeNote: '免費 · 隨時可在「我的報名」取消',
@@ -448,6 +456,7 @@ const zh: Dict = {
     ],
     cantMakeIt: '我無法參加',
     loginText: (code, event) => `${code} 是你的${event}登入代碼，10 分鐘內有效。`,
+    loginSms: (from, code, event) => `${from}：${code} 是你的${event}登入代碼，10 分鐘內有效。若非你本人申請，請忽略此簡訊。回覆 STOP 取消簡訊。`,
     loginSubject: (code) => `你的登入代碼：${code}`,
     loginTitle: '你的登入代碼',
     seatingLine: (seats) => `座位：${seats}。`,
@@ -538,6 +547,8 @@ const zhs: Dict = {
   organizedBy: (org, parent) => `由 ${org} 主办，隶属于 ${parent}。`,
   privacy: '隐私政策',
   signinSmsNote: '我们会将验证码发送到你报名时填写的邮箱。',
+  codeTextConsent: (sender) =>
+    `如输入手机号码，即表示你同意接收 ${sender} 通过短信发送的一次性登录验证码。每次申请一条短信。可能产生短信和数据流量费用。回复 STOP 退订，回复 HELP 获取帮助。如想通过邮件接收验证码，请改为输入邮箱。`,
   confirming: '提交中…',
   confirmBtn: (n) => `确认报名 ${n} 位`,
   freeNote: '免费 · 随时可在“我的报名”取消',
@@ -660,6 +671,7 @@ const zhs: Dict = {
     ],
     cantMakeIt: '我无法参加',
     loginText: (code, event) => `${code} 是你的${event}登录验证码，10 分钟内有效。`,
+    loginSms: (from, code, event) => `${from}：${code} 是你的${event}登录验证码，10 分钟内有效。如非本人申请，请忽略此短信。回复 STOP 退订短信。`,
     loginSubject: (code) => `你的登录验证码：${code}`,
     loginTitle: '你的登录验证码',
     seatingLine: (seats) => `座位：${seats}。`,

@@ -28,7 +28,8 @@ Built with Next.js 16 and Postgres (runs on Supabase as is).
   cancel it and move) and to staff walk-ins (staff see the
   clash and can cancel it and sign the guest up for the new time).
 - **My sign-ups** (`/me`): remembered on the device; on a new device, sign in with a 6-digit code
-  sent by email (to every email on a shared phone). Change time, cancel, and rate finished activities 1–10.
+  sent by email (to every email on a shared phone), or by text when a mobile number is entered and
+  `TWILIO_CODES_FROM` is set (see Deploy). Change time, cancel, and rate finished activities 1–10.
 - Confirmation message right away, reminder 15 minutes before each activity.
 - **Texting follows carrier (A2P 10DLC) rules**: the "By text message" box starts unticked, with the
   consent wording and Terms/Privacy links beside it; only people who tick it get texts (walk-ins
@@ -102,6 +103,12 @@ npm test     # 85 tests: capacity, holds, overlaps, seating, login codes, remind
      before carriers deliver texts reliably, which can take a few days to a couple of weeks —
      start it early. Until it's approved, leave the `TWILIO_*` values unset so everything goes by
      email — Twilio accepts texts from unregistered numbers but carriers silently drop them.
+   - *Sign-in codes by text (optional):* these are a second campaign with the **2FA** use case,
+     on its own Messaging Service with its own phone number (a number can belong to only one
+     campaign) → `TWILIO_CODES_FROM`. Codes are texted only from the My sign-ups sign-in page, where
+     the disclosure sits under the button; everywhere else, and while it's unset, codes go by email.
+     While the campaign is under review, set `SHOW_CODE_TEXT_DISCLOSURE=1` so reviewers can see the
+     disclosure on `/me/sign-in`; remove it once `TWILIO_CODES_FROM` is set.
 4. **Reminders** — something must call `/api/cron/reminders` every minute with
    `Authorization: Bearer $CRON_SECRET`. Vercel's free plan only runs cron once a day, so use
    Supabase's scheduler (SQL editor):

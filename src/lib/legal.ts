@@ -9,7 +9,7 @@ import { EVENT, type Lang } from './event';
 type Section = { h: string; p: (string | string[])[] };
 export type LegalDoc = { title: string; updated: string; intro: string; sections: Section[]; note?: string };
 
-const UPDATED = { en: 'Last updated October 20, 2026', zh: '最後更新：2026 年 10 月 20 日', zhs: '最后更新：2026 年 10 月 20 日' };
+const UPDATED = { en: 'Last updated October 22, 2026', zh: '最後更新：2026 年 10 月 22 日', zhs: '最后更新：2026 年 10 月 22 日' };
 const NOTE = { zh: '本頁為中文譯本，如與英文版本有出入，以英文版本為準。', zhs: '本页为中文译本，如与英文版本有出入，以英文版本为准。' };
 
 export function terms(lang: Lang, event: string): LegalDoc {
@@ -31,6 +31,14 @@ export function terms(lang: Lang, event: string): LegalDoc {
           'Reply STOP at any time to stop texts. We’ll send one message to confirm, then no more. Your reminders will then come by email if you gave us one.',
           `Reply HELP for help, or email ${mail}.`,
           'Texting is optional. You can choose email reminders instead, and signing up works either way.',
+          'Carriers are not liable for delayed or undelivered messages.',
+        ],
+      ] },
+      { h: 'Sign-in codes by text', p: [
+        `If you enter your mobile number on the My sign-ups sign-in page, ${EVENT.parentOrg} will text you a one-time code to sign in. This is separate from the texts above.`,
+        [
+          'One message each time you ask for a code. Message and data rates may apply.',
+          'Reply STOP to stop sign-in code texts; you can still sign in with your email. Reply HELP for help, or email ' + mail + '.',
           'Carriers are not liable for delayed or undelivered messages.',
         ],
       ] },
@@ -58,6 +66,14 @@ export function terms(lang: Lang, event: string): LegalDoc {
           '電信業者對延遲或未送達的訊息不負責任。',
         ],
       ] },
+      { h: '以簡訊接收登入代碼', p: [
+        `若你在「我的報名」登入頁輸入手機號碼，${EVENT.parentOrg} 會以簡訊傳送一次性登入代碼。這與上述簡訊是分開的。`,
+        [
+          '每次申請代碼傳送一則簡訊。可能產生簡訊及數據傳輸費用。',
+          '回覆 STOP 即可停止接收登入代碼簡訊，你仍可用電子郵件登入。回覆 HELP 取得協助，或寫信至 ' + mail + '。',
+          '電信業者對延遲或未送達的訊息不負責任。',
+        ],
+      ] },
       { h: '電子郵件', p: ['我們會以電子郵件寄送你選擇的報名確認與提醒，以及你申請的登入代碼。'] },
       { h: '你的資料', p: ['我們如何處理你的資料，請參閱隱私權政策。'] },
       { h: '條款變更與聯絡方式', p: [`我們可能更新本條款，上方日期為最新版本。如有疑問，請寫信至 ${mail}。`] },
@@ -82,6 +98,14 @@ export function terms(lang: Lang, event: string): LegalDoc {
           '运营商对延迟或未送达的消息不承担责任。',
         ],
       ] },
+      { h: '通过短信接收登录验证码', p: [
+        `如你在“我的报名”登录页输入手机号码，${EVENT.parentOrg} 会通过短信发送一次性登录验证码。这与上述短信是分开的。`,
+        [
+          '每次申请验证码发送一条短信。可能产生短信和数据流量费用。',
+          '回复 STOP 即可退订登录验证码短信，你仍可用邮箱登录。回复 HELP 获取帮助，或发邮件至 ' + mail + '。',
+          '运营商对延迟或未送达的消息不承担责任。',
+        ],
+      ] },
       { h: '邮件', p: ['我们会通过邮件发送你选择的报名确认和提醒，以及你申请的登录验证码。'] },
       { h: '你的信息', p: ['我们如何处理你的信息，请参阅隐私政策。'] },
       { h: '条款变更与联系方式', p: [`我们可能更新本条款，上方日期为最新版本。如有疑问，请发邮件至 ${mail}。`] },
@@ -100,7 +124,7 @@ export function privacy(lang: Lang, event: string): LegalDoc {
       { h: 'How we use it', p: ['Only to run the event: to hold your spots, send the confirmations, reminders, schedule changes and sign-in codes you ask for, and let staff find you at check-in.'] },
       { h: 'Text messages', p: [
         [
-          'We use your mobile number to text you only if you agreed to texts, and only about your own sign-ups.',
+          'We use your mobile number to text you only if you agreed to texts or asked us to text you a sign-in code, and only about your own sign-ups.',
           'Message frequency varies — usually 2–3 texts per activity. Message and data rates may apply.',
           `Reply STOP to stop texts at any time; reply HELP for help, or email ${mail}.`,
           'No mobile information will be shared with third parties or affiliates for marketing or promotional purposes.',
@@ -120,7 +144,7 @@ export function privacy(lang: Lang, event: string): LegalDoc {
       { h: '使用方式', p: ['僅用於辦理活動：保留名額、傳送你申請的報名確認、提醒、時段異動與登入代碼，以及讓工作人員在報到時找到你。'] },
       { h: '簡訊', p: [
         [
-          '只有在你同意接收簡訊時，我們才會以你的手機號碼傳送簡訊，且內容僅限你本人的報名。',
+          '只有在你同意接收簡訊，或申請以簡訊接收登入代碼時，我們才會以你的手機號碼傳送簡訊，且內容僅限你本人的報名。',
           '簡訊數量不一，每項活動通常 2–3 則。可能產生簡訊及數據傳輸費用。',
           `隨時回覆 STOP 即可停止接收簡訊；回覆 HELP 取得協助，或寫信至 ${mail}。`,
           '我們不會為行銷或推廣目的，將任何手機資訊提供給第三方或關係企業。',
@@ -140,7 +164,7 @@ export function privacy(lang: Lang, event: string): LegalDoc {
       { h: '使用方式', p: ['仅用于举办活动：保留名额、发送你申请的报名确认、提醒、时段变更和登录验证码，以及让工作人员在签到时找到你。'] },
       { h: '短信', p: [
         [
-          '只有在你同意接收短信时，我们才会通过你的手机号码发送短信，且内容仅限你本人的报名。',
+          '只有在你同意接收短信，或申请通过短信接收登录验证码时，我们才会通过你的手机号码发送短信，且内容仅限你本人的报名。',
           '短信数量不一，每项活动通常 2–3 条。可能产生短信和数据流量费用。',
           `随时回复 STOP 即可退订；回复 HELP 获取帮助，或发邮件至 ${mail}。`,
           '我们不会为营销或推广目的，将任何手机信息提供给第三方或关联公司。',

@@ -12,7 +12,8 @@ const Bubble = () => (
   </svg>
 );
 
-export function AskForm({ lang }: { lang: Lang }) {
+/** `codesByText`: the sender's name when sign-in codes can be texted (2FA campaign set up), else null. */
+export function AskForm({ lang, codesByText }: { lang: Lang; codesByText: string | null }) {
   const t = dict(lang);
   const [state, action, pending] = useActionState<LoginState, FormData>(startLoginAction, null);
   return (
@@ -25,9 +26,14 @@ export function AskForm({ lang }: { lang: Lang }) {
         <input id="who" name="who" className="input" style={{ minHeight: 54, fontSize: 17 }} autoComplete="email tel"
           defaultValue={state?.value ?? ''} aria-invalid={!!state?.error} aria-describedby={state?.error ? 'who-err' : undefined} required />
         {state?.error ? <span id="who-err" className="error">{errorText(lang, state.error)}</span> : null}
-        <span className="hint">{t.signinSmsNote} <a href="/terms">{t.terms}</a> · <a href="/privacy">{t.privacy}</a></span>
+        {codesByText ? null : <span className="hint">{t.signinSmsNote} <a href="/terms">{t.terms}</a> · <a href="/privacy">{t.privacy}</a></span>}
       </div>
-      <button className="btn" type="submit" disabled={pending}>{pending ? t.sending : t.sendCode}</button>
+      <button className="btn" type="submit" disabled={pending} aria-describedby={codesByText ? 'code-consent' : undefined}>{pending ? t.sending : t.sendCode}</button>
+      {codesByText ? (
+        <p id="code-consent" className="consent" style={{ margin: '-6px 0 0' }}>
+          {t.codeTextConsent(codesByText)} <a href="/terms">{t.terms}</a> · <a href="/privacy">{t.privacy}</a>
+        </p>
+      ) : null}
       <div className="panel" style={{ fontSize: 14, color: 'var(--ink-2)', padding: '14px 18px', borderRadius: 20 }}>
         {t.rememberNote}
       </div>

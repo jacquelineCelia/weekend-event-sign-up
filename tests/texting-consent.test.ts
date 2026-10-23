@@ -20,7 +20,7 @@ const E164 = '+14125550177';
 const mei = contactSchema.parse({ name: 'Mei Chen', email: 'mei@example.com', phone: PHONE });
 
 // Pretend Twilio is set up; record every text the app tries to send.
-let texts: { to: string; body: string }[] = [];
+let texts: { to: string; body: string; sender: string }[] = [];
 let twilioReply: () => Response = () => new Response('{"sid":"SM1"}', { status: 201 });
 let fetchSpy: { mockRestore: () => void };
 
@@ -32,7 +32,7 @@ beforeEach(async () => {
   process.env.TWILIO_ACCOUNT_SID = 'x'; process.env.TWILIO_AUTH_TOKEN = 'x'; process.env.TWILIO_FROM = 'MG123';
   fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(async (_url, init) => {
     const body = new URLSearchParams(String((init as RequestInit).body));
-    texts.push({ to: body.get('To')!, body: body.get('Body')! });
+    texts.push({ to: body.get('To')!, body: body.get('Body')!, sender: body.get('MessagingServiceSid') ?? body.get('From')! });
     return twilioReply();
   });
   actId = (await pool.query<{ id: string }>(`insert into activities (name, place, duration_min) values ('Pottery Wheel', 'Barn Studio', 60) returning id`)).rows[0].id;
@@ -40,7 +40,7 @@ beforeEach(async () => {
 });
 afterEach(() => {
   fetchSpy.mockRestore();
-  delete process.env.TWILIO_ACCOUNT_SID; delete process.env.TWILIO_AUTH_TOKEN; delete process.env.TWILIO_FROM;
+  delete process.env.TWILIO_ACCOUNT_SID; delete process.env.TWILIO_AUTH_TOKEN; delete process.env.TWILIO_FROM; delete process.env.TWILIO_CODES_FROM;
 });
 afterAll(() => pool.end());
 
@@ -84,7 +84,7 @@ describe('texting only with consent', () => {
     expect(outbox[0].channel).toBe('email');
   });
 
-  it('sends sign-in codes by email only, even to numbers that opted in to texts', async () => {
+  it('sends sign-in codes by email when the sign-in codes sender is not set up, even to numbers that opted in to texts', async () => {
     await book(true);
     texts = [];
     outbox.length = 0;
@@ -93,6 +93,50 @@ describe('texting only with consent', () => {
     expect(texts).toEqual([]);
     expect(outbox.at(-1)!.to).toBe('mei@example.com');
     expect(outbox.at(-1)!.text).toMatch(/^\d{6} is your Mindfulness Weekend sign-in code/);
+  });
+
+  it('texts a sign-in code from the sign-in page through the sign-in codes sender only', async () => {
+    await book(false); // no consent to notification texts: asking for a code by text is its own consent
+    process.env.TWILIO_CODES_FROM = 'MG2FA';
+    texts = [];
+    outbox.length = 0;
+    const r = await startLogin(PHONE, 'en', { allowText: true });
+    expect(r.via).toBe('sms');
+    expect(texts).toHaveLength(1);
+    expect(texts[0].to).toBe(E164);
+    expect(texts[0].sender).toBe('MG2FA');
+    expect(texts[0].body).toMatch(/^The Oneness Truth Foundation: \d{6} is your Mindfulness Weekend sign-in code\. It expires in 10 minutes\. .*Reply STOP to opt out\.$/);
+    expect(outbox.filter((m) => m.channel === 'email')).toEqual([]);
+  });
+
+  it('emails the code instead when the request is not from the sign-in page', async () => {
+    await book(true);
+    process.env.TWILIO_CODES_FROM = 'MG2FA';
+    texts = [];
+    const r = await startLogin(PHONE); // e.g. the clash check on the sign-up page
+    expect(r.via).toBe('email');
+    expect(texts).toEqual([]);
+  });
+
+  it('falls back to email when the number replied STOP to sign-in code texts', async () => {
+    await book(false);
+    process.env.TWILIO_CODES_FROM = 'MG2FA';
+    twilioReply = () => new Response('{"code":21610,"message":"Attempt to send to unsubscribed recipient"}', { status: 400 });
+    outbox.length = 0;
+    const r = await startLogin(PHONE, 'en', { allowText: true });
+    expect(r.via).toBe('email');
+    expect(outbox.at(-1)!.to).toBe('mei@example.com');
+    // Replying STOP to codes doesn't touch their reminder choices.
+    const b = (await pool.query<{ remind_email: boolean }>('select remind_email from bookings')).rows[0];
+    expect(b.remind_email).toBe(true);
+  });
+
+  it('does not text unknown numbers, and answers the same way', async () => {
+    process.env.TWILIO_CODES_FROM = 'MG2FA';
+    const r = await startLogin('(412) 555-0100', 'en', { allowText: true });
+    expect(r.via).toBe('sms');
+    expect(r.ticket).toBeTruthy();
+    expect(texts).toEqual([]);
   });
 
   it('sends reminder texts without a link', async () => {
