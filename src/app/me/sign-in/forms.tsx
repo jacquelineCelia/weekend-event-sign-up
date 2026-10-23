@@ -34,9 +34,6 @@ export function AskForm({ lang, codesByText }: { lang: Lang; codesByText: string
           {t.codeTextConsent(codesByText)} <a href="/terms">{t.terms}</a> · <a href="/privacy">{t.privacy}</a>
         </p>
       ) : null}
-      <div className="panel" style={{ fontSize: 14, color: 'var(--ink-2)', padding: '14px 18px', borderRadius: 20 }}>
-        {t.rememberNote}
-      </div>
     </form>
   );
 }
