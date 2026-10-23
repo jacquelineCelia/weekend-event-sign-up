@@ -236,9 +236,9 @@ const en = {
     ],
     cantMakeIt: "I can't make it",
     loginText: (code: string, event: string) => `${code} is your ${event} sign-in code. It expires in 10 minutes.`,
-    /** The texted sign-in code (sign-in codes / 2FA sender). Starts with the event's name. */
-    loginSms: (code: string, event: string) =>
-      `${event}: ${code} is your sign-in code. It expires in 10 minutes. Didn't ask for it? Ignore this text. Reply STOP to opt out.`,
+    /** The texted sign-in code (sign-in codes / 2FA sender). */
+    loginSms: (from: string, code: string, event: string) =>
+      `${from}: ${code} is your ${event} sign-in code. It expires in 10 minutes. Didn't ask for it? Ignore this text. Reply STOP to opt out.`,
     loginSubject: (code: string) => `Your sign-in code: ${code}`,
     loginTitle: 'Your sign-in code',
     seatingLine: (seats: string) => `Seating: ${seats}.`,
@@ -456,7 +456,7 @@ const zh: Dict = {
     ],
     cantMakeIt: '我無法參加',
     loginText: (code, event) => `${code} 是你的${event}登入代碼，10 分鐘內有效。`,
-    loginSms: (code, event) => `${event}：${code} 是你的登入代碼，10 分鐘內有效。若非你本人申請，請忽略此簡訊。回覆 STOP 取消簡訊。`,
+    loginSms: (from, code, event) => `${from}：${code} 是你的${event}登入代碼，10 分鐘內有效。若非你本人申請，請忽略此簡訊。回覆 STOP 取消簡訊。`,
     loginSubject: (code) => `你的登入代碼：${code}`,
     loginTitle: '你的登入代碼',
     seatingLine: (seats) => `座位：${seats}。`,
@@ -671,7 +671,7 @@ const zhs: Dict = {
     ],
     cantMakeIt: '我无法参加',
     loginText: (code, event) => `${code} 是你的${event}登录验证码，10 分钟内有效。`,
-    loginSms: (code, event) => `${event}：${code} 是你的登录验证码，10 分钟内有效。如非本人申请，请忽略此短信。回复 STOP 退订短信。`,
+    loginSms: (from, code, event) => `${from}：${code} 是你的${event}登录验证码，10 分钟内有效。如非本人申请，请忽略此短信。回复 STOP 退订短信。`,
     loginSubject: (code) => `你的登录验证码：${code}`,
     loginTitle: '你的登录验证码',
     seatingLine: (seats) => `座位：${seats}。`,

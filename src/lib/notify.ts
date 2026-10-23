@@ -127,7 +127,7 @@ export async function sendReminder(b: BookingView) {
  */
 export async function sendLoginCode(to: { email: string } | { phone: string }, code: string, lang: Lang = 'en') {
   const m = dict(lang).msg;
-  if ('phone' in to) return sendSms(to.phone, m.loginSms(code, eventName(lang)), 'codes');
+  if ('phone' in to) return sendSms(to.phone, m.loginSms(smsSender(), code, eventName(lang)), 'codes');
   const text = m.loginText(code, eventName(lang));
   return sendEmail(to.email, m.loginSubject(code), text, emailHtml(lang, m.loginTitle, [text], code));
 }
