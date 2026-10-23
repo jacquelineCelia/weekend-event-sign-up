@@ -55,6 +55,15 @@ describe('sign in with a one-time code', () => {
     expect(await verifyLogin(r.ticket!, lastCode())).toHaveProperty('error');
   });
 
+  it('only the newest code works', async () => {
+    const r1 = await startLogin('jordan@example.com');
+    const c1 = lastCode();
+    const r2 = await startLogin('jordan@example.com');
+    const c2 = lastCode();
+    expect(await verifyLogin(r1.ticket!, c1)).toHaveProperty('error');
+    expect(await verifyLogin(r2.ticket!, c2)).toEqual({ viewer: { kind: 'person', personId } });
+  });
+
   it('limits how many codes are sent', async () => {
     for (let i = 0; i < 3; i++) await startLogin('jordan@example.com');
     expect((await startLogin('jordan@example.com')).limited).toBe(true);

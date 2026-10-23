@@ -238,6 +238,9 @@ const en = {
     /** The texted sign-in code (sign-in codes / 2FA sender). */
     loginSms: (from: string, code: string, event: string) =>
       `${from}: ${code} is your ${event} sign-in code. It expires in 10 minutes. Didn't ask for it? Ignore this text. Reply STOP to opt out.`,
+    /** A second texted code while an earlier one was still valid (the earlier one stops working). */
+    loginSmsAgain: (from: string, code: string, event: string) =>
+      `${from}: here's a new ${event} sign-in code: ${code}. Use this one; earlier codes no longer work. It expires in 10 minutes. Reply HELP for help, STOP to opt out.`,
     loginSubject: (code: string) => `Your sign-in code: ${code}`,
     loginTitle: 'Your sign-in code',
     seatingLine: (seats: string) => `Seating: ${seats}.`,
@@ -455,6 +458,7 @@ const zh: Dict = {
     cantMakeIt: '我無法參加',
     loginText: (code, event) => `${code} 是你的${event}登入代碼，10 分鐘內有效。`,
     loginSms: (from, code, event) => `${from}：${code} 是你的${event}登入代碼，10 分鐘內有效。若非你本人申請，請忽略此簡訊。回覆 STOP 取消簡訊。`,
+    loginSmsAgain: (from, code, event) => `${from}：這是新的${event}登入代碼：${code}。請使用這組代碼，先前的代碼已失效。10 分鐘內有效。回覆 HELP 取得協助，回覆 STOP 取消簡訊。`,
     loginSubject: (code) => `你的登入代碼：${code}`,
     loginTitle: '你的登入代碼',
     seatingLine: (seats) => `座位：${seats}。`,
@@ -669,6 +673,7 @@ const zhs: Dict = {
     cantMakeIt: '我无法参加',
     loginText: (code, event) => `${code} 是你的${event}登录验证码，10 分钟内有效。`,
     loginSms: (from, code, event) => `${from}：${code} 是你的${event}登录验证码，10 分钟内有效。如非本人申请，请忽略此短信。回复 STOP 退订短信。`,
+    loginSmsAgain: (from, code, event) => `${from}：这是新的${event}登录验证码：${code}。请使用这个验证码，之前的验证码已失效。10 分钟内有效。回复 HELP 获取帮助，回复 STOP 退订短信。`,
     loginSubject: (code) => `你的登录验证码：${code}`,
     loginTitle: '你的登录验证码',
     seatingLine: (seats) => `座位：${seats}。`,

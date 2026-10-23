@@ -2,7 +2,7 @@ import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vites
 import { getPool } from '@/lib/db';
 import { confirmBooking, holdSpots, walkInBooking } from '@/lib/booking';
 import { contactSchema, walkInContactSchema } from '@/lib/contact';
-import { startLogin } from '@/lib/login';
+import { startLogin, verifyLogin } from '@/lib/login';
 import { outbox } from '@/lib/messaging';
 import { getBooking } from '@/lib/queries';
 import { sendConfirmation, sendReminder } from '@/lib/notify';
@@ -107,6 +107,21 @@ describe('texting only with consent', () => {
     expect(texts[0].sender).toBe('MG2FA');
     expect(texts[0].body).toMatch(/^The Oneness Truth Foundation: \d{6} is your Mindfulness Weekend sign-in code\. It expires in 10 minutes\. .*Reply STOP to opt out\.$/);
     expect(outbox.filter((m) => m.channel === 'email')).toEqual([]);
+  });
+
+  it('texts a second code with the "new code" wording, and only the newest code works', async () => {
+    await book(false);
+    process.env.TWILIO_CODES_FROM = 'MG2FA';
+    texts = [];
+    const first = await startLogin(PHONE, 'en', { allowText: true });
+    const second = await startLogin(PHONE, 'en', { allowText: true });
+    expect(texts).toHaveLength(2);
+    expect(texts[0].body).toMatch(/^The Oneness Truth Foundation: \d{6} is your Mindfulness Weekend sign-in code\./);
+    expect(texts[1].body).toMatch(/^The Oneness Truth Foundation: here's a new Mindfulness Weekend sign-in code: \d{6}\. Use this one; earlier codes no longer work\. It expires in 10 minutes\. Reply HELP for help, STOP to opt out\.$/);
+    const code1 = texts[0].body.match(/\b(\d{6})\b/)![1];
+    const code2 = texts[1].body.match(/\b(\d{6})\b/)![1];
+    expect(await verifyLogin(first.ticket!, code1)).toHaveProperty('error');
+    expect(await verifyLogin(second.ticket!, code2)).toHaveProperty('viewer');
   });
 
   it('emails the code instead when the request is not from the sign-in page', async () => {

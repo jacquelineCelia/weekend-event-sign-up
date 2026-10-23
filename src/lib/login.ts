@@ -49,6 +49,15 @@ export async function startLogin(identifier: string, lang: 'en' | 'zh' | 'zhs' =
   );
   if (recent.rows[0].n >= MAX_CODES_PER_15_MIN) return { ticket: null, via, masked: null, limited: true };
 
+  // Only the newest code works: earlier unused codes for the same phone or person stop working now.
+  // When there was one, a texted code says it's a new one (the second wording in the 2FA campaign).
+  const replaced = await getPool().query(
+    phone
+      ? `update login_codes set expires_at = now() where phone = $1 and used_at is null and expires_at > now()`
+      : `update login_codes set expires_at = now() where person_id = $1 and used_at is null and expires_at > now()`,
+    [phone ?? people[0].id],
+  );
+  const again = (replaced.rowCount ?? 0) > 0;
   const code = String(randomInt(0, 1_000_000)).padStart(6, '0');
   const ins = await getPool().query<{ id: string }>(
     `insert into login_codes (person_id, phone, code_hash, sent_via, expires_at)
@@ -57,7 +66,7 @@ export async function startLogin(identifier: string, lang: 'en' | 'zh' | 'zhs' =
   );
   if (via === 'sms') {
     try {
-      await sendLoginCode({ phone: phone! }, code, lang);
+      await sendLoginCode({ phone: phone! }, code, lang, again);
       return { ticket: ins.rows[0].id, via, masked: mask(phone!) };
     } catch (e) {
       // The number replied STOP to the sign-in codes sender: use email if there is one.

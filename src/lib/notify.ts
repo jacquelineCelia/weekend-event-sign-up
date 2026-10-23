@@ -124,10 +124,14 @@ export async function sendReminder(b: BookingView) {
 /**
  * Sends a sign-in code: by email, or by text on the sign-in codes (2FA) sender when the person typed
  * their phone number on the sign-in page. Texted codes never go through the notifications sender.
+ * `again`: an earlier code for the same phone was just replaced, so the text says this one is new.
  */
-export async function sendLoginCode(to: { email: string } | { phone: string }, code: string, lang: Lang = 'en') {
+export async function sendLoginCode(to: { email: string } | { phone: string }, code: string, lang: Lang = 'en', again = false) {
   const m = dict(lang).msg;
-  if ('phone' in to) return sendSms(to.phone, m.loginSms(smsSender(), code, eventName(lang)), 'codes');
+  if ('phone' in to) {
+    const text = again ? m.loginSmsAgain(smsSender(), code, eventName(lang)) : m.loginSms(smsSender(), code, eventName(lang));
+    return sendSms(to.phone, text, 'codes');
+  }
   const text = m.loginText(code, eventName(lang));
   return sendEmail(to.email, m.loginSubject(code), text, emailHtml(lang, m.loginTitle, [text], code));
 }
