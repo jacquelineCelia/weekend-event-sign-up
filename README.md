@@ -105,9 +105,8 @@ npm test     # 85 tests: capacity, holds, overlaps, seating, login codes, remind
      email — Twilio accepts texts from unregistered numbers but carriers silently drop them.
    - *Sign-in codes by text (optional):* these are a second campaign with the **2FA** use case,
      on its own Messaging Service with its own phone number (a number can belong to only one
-     campaign) → `TWILIO_CODES_FROM`. Codes are texted only from the My sign-ups sign-in page, when
-     a mobile number is entered and the unticked "Text me the code" box (consent wording under it)
-     is ticked; everywhere else, and while it's unset, codes go by email.
+     campaign) → `TWILIO_CODES_FROM`. Codes are texted only from the My sign-ups sign-in page, where
+     the disclosure sits under the button; everywhere else, and while it's unset, codes go by email.
      While the campaign is under review, set `SHOW_CODE_TEXT_DISCLOSURE=1` so reviewers can see the
      disclosure on `/me/sign-in`; remove it once `TWILIO_CODES_FROM` is set.
 4. **Reminders** — something must call `/api/cron/reminders` every minute with

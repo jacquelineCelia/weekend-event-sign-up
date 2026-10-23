@@ -35,7 +35,7 @@ export function terms(lang: Lang, event: string): LegalDoc {
         ],
       ] },
       { h: 'Sign-in codes by text', p: [
-        `If you enter your mobile number on the My sign-ups sign-in page and tick “Text me the code”, ${EVENT.parentOrg} will text you a one-time code to sign in. The box starts unchecked; without it, we email the code. This is separate from the sign-up texts above: asking for a code doesn’t sign you up for them, and they don’t include sign-in codes.`,
+        `If you enter your mobile number on the My sign-ups sign-in page, ${EVENT.parentOrg} will text you a one-time code to sign in. This is separate from the sign-up texts above: asking for a code doesn’t sign you up for them, and they don’t include sign-in codes.`,
         [
           'One message each time you ask for a code. Message and data rates may apply.',
           'Reply STOP to stop sign-in code texts; you can still sign in with your email. Reply HELP for help, or email ' + mail + '.',
@@ -67,7 +67,7 @@ export function terms(lang: Lang, event: string): LegalDoc {
         ],
       ] },
       { h: '以簡訊接收登入代碼', p: [
-        `若你在「我的報名」登入頁輸入手機號碼並勾選「以簡訊傳送代碼」，${EVENT.parentOrg} 會以簡訊傳送一次性登入代碼。此方框預設不勾選；未勾選時，我們會以電子郵件寄送代碼。這與上述報名簡訊是分開的：申請代碼不代表你同意接收報名簡訊，報名簡訊也不包含登入代碼。`,
+        `若你在「我的報名」登入頁輸入手機號碼，${EVENT.parentOrg} 會以簡訊傳送一次性登入代碼。這與上述報名簡訊是分開的：申請代碼不代表你同意接收報名簡訊，報名簡訊也不包含登入代碼。`,
         [
           '每次申請代碼傳送一則簡訊。可能產生簡訊及數據傳輸費用。',
           '回覆 STOP 即可停止接收登入代碼簡訊，你仍可用電子郵件登入。回覆 HELP 取得協助，或寫信至 ' + mail + '。',
@@ -99,7 +99,7 @@ export function terms(lang: Lang, event: string): LegalDoc {
         ],
       ] },
       { h: '通过短信接收登录验证码', p: [
-        `如你在“我的报名”登录页输入手机号码并勾选“通过短信发送验证码”，${EVENT.parentOrg} 会通过短信发送一次性登录验证码。此方框默认不勾选；未勾选时，我们会通过邮件发送验证码。这与上述报名短信是分开的：申请验证码不代表你同意接收报名短信，报名短信也不包含登录验证码。`,
+        `如你在“我的报名”登录页输入手机号码，${EVENT.parentOrg} 会通过短信发送一次性登录验证码。这与上述报名短信是分开的：申请验证码不代表你同意接收报名短信，报名短信也不包含登录验证码。`,
         [
           '每次申请验证码发送一条短信。可能产生短信和数据流量费用。',
           '回复 STOP 即可退订登录验证码短信，你仍可用邮箱登录。回复 HELP 获取帮助，或发邮件至 ' + mail + '。',
