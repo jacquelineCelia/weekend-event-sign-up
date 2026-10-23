@@ -105,7 +105,7 @@ describe('texting only with consent', () => {
     expect(texts).toHaveLength(1);
     expect(texts[0].to).toBe(E164);
     expect(texts[0].sender).toBe('MG2FA');
-    expect(texts[0].body).toMatch(/^The Oneness Truth Foundation: \d{6} is your Mindfulness Weekend sign-in code\. It expires in 10 minutes\. .*Reply STOP to opt out\.$/);
+    expect(texts[0].body).toMatch(/^Mindfulness Weekend: \d{6} is your sign-in code\. It expires in 10 minutes\. .*Reply STOP to opt out\.$/);
     expect(outbox.filter((m) => m.channel === 'email')).toEqual([]);
   });
 
