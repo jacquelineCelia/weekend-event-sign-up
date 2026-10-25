@@ -28,6 +28,11 @@ export async function sendEmail(to: string, subject: string, text: string, html?
   const resendKey = process.env.RESEND_API_KEY;
   const key = process.env.SENDGRID_API_KEY;
   if (!from || (!resendKey && !key)) {
+    // Say why in the server log (Vercel → Logs), so a missing setting is easy to spot.
+    if (process.env.MESSAGING_CAPTURE !== '1') {
+      const missing = [!from && 'EMAIL_FROM', !resendKey && !key && 'RESEND_API_KEY'].filter(Boolean).join(' and ');
+      console.warn(`Email not sent (only logged): ${missing} not set in this environment.`);
+    }
     capture('email', to, text, subject);
     return { channel: 'email', to, delivered: false };
   }
