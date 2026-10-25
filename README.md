@@ -128,9 +128,13 @@ npm test     # 85 tests: capacity, holds, overlaps, seating, login codes, remind
    safely — a booking is claimed before sending, so nobody gets two reminders.
 5. **Preview site (optional)** — push a `dev` branch and Vercel deploys it at a stable address like
    `<project>-git-dev-<you>.vercel.app`. Give Vercel's **Preview** environment the dev database's
-   `DATABASE_URL`, its own `SESSION_SECRET` / `STAFF_PASSCODE`, and leave out `APP_URL`,
-   `RESEND_API_KEY`, `SENDGRID_API_KEY` and `TWILIO_*` (messages then go to the Vercel logs, and links point at the
-   preview). Previews require a Vercel login by default — turn that off under Settings →
+   `DATABASE_URL`, its own `SESSION_SECRET` / `STAFF_PASSCODE` / `CRON_SECRET`, and leave out
+   `APP_URL` (links in messages then point at the preview). To send real email and texts from the
+   preview, give Preview `EMAIL_FROM`, `RESEND_API_KEY` and the `TWILIO_*` values too (the same ones
+   as Production are fine); leave them out and messages only go to the Vercel logs. Reminders on the
+   preview need their own scheduler job in the dev Supabase project (step 4, with the preview's
+   address and its `CRON_SECRET`). Texting opt-outs belong to the phone numbers, so a STOP sent to a
+   text from the preview also stops production texts to that phone. Previews require a Vercel login by default — turn that off under Settings →
    Deployment Protection if testers without Vercel accounts need in.
 6. **Real activities** — replace the placeholders in **Staff → Schedule & capacity**
    (or edit `db/seed.sql` before seeding).
