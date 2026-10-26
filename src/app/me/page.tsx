@@ -14,6 +14,7 @@ import { SHOW_VENUE_MAP } from '@/lib/venue-map';
 import { LegalFoot } from '@/components/LegalPage';
 import { signOutAction } from './actions';
 import { CancelButton, RatePicker, SeatChanger, type SeatChoice } from './widgets';
+import { nameRuns } from '@/components/ActivityName';
 
 export const dynamic = 'force-dynamic';
 
@@ -123,7 +124,7 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
             <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: '0.14em', background: 'var(--paper)', color: 'var(--ink)', padding: '4px 10px', borderRadius: 999 }}>{next.code}</span>
           </div>
           <div className="stack" style={{ gap: 4, position: 'relative' }}>
-            <span className={`serif${zhBold(next.activity_name)}`} style={{ fontSize: 24 }}>{next.activity_name}</span>
+            <span className={`serif${zhBold(next.activity_name)}`} style={{ fontSize: 24 }}>{nameRuns(next.activity_name)}</span>
             <span className="sub">{fmtTimeL(next.starts_at, lang)} · {next.place} · {t.spots(next.party_size)}{household ? ` · ${next.person_name}` : ''}</span>
             {seatsOf(next.id) ? <span className="sub">{t.seatingIs(seatsOf(next.id))}</span> : null}
           </div>
@@ -152,7 +153,7 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
                 <div style={{ display: 'flex', gap: 14 }}>
                   <div style={{ width: 88, flex: 'none', whiteSpace: 'nowrap', fontWeight: 700, color: 'var(--moss)', fontVariantNumeric: 'tabular-nums', paddingTop: 2 }}>{fmtTimeL(r.starts_at, lang)}</div>
                   <div className="stack" style={{ gap: 3, minWidth: 0 }}>
-                    <span className={`serif${zhBold(r.activity_name)}`} style={{ fontSize: 17, color: started ? 'var(--muted-2)' : undefined }}>{r.activity_name}</span>
+                    <span className={`serif${zhBold(r.activity_name)}`} style={{ fontSize: 17, color: started ? 'var(--muted-2)' : undefined }}>{nameRuns(r.activity_name)}</span>
                     {household ? <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--ochre)' }}>{r.person_name}</span> : null}
                     <span className="muted" style={{ fontSize: 13.5 }}>{r.place} · {t.spots(r.party_size)} · {t.code(r.code)}</span>
                     {seatsOf(r.id) ? <span style={{ fontSize: 13.5, color: started ? 'var(--muted-2)' : 'var(--ink-2)' }}>{t.seatingIs(seatsOf(r.id))}</span> : null}

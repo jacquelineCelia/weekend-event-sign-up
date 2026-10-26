@@ -5,6 +5,7 @@ import { changeTimeAction, confirmAction, type Conflict, type FormState } from '
 import { Back, Clock } from '@/components/icons';
 import { dict, errorText, type Lang, zhBold } from '@/lib/i18n';
 import LangToggle from '@/components/LangToggle';
+import { nameRuns } from '@/components/ActivityName';
 
 type Props = {
   lang: Lang;
@@ -90,7 +91,7 @@ export default function DetailsForm({ lang, smsFrom, eventName, holdId, secondsL
         <h1 className="h1" style={{ fontSize: 30 }}>{known ? t.welcomeBack(known.first) : t.almostThere}</h1>
         <div className="summary">
           <div className="stack" style={{ gap: 4 }}>
-            <span className={`serif${zhBold(summary.activity)}`} style={{ fontSize: 19 }}>{summary.activity}</span>
+            <span className={`serif${zhBold(summary.activity)}`} style={{ fontSize: 19 }}>{nameRuns(summary.activity)}</span>
             <span className="sub">{summary.when}</span>
             <span style={{ fontSize: 13.5, fontWeight: 600, marginTop: 4 }}>{summary.spots}</span>
           </div>
@@ -164,7 +165,7 @@ function OverlapPanel({ lang, holdId, conflict, email, pending }: { lang: Lang; 
           <ul className="stack" style={{ listStyle: 'none', margin: 0, padding: 0, gap: 8 }}>
             {conflict.items.map((c) => (
               <li key={c.id} className="stack" style={{ gap: 2, background: 'var(--paper)', color: 'var(--ink)', borderRadius: 14, padding: '10px 14px' }}>
-                <span className={`serif${zhBold(c.activity)}`} style={{ fontSize: 17 }}>{c.activity}</span>
+                <span className={`serif${zhBold(c.activity)}`} style={{ fontSize: 17 }}>{nameRuns(c.activity)}</span>
                 <span style={{ fontSize: 13, color: 'var(--muted)' }}>{c.when} · {c.place} · {t.spots(c.partySize)}</span>
                 <input type="hidden" name="replace" value={c.id} />
               </li>

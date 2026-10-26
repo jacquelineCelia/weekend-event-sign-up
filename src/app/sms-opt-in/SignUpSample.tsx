@@ -7,6 +7,7 @@ import LangToggle from '@/components/LangToggle';
 import { contactSchema } from '@/lib/contact';
 import { dict, errorText, firstName, type Lang, zhBold } from '@/lib/i18n';
 import { useCountdown } from '@/app/book/[holdId]/DetailsForm';
+import { nameRuns } from '@/components/ActivityName';
 
 type Props = {
   lang: Lang;
@@ -74,7 +75,7 @@ export default function SignUpSample({ lang, smsFrom, eventName, summary, ticket
         <h1 className="h1" style={{ fontSize: 30 }}>{t.almostThere}</h1>
         <div className="summary">
           <div className="stack" style={{ gap: 4 }}>
-            <span className={`serif${zhBold(summary.activity)}`} style={{ fontSize: 19 }}>{summary.activity}</span>
+            <span className={`serif${zhBold(summary.activity)}`} style={{ fontSize: 19 }}>{nameRuns(summary.activity)}</span>
             <span className="sub">{summary.when}</span>
             <span style={{ fontSize: 13.5, fontWeight: 600, marginTop: 4 }}>{summary.spots}</span>
           </div>
@@ -153,7 +154,7 @@ function Success({ lang, done, summary, ticket, calendar }: { lang: Lang; done: 
         <article className="ticket">
           <div className="top">
             <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--moss)' }}>{ticket.day}</span>
-            <span className={`serif${zhBold(summary.activity)}`} style={{ fontSize: 24 }}>{summary.activity}</span>
+            <span className={`serif${zhBold(summary.activity)}`} style={{ fontSize: 24 }}>{nameRuns(summary.activity)}</span>
             <span style={{ fontSize: 15, color: 'var(--ink-2)' }}>{ticket.time}</span>
           </div>
           <div className="mid">

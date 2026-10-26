@@ -7,6 +7,7 @@ import { getLang } from '@/lib/lang';
 import { dict, zhBold } from '@/lib/i18n';
 import LangToggle from '@/components/LangToggle';
 import { Calendar, Hills, Leaf, Check } from '@/components/icons';
+import { nameRuns } from '@/components/ActivityName';
 
 export const dynamic = 'force-dynamic';
 
@@ -73,7 +74,7 @@ export default async function Browse({ searchParams }: { searchParams: Promise<{
           <section key={a.id} className="card" aria-labelledby={`a-${a.id}`}>
             <div className="card-head">
               <div className="stack" style={{ gap: 4, minWidth: 0 }}>
-                <Link id={`a-${a.id}`} className={`card-title${zhBold(a.name)}`} href={`/activity/${a.id}?day=${day.key}`}>{a.name}</Link>
+                <Link id={`a-${a.id}`} className={`card-title${zhBold(a.name)}`} href={`/activity/${a.id}?day=${day.key}`}>{nameRuns(a.name)}</Link>
                 <span className="card-sub">{a.place} · {fmtDurationL(a.durationMin, lang)}</span>
               </div>
               {a.open.length === 0 ? <span className="badge">{t.fullyBooked}</span> : null}

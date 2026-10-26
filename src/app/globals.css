@@ -248,6 +248,7 @@ select.input { padding: 0 14px; }
 
 /* Chinese activity names are bold so they stand out the way the serif English names do. */
 .zhname { font-weight: 700; }
+.zhname .latin { font-weight: 400; }
 
 /* Staff lists (Check-in sessions, Schedule activities): when the list sits beside the main panel, it
    scrolls on its own and stays in view, so the right side doesn't scroll away while looking for one.

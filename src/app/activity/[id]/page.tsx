@@ -10,6 +10,7 @@ import { getPool } from '@/lib/db';
 import { currentOwners } from '@/lib/viewer';
 import { Back, Leaf } from '@/components/icons';
 import SlotPicker, { type PickerSlot, type PickerSeat } from './SlotPicker';
+import { nameRuns } from '@/components/ActivityName';
 
 export const dynamic = 'force-dynamic';
 
@@ -117,7 +118,7 @@ export default async function ActivityPage({
       </div>
       <section className="pad stack" style={{ gap: 12, padding: '8px 20px 22px' }}>
         <span className="eyebrow"><Leaf /> {dayText(day, 'long', lang)}</span>
-        <h1 className={`h1${zhBold(a.name)}`} style={{ fontSize: 34 }}>{a.name}</h1>
+        <h1 className={`h1${zhBold(a.name)}`} style={{ fontSize: 34 }}>{nameRuns(a.name)}</h1>
         {a.description ? <p className="lede">{a.description}</p> : null}
         <div className="pills"><span>{a.place}</span><span>{fmtDurationL(a.durationMin, lang)}</span></div>
         {EVENT.days.length > 1 ? (
