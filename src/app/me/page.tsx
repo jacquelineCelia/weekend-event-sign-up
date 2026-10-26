@@ -10,6 +10,7 @@ import { dict, zhBold } from '@/lib/i18n';
 import LangToggle from '@/components/LangToggle';
 import { Back, Bell, Plus } from '@/components/icons';
 import VenueMap, { type MapPlace } from '@/components/VenueMap';
+import { SHOW_VENUE_MAP } from '@/lib/venue-map';
 import { LegalFoot } from '@/components/LegalPage';
 import { signOutAction } from './actions';
 import { CancelButton, RatePicker, SeatChanger, type SeatChoice } from './widgets';
@@ -62,10 +63,12 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
     r.place = localText(r.place, r.place_zh, lang);
   }
   const now = requestTime();
-  // Every place on the grounds with what happens there, for the map in the Up next card.
-  const placeRows = (await getPool().query<{ name: string; name_zh: string; place: string; place_zh: string }>(
-    'select name, name_zh, place, place_zh from activities order by sort_order, name',
-  )).rows;
+  // Every place on the grounds with what happens there, for the map in the Up next card (when shown).
+  const placeRows = SHOW_VENUE_MAP
+    ? (await getPool().query<{ name: string; name_zh: string; place: string; place_zh: string }>(
+        'select name, name_zh, place, place_zh from activities order by sort_order, name',
+      )).rows
+    : [];
   const mapPlaces: MapPlace[] = [];
   for (const a of placeRows) {
     let p = mapPlaces.find((m) => m.key === a.place);
@@ -130,8 +133,10 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
                 <Bell size={16} /> {t.reminderAt(fmtTimeL(addMinutes(next.starts_at, -15), lang))}
               </span>
             ) : <span />}
-            <VenueMap places={mapPlaces} current={next.place_en ?? next.place} zh={isChinese(lang)}
-              text={{ map: t.map, mapTitle: t.mapTitle, close: t.close, yourNext: t.yourNextHere, entrance: t.entrance }} />
+            {SHOW_VENUE_MAP ? (
+              <VenueMap places={mapPlaces} current={next.place_en ?? next.place} zh={isChinese(lang)}
+                text={{ map: t.map, mapTitle: t.mapTitle, close: t.close, yourNext: t.yourNextHere, entrance: t.entrance }} />
+            ) : null}
           </div>
         </section>
       ) : null}

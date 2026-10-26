@@ -4,6 +4,12 @@
  * When the real map is ready, replace the drawing in VenueMap.tsx and update these points.
  * A place not listed here still shows in the list under the map, just without a pin.
  */
+/**
+ * The Map button on My sign-ups is hidden while the map is still the placeholder drawing (the real
+ * rooms have no pins on it). Set to true once VenueMap.tsx and MAP_POINTS show the real site.
+ */
+export const SHOW_VENUE_MAP = false;
+
 export type Label = 'left' | 'right' | 'above' | 'below';
 export const MAP_POINTS: Record<string, { x: number; y: number; label: Label }> = {
   'North Trailhead': { x: 96, y: 84, label: 'right' },

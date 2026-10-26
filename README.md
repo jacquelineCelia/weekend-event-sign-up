@@ -39,9 +39,11 @@ Built with Next.js 16 and Postgres (runs on Supabase as is).
   so every text is an account notification; and
   if someone replies STOP, their reminders switch to email. Terms (`/terms`) and Privacy (`/privacy`)
   pages are in all three languages; set `NEXT_PUBLIC_ORG_NAME` and `NEXT_PUBLIC_SUPPORT_EMAIL`.
-- **Map**: a Map button on the Up next card opens a map of the grounds with the next activity's place
-  highlighted and what happens where. The map is a **placeholder drawing**: replace the drawing in
-  `src/components/VenueMap.tsx` and the pin positions in `src/lib/venue-map.ts` with the real site.
+- **Map** (currently hidden): a Map button on the Up next card can open a map of the grounds with the
+  next activity's place highlighted and what happens where. The map is a **placeholder drawing**, so
+  the button is off (`SHOW_VENUE_MAP = false` in `src/lib/venue-map.ts`). To use it, replace the
+  drawing in `src/components/VenueMap.tsx` and the pin positions in `src/lib/venue-map.ts` with the
+  real site, then set `SHOW_VENUE_MAP` to true.
 - **Shared phone numbers** (families, couples): people are told apart by email, so several can use
   one phone. Signing in with that phone shows everyone's sign-ups, each labelled with a name;
   signing in with an email shows just that person's. Texts start with the person's first name.
