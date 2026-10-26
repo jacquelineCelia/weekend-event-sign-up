@@ -444,7 +444,7 @@ const zh: Dict = {
     whenWhere: (act, when, place) => `${act} — ${when}，地點：${place}。`,
     partyFor: (n, name, code) => `${name}，共 ${n} 位。報到時請出示代碼 ${code}、姓名或手機號碼。`,
     willRemind: (t) => `我們會在${t} 提醒你。`,
-    plansChanged: '行程有變？請到「我的報名」取消，把名額留給其他人。',
+    plansChanged: '行程有變？請到「我的報名」取消，以釋放您的名額，謝謝。',
     // Kept short: a Chinese text message holds about 70 characters per part.
     confirmSms: (from, first, act, when, place, n, code, reminder) => `${from}：${first}已報名${act}，${when}，${place}。${n}位，代碼 ${code}。${reminder}簡訊頻率不一。可能產生簡訊及數據傳輸費用。回覆 HELP 取得協助，回覆 STOP 取消簡訊。`,
     reminderSms: (from, first, act, time, place, n, code) => `${from}：${first}，${act} 15 分鐘後開始（${time}，${place}）。${n}位，代碼 ${code}。無法參加？請到「我的報名」取消。`,
@@ -659,7 +659,7 @@ const zhs: Dict = {
     whenWhere: (act, when, place) => `${act} — ${when}，地点：${place}。`,
     partyFor: (n, name, code) => `${name}，共 ${n} 位。签到时请出示签到码 ${code}、姓名或手机号码。`,
     willRemind: (t) => `我们会在${t} 提醒你。`,
-    plansChanged: '行程有变？请到“我的报名”取消，把名额留给其他人。',
+    plansChanged: '行程有变？请到“我的报名”取消，以释放您的名额，谢谢。',
     // Kept short: a Chinese text message holds about 70 characters per part.
     confirmSms: (from, first, act, when, place, n, code, reminder) => `${from}：${first}已报名${act}，${when}，${place}。${n}位，签到码 ${code}。${reminder}短信频率不一。可能产生短信和数据流量费用。回复 HELP 获取帮助，回复 STOP 退订短信。`,
     reminderSms: (from, first, act, time, place, n, code) => `${from}：${first}，${act} 15 分钟后开始（${time}，${place}）。${n}位，签到码 ${code}。无法参加？请到“我的报名”取消。`,
