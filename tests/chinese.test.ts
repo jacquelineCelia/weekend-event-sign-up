@@ -90,7 +90,7 @@ describe('messages in the attendee’s saved language', () => {
     const [confirm, remind] = outbox;
     expect(confirm.subject).toBe('報名成功：拉坯體驗，11/14（六） 上午 11:30');
     expect(confirm.text).toContain('王美玲，共 2 位。報到時請出示代碼');
-    expect(confirm.text).toContain('我們會在上午 11:15 提醒你。');
+    expect(confirm.text).toContain('我們會在上午 11:15 提醒您。');
     expect(remind.subject).toBe('15 分鐘後開始：拉坯體驗，上午 11:30');
     expect(remind.text).toContain('拉坯體驗將於上午 11:30 在穀倉工作室開始。');
   });
@@ -123,8 +123,8 @@ describe('messages in the attendee’s saved language', () => {
     await book('zh');
     outbox.length = 0;
     await startLogin('mei@example.com', 'zh');
-    expect(outbox[0].subject).toMatch(/^你的登入代碼：\d{6}$/);
-    expect(outbox[0].text).toMatch(/^\d{6} 是你的正念週末登入代碼，10 分鐘內有效。$/);
+    expect(outbox[0].subject).toMatch(/^您的登入代碼：\d{6}$/);
+    expect(outbox[0].text).toMatch(/^\d{6} 是您的正念週末登入代碼，10 分鐘內有效。$/);
   });
 
   it('walk-ins get messages in the language staff picked', async () => {
@@ -157,7 +157,7 @@ describe('Simplified Chinese', () => {
     const all = flat(zhs).join('\n');
     expect(toSimplified(all)).toBe(all); // nothing left in Traditional
     for (const taiwanWord of ['代碼', '额满', '进程', '行事历', '信箱', '报到', '「']) expect(all).not.toContain(taiwanWord);
-    expect(zhs.msg.loginSubject('123456')).toBe('你的登录验证码：123456');
+    expect(zhs.msg.loginSubject('123456')).toBe('您的登录验证码：123456');
     expect(zhs.checkInCode).toBe('签到码');
   });
 
