@@ -2,6 +2,10 @@
 
 import { useActionState, useState } from 'react';
 import { walkInAction, type WalkInState } from '../../actions';
+import { sdict } from '@/lib/staff-i18n';
+import { zhBold } from '@/lib/i18n';
+import { nameRuns } from '@/components/ActivityName';
+import type { Lang } from '@/lib/event';
 
 export type WalkInActivity = {
   key: string; label: string; dayShort: string; name: string;
@@ -10,9 +14,9 @@ export type WalkInActivity = {
   slots: { id: string; time: string; remaining: number; capacity: number; soon: boolean; ended: boolean }[];
 };
 
-const spots = (n: number) => `${n} ${n === 1 ? 'spot' : 'spots'}`;
-
-export default function WalkInForm({ options, initialKey, initialSlot }: { options: WalkInActivity[]; initialKey: string; initialSlot: string | null }) {
+export default function WalkInForm({ options, initialKey, initialSlot, lang }: { options: WalkInActivity[]; initialKey: string; initialSlot: string | null; lang: Lang }) {
+  const t = sdict(lang);
+  const spots = t.spots;
   const [key, setKey] = useState(initialKey);
   const act = options.find((o) => o.key === key) ?? options[0];
   const usable = act?.slots.filter((s) => !s.ended) ?? [];
@@ -60,22 +64,22 @@ export default function WalkInForm({ options, initialKey, initialSlot }: { optio
     setApproved(false);
   };
 
-  if (!act) return <p className="muted">No activities yet. Add them on the Schedule &amp; capacity screen.</p>;
+  if (!act) return <p className="muted">{t.noActivitiesWalkIn}</p>;
 
   return (
     <form key={formKey} action={action} style={{ display: 'contents' }}>
       <div className="sheet staffmain" style={{ gap: 22 }}>
-        <h1 className="h1" style={{ fontSize: 30 }}>Welcome someone in</h1>
+        <h1 className="h1" style={{ fontSize: 30 }}>{t.walkInTitle}</h1>
 
         <div className="field">
-          <label htmlFor="act">Activity</label>
+          <label htmlFor="act">{t.activity}</label>
           <select id="act" className="input" value={key} onChange={(e) => pickActivity(e.target.value)}>
             {options.map((o) => <option key={o.key} value={o.key}>{o.label}</option>)}
           </select>
         </div>
 
         <fieldset style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
-          <legend className="legend" style={{ padding: 0, marginBottom: 8 }}>Time</legend>
+          <legend className="legend" style={{ padding: 0, marginBottom: 8 }}>{t.time}</legend>
           <div className="tgrid">
             {usable.map((s) => {
               const full = s.remaining === 0;
@@ -85,32 +89,32 @@ export default function WalkInForm({ options, initialKey, initialSlot }: { optio
                   <input type="radio" name="slotId" value={s.id} checked={slotId === s.id} onChange={() => { setSlotId(s.id); setApproved(false); }} />
                   <span style={{ fontSize: 16, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{s.time}</span>
                   <span style={{ fontSize: 13, fontWeight: 600, color: full ? 'var(--muted-2)' : low ? 'var(--ochre)' : 'var(--moss-dark)' }}>
-                    {full ? 'Full' : low ? `Only ${s.remaining} left` : `${s.remaining} left`}
+                    {full ? t.full : low ? t.onlyLeft(s.remaining) : t.left(s.remaining)}
                   </span>
                 </label>
               );
             })}
-            {usable.length === 0 ? <p className="muted">All sessions for this activity have ended.</p> : null}
+            {usable.length === 0 ? <p className="muted">{t.allSessionsEnded}</p> : null}
           </div>
           {err.slotId ? <span className="error">{err.slotId}</span> : null}
         </fieldset>
 
         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 12, padding: '16px 20px', background: 'var(--ground)', borderRadius: 20 }}>
           <div className="stack" style={{ gap: 2 }}>
-            <span style={{ fontWeight: 600 }} id="party-l">Party size</span>
-            <span className="muted" style={{ fontSize: 13 }}>Including the person signing up</span>
+            <span style={{ fontWeight: 600 }} id="party-l">{t.partySize}</span>
+            <span className="muted" style={{ fontSize: 13 }}>{t.includingSigner}</span>
           </div>
           <div className="stepper" role="group" aria-labelledby="party-l">
-            <button type="button" className="round" aria-label="Smaller party" disabled={party <= 1} onClick={() => setParty(Math.max(1, party - 1))}>−</button>
+            <button type="button" className="round" aria-label={t.smallerParty} disabled={party <= 1} onClick={() => setParty(Math.max(1, party - 1))}>−</button>
             <output aria-live="polite">{party}</output>
-            <button type="button" className="round" aria-label="Larger party" disabled={party >= 50} onClick={() => { setParty(party + 1); setApproved(false); }}>+</button>
+            <button type="button" className="round" aria-label={t.largerParty} disabled={party >= 50} onClick={() => { setParty(party + 1); setApproved(false); }}>+</button>
           </div>
           <input type="hidden" name="party" value={party} />
         </div>
 
         {hasSeats ? (
           <fieldset style={{ border: '1px solid var(--line)', borderRadius: 20, padding: '14px 20px 16px', margin: 0, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <legend className="legend" style={{ padding: '0 6px' }}>Seating <span className="muted" style={{ fontWeight: 400 }}>· {seated} of {party} seated</span></legend>
+            <legend className="legend" style={{ padding: '0 6px' }}>{t.seating} <span className="muted" style={{ fontWeight: 400 }}>· {t.seatedOf(seated, party)}</span></legend>
             {act.seats.map((x) => {
               const n = seatCount[x.id];
               const left = seatLeft(x.id);
@@ -118,12 +122,12 @@ export default function WalkInForm({ options, initialKey, initialSlot }: { optio
                 <div key={x.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
                   <div className="stack" style={{ gap: 2 }}>
                     <span style={{ fontWeight: 600 }} id={`seat-${x.id}`}>{x.name}</span>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: !slot ? 'var(--muted)' : left === 0 ? 'var(--muted-2)' : 'var(--moss-dark)' }}>{!slot ? '' : left === 0 ? 'Full' : `${left} left`}</span>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: !slot ? 'var(--muted)' : left === 0 ? 'var(--muted-2)' : 'var(--moss-dark)' }}>{!slot ? '' : left === 0 ? t.full : t.left(left)}</span>
                   </div>
                   <div className="stepper" role="group" aria-labelledby={`seat-${x.id}`}>
-                    <button type="button" className="round" aria-label={`One fewer ${x.name}`} disabled={n <= 0} onClick={() => { setSeatWanted({ ...seatCount, [x.id]: n - 1 }); setApproved(false); }}>−</button>
+                    <button type="button" className="round" aria-label={t.oneFewerSeat(x.name)} disabled={n <= 0} onClick={() => { setSeatWanted({ ...seatCount, [x.id]: n - 1 }); setApproved(false); }}>−</button>
                     <output aria-live="polite">{n}</output>
-                    <button type="button" className="round" aria-label={`One more ${x.name}`} disabled={seated >= party} onClick={() => { setSeatWanted({ ...seatCount, [x.id]: n + 1 }); setApproved(false); }}>+</button>
+                    <button type="button" className="round" aria-label={t.oneMoreSeat(x.name)} disabled={seated >= party} onClick={() => { setSeatWanted({ ...seatCount, [x.id]: n + 1 }); setApproved(false); }}>+</button>
                   </div>
                 </div>
               );
@@ -136,82 +140,81 @@ export default function WalkInForm({ options, initialKey, initialSlot }: { optio
           <div role="alert" style={{ border: '1.5px solid #b07a2a', background: 'var(--ochre-pale)', borderRadius: 20, padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
             <span style={{ fontWeight: 600, color: 'var(--ochre-dark)' }}>
               {party > slot.remaining
-                ? slot.remaining === 0 ? `This time is full. Adding ${party} would put it ${party} over capacity.`
-                  : `Only ${spots(slot.remaining)} left. This party would put it ${party - slot.remaining} over capacity.`
-                : `Not enough ${(seatsOver || []).map((x) => `${x.name} (${seatLeft(x.id)} left)`).join(' or ')} at this time.`}
+                ? slot.remaining === 0 ? t.overFull(party) : t.overSome(slot.remaining, party - slot.remaining)
+                : t.notEnoughSeats((seatsOver || []).map((x) => ({ name: x.name, left: seatLeft(x.id) })))}
             </span>
             <label className="check" style={{ fontSize: 14 }}>
               <input type="checkbox" name="allowOver" checked={approved} onChange={(e) => setApproved(e.target.checked)} style={{ accentColor: 'var(--ochre)' }} />
-              Allow over capacity — approved by activity lead
+              {t.allowOver}
             </label>
           </div>
         ) : null}
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
-          <Field id="name" label="Name" error={err.name} autoComplete="off" defaultValue={state?.values?.name} />
-          <Field id="phone" label="Mobile phone" type="tel" error={err.phone} autoComplete="off" defaultValue={state?.values?.phone} />
-          <Field id="email" label="Email (optional)" type="email" error={err.email} autoComplete="off" defaultValue={state?.values?.email} />
+          <Field id="name" label={t.name} error={err.name} autoComplete="off" defaultValue={state?.values?.name} />
+          <Field id="phone" label={t.mobile} type="tel" error={err.phone} autoComplete="off" defaultValue={state?.values?.phone} />
+          <Field id="email" label={t.emailOptional} type="email" error={err.email} autoComplete="off" defaultValue={state?.values?.email} />
         </div>
 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px 24px' }}>
-          <label className="check"><input type="checkbox" name="checkInNow" checked={checkNow} onChange={(e) => setCheckNow(e.target.checked)} /> Check them in now</label>
-          <span role="radiogroup" aria-label="Messages in" style={{ display: 'flex', alignItems: 'center', gap: 14, fontSize: 15 }}>
-            <span className="muted">Messages in</span>
+          <label className="check"><input type="checkbox" name="checkInNow" checked={checkNow} onChange={(e) => setCheckNow(e.target.checked)} /> {t.checkInNow}</label>
+          <span role="radiogroup" aria-label={t.messagesIn} style={{ display: 'flex', alignItems: 'center', gap: 14, fontSize: 15 }}>
+            <span className="muted">{t.messagesIn}</span>
             <label className="check"><input type="radio" name="lang" value="en" defaultChecked /> English</label>
             <label className="check" lang="zh-Hant-TW"><input type="radio" name="lang" value="zh" /> 繁體中文</label>
             <label className="check" lang="zh-Hans-CN"><input type="radio" name="lang" value="zhs" /> 简体中文</label>
           </span>
         </div>
         <p className="muted" style={{ fontSize: 13, margin: '-12px 0 0', lineHeight: 1.5 }}>
-          Walk-ins aren’t texted. Add their email if they’d like a reminder 15 minutes before.
+          {t.notTexted}
         </p>
-        {slot?.soon ? <span className="muted" style={{ fontSize: 13, marginTop: -12 }}>This session starts in under 15 minutes, so no reminder will be sent for it.</span> : null}
+        {slot?.soon ? <span className="muted" style={{ fontSize: 13, marginTop: -12 }}>{t.soonNoReminder}</span> : null}
       </div>
 
-      <aside className="staffside" aria-label="Summary" style={{ maxWidth: 420 }}>
+      <aside className="staffside" aria-label={t.summary} style={{ maxWidth: 420 }}>
         <div className="summary" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 14, borderRadius: 24, padding: '22px 22px 24px' }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: '#cfdacb' }}>Summary</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: '#cfdacb' }}>{t.summary}</span>
           <div className="stack" style={{ gap: 4 }}>
-            <span className="serif" style={{ fontSize: 24 }}>{act.name}</span>
+            <span className={`serif${zhBold(act.name)}`} style={{ fontSize: 24 }}>{nameRuns(act.name)}</span>
             <span className="sub">{act.dayShort}{slot ? ` · ${slot.time}` : ''}</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #4b6152', paddingTop: 12 }}>
-            <span>Party</span><span style={{ fontWeight: 600 }}>{spots(party)}</span>
+            <span>{t.party}</span><span style={{ fontWeight: 600 }}>{spots(party)}</span>
           </div>
           {hasSeats && seated > 0 ? (
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, fontSize: 14, color: 'var(--on-dark-2)' }}>
-              <span>Seating</span><span style={{ fontWeight: 600, textAlign: 'right' }}>{act.seats.filter((x) => seatCount[x.id] > 0).map((x) => `${x.name} × ${seatCount[x.id]}`).join(', ')}</span>
+              <span>{t.seating}</span><span style={{ fontWeight: 600, textAlign: 'right' }}>{act.seats.filter((x) => seatCount[x.id] > 0).map((x) => `${x.name} × ${seatCount[x.id]}`).join(lang === 'en' ? ', ' : '、')}</span>
             </div>
           ) : null}
           {slot ? (
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, color: 'var(--on-dark-2)' }}>
-              <span>Spots left after this</span><span style={{ fontWeight: 600 }}>{slot.remaining - party}{over ? ' (over)' : ''}</span>
+              <span>{t.spotsLeftAfter}</span><span style={{ fontWeight: 600 }}>{slot.remaining - party}{over ? t.overTag : ''}</span>
             </div>
           ) : null}
           {state?.error ? <span role="alert" style={{ color: 'var(--sun)', fontWeight: 600 }}>{state.error}</span> : null}
           <button type="submit" disabled={blocked || pending} className="btn"
             style={{ background: blocked ? '#3b5644' : 'var(--paper)', color: blocked ? '#a9b8a6' : 'var(--ink)', marginTop: 4 }}>
-            {pending ? 'Signing up…' : !slot ? 'Pick a time' : noParty ? 'Set the party size' : needSeats ? `Seat ${party - seated} more` : blocked ? 'Needs lead approval' : checkNow ? `Sign up & check in ${party}` : `Sign up ${party}`}
+            {pending ? t.signingUp : !slot ? t.pickTime : noParty ? t.setParty : needSeats ? t.seatMore(party - seated) : blocked ? t.needsApproval : checkNow ? t.signUpCheckIn(party) : t.signUp(party)}
           </button>
         </div>
         {/* Only for the time it was found at: picking another time hides it. */}
         {state?.conflict && state.conflict.slotId === slotId ? (
           <div role="alert" style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 14.5, borderRadius: 20, padding: '16px 20px', border: '1.5px solid #b07a2a', background: 'var(--ochre-pale)', color: 'var(--ochre-dark)' }}>
-            <span style={{ fontWeight: 600 }}>{state.conflict.name} is already signed up at an overlapping time:</span>
+            <span style={{ fontWeight: 600 }}>{t.alreadySignedUp(state.conflict.name)}</span>
             <ul style={{ margin: 0, paddingLeft: 18, color: 'var(--ink-2)' }}>
               {state.conflict.items.map((x) => <li key={x.id}>{x.label}</li>)}
             </ul>
-            <span style={{ color: 'var(--ink-2)' }}>One person can&apos;t be in two places at once. Pick another time, or, if they&apos;d rather do this one:</span>
+            <span style={{ color: 'var(--ink-2)' }}>{t.twoPlaces}</span>
             {state.conflict.items.map((x) => <input key={x.id} type="hidden" name="clashId" value={x.id} />)}
             <button type="submit" name="replaceClash" value="1" className="btn" disabled={pending || blocked} style={{ minHeight: 48, fontSize: 15, background: 'var(--ochre)' }}>
-              {state.conflict.items.length === 1 ? 'Cancel that sign-up and sign up for this' : 'Cancel those sign-ups and sign up for this'}
+              {t.cancelThatSignUp(state.conflict.items.length)}
             </button>
           </div>
         ) : null}
         {state?.done ? (
           <div className="note ok" role="status" style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 14.5, borderRadius: 20, padding: '16px 20px' }}>
-            <span style={{ fontWeight: 600 }}>{state.done.name} is signed up{state.done.checkedIn ? ' and checked in' : ''}.</span>
-            <span>Code <b style={{ letterSpacing: '0.1em' }}>{state.done.code}</b>{state.done.to ? ` · confirmation sent to ${state.done.to}` : ''}.</span>
+            <span style={{ fontWeight: 600 }}>{t.signedUp(state.done.name, state.done.checkedIn)}</span>
+            <span>{t.code} <b style={{ letterSpacing: '0.1em' }}>{state.done.code}</b>{state.done.to ? t.confirmationSentTo(state.done.to) : ''}</span>
           </div>
         ) : null}
       </aside>

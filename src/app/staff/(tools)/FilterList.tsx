@@ -1,6 +1,8 @@
 'use client';
 
 import { useId, useState } from 'react';
+import { sdict } from '@/lib/staff-i18n';
+import type { Lang } from '@/lib/event';
 
 export type FilterItem = { key: string; search: string; node: React.ReactNode };
 
@@ -11,9 +13,10 @@ const norm = (s: string) => s.toLowerCase().replace(/\s+/g, ' ').trim();
  * Typing narrows the list to items whose name, place or time contain every word typed.
  * The box sticks to the top while the list scrolls, and its text survives the 20-second refresh.
  */
-export default function FilterList({ items, label, placeholder, noun }: {
-  items: FilterItem[]; label: string; placeholder: string; noun: [string, string];
+export default function FilterList({ items, label, placeholder, noun, lang }: {
+  items: FilterItem[]; label: string; placeholder: string; noun: 'session' | 'activity'; lang: Lang;
 }) {
+  const t = sdict(lang);
   const [q, setQ] = useState('');
   const id = useId();
   const words = norm(q).split(' ').filter(Boolean);
@@ -28,17 +31,17 @@ export default function FilterList({ items, label, placeholder, noun }: {
         </svg>
         <input id={id} type="search" value={q} placeholder={placeholder} autoComplete="off"
           onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === 'Escape' && setQ('')} />
-        {q ? <button type="button" aria-label="Clear search" onClick={() => setQ('')}>×</button> : null}
+        {q ? <button type="button" aria-label={t.clearSearch} onClick={() => setQ('')}>×</button> : null}
       </div>
       {words.length ? (
         <span className="muted" role="status" style={{ fontSize: 13, padding: '0 4px' }}>
-          {shown.length} of {items.length} {items.length === 1 ? noun[0] : noun[1]}
+          {t.shownOf(shown.length, items.length, noun)}
         </span>
       ) : null}
       {shown.map((it) => <div key={it.key} style={{ display: 'contents' }}>{it.node}</div>)}
       {words.length && shown.length === 0 ? (
         <p className="muted" style={{ margin: '4px', fontSize: 14 }}>
-          Nothing matches “{q.trim()}”. <button type="button" onClick={() => setQ('')} style={{ border: 0, background: 'none', color: 'var(--moss)', fontWeight: 600, cursor: 'pointer', padding: 0 }}>Clear</button>
+          {t.nothingMatches(q.trim())} <button type="button" onClick={() => setQ('')} style={{ border: 0, background: 'none', color: 'var(--moss)', fontWeight: 600, cursor: 'pointer', padding: 0 }}>{t.clear}</button>
         </p>
       ) : null}
     </>

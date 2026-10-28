@@ -48,7 +48,7 @@ describe('registration by time', () => {
 
     const [teaRow, yogaRow] = await registrationAt(T1);
     expect(teaRow).toMatchObject({ activityName: 'Tea', capacity: 10, booked: 5, held: 1, arrived: 2, parties: 2, walkIns: 1 });
-    expect(teaRow.seats).toEqual([{ name: 'High chair', capacity: 4, booked: 1 }, { name: 'Ground seat', capacity: 6, booked: 4 }]);
+    expect(teaRow.seats).toEqual([{ name: 'High chair', nameZh: '', capacity: 4, booked: 1 }, { name: 'Ground seat', nameZh: '', capacity: 6, booked: 4 }]);
     expect(yogaRow).toMatchObject({ activityName: 'Yoga', booked: 0, held: 0, parties: 0, seats: [] });
   });
 });

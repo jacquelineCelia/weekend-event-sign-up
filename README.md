@@ -55,13 +55,15 @@ Built with Next.js 16 and Postgres (runs on Supabase as is).
   notices come in it.
 
 **Staff** (`/staff`, behind a shared passcode)
+- **Language**: an EN | 繁中 | 简中 switch in the staff bar (and on the sign-in page) shows every staff
+  screen in English, Traditional or Simplified Chinese, including activity, place and seat names.
+  It's remembered on each device. Staff text lives in `src/lib/staff-i18n.ts`.
 - **Check-in**: sessions by day (with a search box above the list; finished sessions are hidden,
   with a "Show finished" link to look back), live roster with search by name, last 4 of phone or code;
   check in a whole party or some of it. Refreshes every 20 seconds.
 - **Registration**: pick a time slot on the left (grouped by day) to see every activity starting
   then: booked out of capacity, on hold, open, checked in, parties and walk-ins, and seating by type,
-  with totals for that time and a link to each roster. Activity names and places can be switched
-  between EN, 繁中 and 简中 (the rest of the page stays in English). Refreshes every 20 seconds.
+  with totals for that time and a link to each roster. Refreshes every 20 seconds.
 - **Walk-in sign-up**: any activity and time that hasn't ended yet, over-capacity only with an explicit lead approval,
   optional "check in now". Walk-ins are never texted; reminders go by email if they give one.
 - **Schedule & capacity**: add, move or delete time slots and change capacity per slot; edit or add
@@ -69,7 +71,7 @@ Built with Next.js 16 and Postgres (runs on Supabase as is).
   slots are blocked, and guests in a moved slot are told the new time. Each activity also has
   Chinese name, place and description fields, typed once in Traditional; Simplified readers get them
   converted automatically (OpenCC, character by character). Blank fields show the English, and the
-  list marks activities with "中 missing" until they're filled in. Staff screens stay in English; the
+  list marks activities with "中 missing" until they're filled in. Staff screens can be switched to Chinese (see Language above); the
   check-in list tags attendees 繁 or 简, and walk-ins can be given either Chinese for their messages.
 
 ## Run it locally

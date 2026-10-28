@@ -1,17 +1,20 @@
 import { getPool, withTx } from './db';
 import { EVENT } from './event';
 import { sendTimeChange } from './notify';
+import { sdict } from './staff-i18n';
+import { localText } from './hans';
+import type { Lang } from './event';
 
 // ---------- Check-in ----------
 
 export type StaffSession = {
-  slotId: string; startsAt: Date; durationMin: number; activityName: string; activityNameZh: string; place: string;
+  slotId: string; startsAt: Date; durationMin: number; activityName: string; activityNameZh: string; place: string; placeZh: string;
   capacity: number; booked: number; arrived: number;
 };
 
 export async function sessionsForDay(date: string): Promise<StaffSession[]> {
   const { rows } = await getPool().query(
-    `select s.id, s.starts_at, a.duration_min, a.name, a.name_zh, a.place, s.capacity,
+    `select s.id, s.starts_at, a.duration_min, a.name, a.name_zh, a.place, a.place_zh, s.capacity,
             coalesce(sum(b.party_size) filter (where b.status = 'confirmed'), 0)::int as booked,
             coalesce(sum(b.checked_in) filter (where b.status = 'confirmed'), 0)::int as arrived
        from slots s join activities a on a.id = s.activity_id
@@ -22,32 +25,33 @@ export async function sessionsForDay(date: string): Promise<StaffSession[]> {
     [EVENT.timeZone, date],
   );
   return rows.map((r) => ({
-    slotId: r.id, startsAt: r.starts_at, durationMin: r.duration_min, activityName: r.name, activityNameZh: r.name_zh, place: r.place,
+    slotId: r.id, startsAt: r.starts_at, durationMin: r.duration_min, activityName: r.name, activityNameZh: r.name_zh, place: r.place, placeZh: r.place_zh,
     capacity: r.capacity, booked: r.booked, arrived: r.arrived,
   }));
 }
 
 export type RosterRow = { bookingId: string; name: string; phoneLast4: string; code: string; partySize: number; checkedIn: number; walkIn: boolean; lang: 'en' | 'zh' | 'zhs'; seats: string };
 
-export async function roster(slotId: string): Promise<RosterRow[]> {
+export async function roster(slotId: string, lang: Lang = 'en'): Promise<RosterRow[]> {
   const { rows } = await getPool().query(
     `select b.id, p.name, coalesce(right(p.phone, 4), '') as last4, b.code, b.party_size, b.checked_in, b.source, p.lang,
-            coalesce((select string_agg(st.name || ' × ' || bs.count, ', ' order by st.sort_order, st.name)
-                        from booking_seats bs join seat_types st on st.id = bs.seat_type_id where bs.booking_id = b.id), '') as seats
+            coalesce((select json_agg(json_build_object('name', st.name, 'nameZh', st.name_zh, 'count', bs.count) order by st.sort_order, st.name)
+                        from booking_seats bs join seat_types st on st.id = bs.seat_type_id where bs.booking_id = b.id), '[]') as seats
        from bookings b join people p on p.id = b.person_id
       where b.slot_id = $1 and b.status = 'confirmed'
       order by lower(p.name)`,
     [slotId],
   );
   return rows.map((r) => ({
-    bookingId: r.id, name: r.name, phoneLast4: r.last4, code: r.code, partySize: r.party_size, checkedIn: r.checked_in, walkIn: r.source === 'walk_in', lang: r.lang, seats: r.seats,
+    bookingId: r.id, name: r.name, phoneLast4: r.last4, code: r.code, partySize: r.party_size, checkedIn: r.checked_in, walkIn: r.source === 'walk_in', lang: r.lang,
+    seats: (r.seats as { name: string; nameZh: string; count: number }[]).map((x) => `${localText(x.name, x.nameZh, lang)} × ${x.count}`).join(lang === 'en' ? ', ' : '、'),
   }));
 }
 
 /** For the check-in screen: each seat type's capacity and how many are booked in this slot. */
-export async function seatCounts(slotId: string) {
-  const { rows } = await getPool().query<{ name: string; capacity: number; booked: number }>(
-    `select st.name, st.capacity,
+export async function seatCounts(slotId: string, lang: Lang = 'en') {
+  const { rows } = await getPool().query<{ name: string; name_zh: string; capacity: number; booked: number }>(
+    `select st.name, st.name_zh, st.capacity,
             coalesce(sum(bs.count) filter (where b.status = 'confirmed'), 0)::int as booked
        from slots s join seat_types st on st.activity_id = s.activity_id
        left join booking_seats bs on bs.seat_type_id = st.id
@@ -56,7 +60,7 @@ export async function seatCounts(slotId: string) {
       group by st.id order by st.sort_order, st.name`,
     [slotId],
   );
-  return rows;
+  return rows.map((r) => ({ name: localText(r.name, r.name_zh, lang), capacity: r.capacity, booked: r.booked }));
 }
 
 export async function setCheckedIn(bookingId: string, count: number) {
@@ -86,7 +90,7 @@ export async function startTimes(): Promise<TimeSlotSummary[]> {
 export type SlotRegistration = {
   slotId: string; activityName: string; activityNameZh: string; place: string; placeZh: string; durationMin: number;
   capacity: number; booked: number; held: number; arrived: number; parties: number; walkIns: number;
-  seats: { name: string; capacity: number; booked: number }[];
+  seats: { name: string; nameZh: string; capacity: number; booked: number }[];
 };
 
 export async function registrationAt(startsAt: Date): Promise<SlotRegistration[]> {
@@ -97,7 +101,7 @@ export async function registrationAt(startsAt: Date): Promise<SlotRegistration[]
             coalesce(sum(b.checked_in) filter (where b.status = 'confirmed'), 0)::int as arrived,
             count(b.id) filter (where b.status = 'confirmed')::int as parties,
             count(b.id) filter (where b.status = 'confirmed' and b.source = 'walk_in')::int as walk_ins,
-            coalesce((select json_agg(json_build_object('name', st.name, 'capacity', st.capacity,
+            coalesce((select json_agg(json_build_object('name', st.name, 'nameZh', st.name_zh, 'capacity', st.capacity,
                         'booked', (select coalesce(sum(bs.count), 0) from booking_seats bs join bookings x on x.id = bs.booking_id
                                     where bs.seat_type_id = st.id and x.slot_id = s.id and x.status = 'confirmed'))
                         order by st.sort_order, st.name)
@@ -112,7 +116,7 @@ export async function registrationAt(startsAt: Date): Promise<SlotRegistration[]
   return rows.map((r) => ({
     slotId: r.id, activityName: r.name, activityNameZh: r.name_zh, place: r.place, placeZh: r.place_zh, durationMin: r.duration_min,
     capacity: r.capacity, booked: r.booked, held: r.held, arrived: r.arrived, parties: r.parties, walkIns: r.walk_ins,
-    seats: (r.seats as { name: string; capacity: number; booked: number }[]).map((x) => ({ ...x, booked: Number(x.booked) })),
+    seats: (r.seats as { name: string; nameZh: string; capacity: number; booked: number }[]).map((x) => ({ ...x, nameZh: x.nameZh ?? '', booked: Number(x.booked) })),
   }));
 }
 
@@ -152,12 +156,13 @@ export async function scheduleFor(activityId: string, date: string): Promise<Sch
 const toMin = (t: string) => Number(t.slice(0, 2)) * 60 + Number(t.slice(3, 5));
 
 /** Applies one activity-day's edits atomically. Guards bookings; tells moved guests. */
-export async function saveSchedule(activityId: string, date: string, edits: SlotEdit[]): Promise<{ notified: number } | { error: string }> {
+export async function saveSchedule(activityId: string, date: string, edits: SlotEdit[], lang: Lang = 'en'): Promise<{ notified: number } | { error: string }> {
+  const t = sdict(lang);
   const moved: { bookingIds: string[]; from: string; to: string }[] = [];
   let nameZh = '';
   const result = await withTx(async (c) => {
     const act = await c.query<{ duration_min: number; name: string; name_zh: string }>('select duration_min, name, name_zh from activities where id = $1 for update', [activityId]);
-    if (!act.rowCount) return { error: 'That activity no longer exists.' };
+    if (!act.rowCount) return { error: t.err.activityGone };
     nameZh = act.rows[0].name_zh;
     const dur = act.rows[0].duration_min;
     // With seat types, every slot's capacity is their total (set under Seating, not per slot).
@@ -185,21 +190,21 @@ export async function saveSchedule(activityId: string, date: string, edits: Slot
     const sorted = [...edits].sort((a, b) => toMin(a.time) - toMin(b.time));
     for (let i = 1; i < sorted.length; i++) {
       if (toMin(sorted[i].time) < toMin(sorted[i - 1].time) + dur) {
-        return { error: `The ${sorted[i - 1].time} and ${sorted[i].time} slots overlap (each runs ${dur} min).` };
+        return { error: t.err.slotsOverlap(sorted[i - 1].time, sorted[i].time, dur) };
       }
     }
     for (const e of edits) {
-      if (e.id && !byId.has(e.id)) return { error: 'Someone else changed this schedule. Reload and try again.' };
+      if (e.id && !byId.has(e.id)) return { error: t.err.scheduleChanged };
       const cur = e.id ? byId.get(e.id)! : null;
       if (cur && e.capacity < cur.booked + cur.held) {
-        return { error: `The ${cur.time} slot already has ${cur.booked + cur.held} people; capacity can't go below that.` };
+        return { error: t.err.capBelowBooked(cur.time, cur.booked + cur.held) };
       }
     }
     // Deletions: only slots with no bookings.
     const keep = new Set(edits.filter((e) => e.id).map((e) => e.id));
     const removed = current.rows.filter((r) => !keep.has(r.id));
     const busy = removed.find((r) => r.booked + r.held > 0);
-    if (busy) return { error: `The ${busy.time} slot has bookings, so it can't be deleted.` };
+    if (busy) return { error: t.err.slotHasBookings(busy.time) };
     for (const r of removed) {
       await c.query(`delete from bookings where slot_id = $1 and status <> 'confirmed'`, [r.id]);
       await c.query('delete from slots where id = $1', [r.id]);
@@ -296,18 +301,19 @@ export async function seatTypesFor(activityId: string): Promise<SeatTypeRow[]> {
  * Refuses to drop a type below what's booked in any slot, to remove a type someone has chosen,
  * or to leave any slot with less room than it has sign-ups.
  */
-export async function saveSeating(activityId: string, edits: SeatTypeEdit[]): Promise<{ ok: true } | { error: string }> {
+export async function saveSeating(activityId: string, edits: SeatTypeEdit[], lang: Lang = 'en'): Promise<{ ok: true } | { error: string }> {
+  const t = sdict(lang);
   return withTx(async (c) => {
     const act = await c.query('select 1 from activities where id = $1 for update', [activityId]);
-    if (!act.rowCount) return { error: 'That activity no longer exists.' };
+    if (!act.rowCount) return { error: t.err.activityGone };
     // Lock the activity's slots so no hold or booking lands while seating changes.
     await c.query('select id from slots where activity_id = $1 for update', [activityId]);
     const names = edits.map((e) => e.name.trim().toLowerCase());
-    if (new Set(names).size !== names.length) return { error: 'Two seat types have the same name.' };
+    if (new Set(names).size !== names.length) return { error: t.err.dupSeatNames };
 
     const current = await c.query<{ id: string; name: string }>('select id, name from seat_types where activity_id = $1', [activityId]);
     const known = new Map(current.rows.map((r) => [r.id, r.name]));
-    for (const e of edits) if (e.id && !known.has(e.id)) return { error: 'Someone else changed the seating. Reload and try again.' };
+    for (const e of edits) if (e.id && !known.has(e.id)) return { error: t.err.seatingChanged };
 
     // Booked (or held) per type per slot.
     const used = await c.query<{ seat_type_id: string; slot_id: string; n: number }>(
@@ -319,11 +325,11 @@ export async function saveSeating(activityId: string, edits: SeatTypeEdit[]): Pr
     );
     const keep = new Set(edits.filter((e) => e.id).map((e) => e.id!));
     for (const [id, name] of known) {
-      if (!keep.has(id) && used.rows.some((u) => u.seat_type_id === id)) return { error: `People have chosen “${name}”, so it can't be removed.` };
+      if (!keep.has(id) && used.rows.some((u) => u.seat_type_id === id)) return { error: t.err.seatChosen(name) };
     }
     for (const e of edits) {
       const most = Math.max(0, ...used.rows.filter((u) => u.seat_type_id === e.id).map((u) => u.n));
-      if (e.capacity < most) return { error: `${most} ${e.name} already booked in one time slot; capacity can't go below that.` };
+      if (e.capacity < most) return { error: t.err.seatBelowBooked(most, e.name) };
     }
     const total = edits.reduce((n, e) => n + e.capacity, 0);
     if (edits.length) {
@@ -334,7 +340,7 @@ export async function saveSeating(activityId: string, edits: SeatTypeEdit[]): Pr
           group by s.id having sum(b.party_size) > $2 limit 1`,
         [activityId, total, EVENT.timeZone],
       );
-      if (busy.rowCount) return { error: `The ${busy.rows[0].time} slot has ${busy.rows[0].taken} people signed up; the seats must add up to at least that.` };
+      if (busy.rowCount) return { error: t.err.seatsTooFew(busy.rows[0].time, busy.rows[0].taken) };
     }
 
     // Remove dropped types (only ever-cancelled or expired sign-ups point at them).

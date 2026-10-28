@@ -10,8 +10,11 @@ import { walkInContactSchema } from '@/lib/contact';
 import { getBooking } from '@/lib/queries';
 import { sendConfirmation } from '@/lib/notify';
 import { setCheckedIn, saveSchedule, saveActivity, saveSeating, type SlotEdit } from '@/lib/staff';
-import { EVENT, addMinutes, dayOf, fmtTime } from '@/lib/event';
+import { EVENT, addMinutes, dayOf, dayText, fmtTimeL } from '@/lib/event';
+import { localText } from '@/lib/hans';
 import { errorText } from '@/lib/i18n';
+import { STAFF_LANG_COOKIE, isStaffLang, sdict } from '@/lib/staff-i18n';
+import { staffLang } from '@/lib/staff-lang';
 
 async function requireStaff() {
   if (!(await isStaff())) redirect('/staff/login');
@@ -26,10 +29,16 @@ export async function rememberSlotAction(slotId: string) {
   if (z.string().uuid().safeParse(slotId).success) await rememberSlot(slotId);
 }
 
+/** The EN | 繁中 | 简中 switch on staff screens (and the staff sign-in page). */
+export async function setStaffLangAction(lang: string) {
+  if (!isStaffLang(lang)) return;
+  (await cookies()).set(STAFF_LANG_COOKIE, lang, { path: '/staff', httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production', maxAge: 60 * 60 * 24 * 365 });
+}
+
 export async function staffLoginAction(_prev: { error?: string } | null, form: FormData) {
   if (!staffPasscodeMatches(String(form.get('passcode') ?? ''))) {
     await new Promise((r) => setTimeout(r, 600)); // slow down guessing
-    return { error: 'That passcode isn’t right.' };
+    return { error: sdict(await staffLang()).wrongPasscode };
   }
   await setStaffSession();
   redirect('/staff');
@@ -61,12 +70,14 @@ const walkIn = z.object({
 
 export async function walkInAction(_prev: WalkInState, form: FormData): Promise<WalkInState> {
   await requireStaff();
+  const ui = await staffLang();
+  const t = sdict(ui);
   const values = { name: String(form.get('name') ?? ''), email: String(form.get('email') ?? ''), phone: String(form.get('phone') ?? '') };
   const base = walkIn.safeParse({ slotId: form.get('slotId'), party: form.get('party') });
   const contact = walkInContactSchema.safeParse({ name: form.get('name') ?? '', email: form.get('email') ?? '', phone: form.get('phone') ?? '' });
   if (!base.success || !contact.success) {
     const fields: Record<string, string> = {};
-    for (const i of [...(base.error?.issues ?? []), ...(contact.error?.issues ?? [])]) fields[String(i.path[0])] ??= errorText('en', i.message);
+    for (const i of [...(base.error?.issues ?? []), ...(contact.error?.issues ?? [])]) fields[String(i.path[0])] ??= i.message === 'Pick a time' ? t.pickTime : errorText(ui, i.message);
     return { fields, values };
   }
   const checkInNow = form.get('checkInNow') === 'on';
@@ -78,7 +89,7 @@ export async function walkInAction(_prev: WalkInState, form: FormData): Promise<
     try {
       seats = z.array(z.object({ seatTypeId: z.string().uuid(), count: z.number().int().min(0).max(50) })).max(20).parse(JSON.parse(String(form.get('seats') ?? '[]')));
     } catch {
-      return { error: 'Choose a seat for everyone in the party.', values };
+      return { error: t.chooseSeatsAll, values };
     }
     const r = await walkInBooking(base.data.slotId, base.data.party, contact.data, { allowOver: form.get('allowOver') === 'on', checkInNow, lang, seats,
       replace: form.get('replaceClash') === '1' ? form.getAll('clashId').map(String).filter((x) => z.string().uuid().safeParse(x).success) : undefined,
@@ -92,11 +103,14 @@ export async function walkInAction(_prev: WalkInState, form: FormData): Promise<
     if (err instanceof BookingError && err.code === 'overlap' && err.overlap) {
       const items = err.overlap.conflicts.map((x) => {
         const d = dayOf(x.startsAt);
-        return { id: x.bookingId, label: `${x.activityName}, ${d ? `${d.short} ` : ''}${fmtTime(x.startsAt)}–${fmtTime(addMinutes(x.startsAt, x.durationMin))}${x.partySize > 1 ? ` (party of ${x.partySize})` : ''}` };
+        const name = localText(x.activityName, x.activityNameZh, ui);
+        const when = `${d ? `${dayText(d, 'short', ui)} ` : ''}${fmtTimeL(x.startsAt, ui)}–${fmtTimeL(addMinutes(x.startsAt, x.durationMin), ui)}`;
+        const party = x.partySize > 1 ? (ui === 'en' ? ` (${t.partyOf(x.partySize)})` : `（${t.partyOf(x.partySize)}）`) : '';
+        return { id: x.bookingId, label: `${name}${ui === 'en' ? ', ' : '，'}${when}${party}` };
       });
       return { values, conflict: { name: contact.data.name, slotId: base.data.slotId, items } };
     }
-    if (err instanceof BookingError) return { error: errorText('en', { code: err.code, remaining: err.remaining }), values };
+    if (err instanceof BookingError) return { error: errorText(ui, { code: err.code, remaining: err.remaining }), values };
     throw err;
   }
 }
@@ -113,9 +127,9 @@ export async function saveScheduleAction(activityId: string, day: string, _prev:
       capacity: z.number().int().min(0).max(1000),
     })).parse(JSON.parse(String(form.get('slots') ?? '[]')));
   } catch {
-    return { error: 'Some times or capacities aren’t valid.' };
+    return { error: sdict(await staffLang()).err.badSlots };
   }
-  const r = await saveSchedule(activityId, day, edits);
+  const r = await saveSchedule(activityId, day, edits, await staffLang());
   if ('error' in r) return { error: r.error };
   revalidatePath('/staff', 'layout');
   revalidatePath('/');
@@ -137,7 +151,7 @@ export async function saveActivityAction(activityId: string | null, _prev: Sched
     name: form.get('name'), place: form.get('place'), durationMin: form.get('durationMin'), description: form.get('description') ?? '',
     nameZh: form.get('nameZh') ?? '', placeZh: form.get('placeZh') ?? '', descriptionZh: form.get('descriptionZh') ?? '',
   });
-  if (!parsed.success) return { error: 'Name, place and a length in minutes are required.' };
+  if (!parsed.success) return { error: sdict(await staffLang()).err.activityFields };
   const id = await saveActivity(activityId, parsed.data);
   revalidatePath('/staff', 'layout');
   revalidatePath('/');
@@ -154,8 +168,8 @@ export async function saveSeatingAction(activityId: string, dayKey: string, _pre
     nameZh: z.string().trim().max(40),
     capacity: z.number().int().min(0).max(1000),
   })).max(10).safeParse((() => { try { return JSON.parse(String(form.get('seats') ?? '[]')); } catch { return null; } })());
-  if (!parsed.success) return { error: 'Each seat type needs a name and a number.' };
-  const r = await saveSeating(activityId, parsed.data);
+  if (!parsed.success) return { error: sdict(await staffLang()).err.seatFields };
+  const r = await saveSeating(activityId, parsed.data, await staffLang());
   if ('error' in r) return { error: r.error };
   revalidatePath('/staff', 'layout');
   revalidatePath('/');
