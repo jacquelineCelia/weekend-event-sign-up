@@ -33,10 +33,6 @@ export default async function Registration({ searchParams }: { searchParams: Pro
     times[times.length - 1];
   const rows = chosen ? await registrationAt(chosen.startsAt) : [];
 
-  const total = rows.reduce(
-    (t, r) => ({ capacity: t.capacity + r.capacity, booked: t.booked + r.booked, held: t.held + r.held, arrived: t.arrived + r.arrived }),
-    { capacity: 0, booked: 0, held: 0, arrived: 0 },
-  );
   const longest = Math.max(0, ...rows.map((r) => r.durationMin));
   // The Check-in screen lists one day at a time and hides finished sessions unless asked.
   const rosterHref = (slotId: string, durationMin: number) => {
@@ -95,12 +91,6 @@ export default async function Registration({ searchParams }: { searchParams: Pro
             <h1 className="h1" style={{ fontSize: 34 }}>
               {fmtTime(chosen.startsAt)}{longest ? ` – ${fmtTime(addMinutes(chosen.startsAt, longest))}` : ''}
             </h1>
-          </div>
-          <div className="stats">
-            <div className="stack"><span>{t.capacity}</span><span>{total.capacity}</span></div>
-            <div className="stack"><span>{t.booked}</span><span>{total.booked}</span></div>
-            <div className="stack"><span>{t.open}</span><span style={{ color: 'var(--ochre)' }}>{Math.max(0, total.capacity - total.booked - total.held)}</span></div>
-            <div className="stack"><span>{t.checkedIn}</span><span style={{ color: 'var(--moss)' }}>{total.arrived}</span></div>
           </div>
 
           <section className="roster" aria-label={t.activitiesAtTime}>
