@@ -105,8 +105,8 @@ export default async function Registration({ searchParams }: { searchParams: Pro
                       return <span className={`serif${name !== r.activityName ? ' zhname' : ''}`} lang={name !== r.activityName ? htmlLang : 'en'} style={{ fontSize: 18 }}>{nameRuns(name)}</span>;
                     })()}
                     <span className="muted" style={{ fontSize: 13.5 }}>
-                      <span lang={lang !== 'en' && r.placeZh ? htmlLang : 'en'}>{localText(r.place, r.placeZh, lang)}</span> · {t.parties(r.parties)}
-                      {r.walkIns ? (lang === 'en' ? ` (${t.walkIns(r.walkIns)})` : `（${t.walkIns(r.walkIns)}）`) : ''}
+                      <span lang={lang !== 'en' && r.placeZh ? htmlLang : 'en'}>{localText(r.place, r.placeZh, lang)}</span>
+                      {r.walkIns ? ` · ${t.walkIns(r.walkIns)}` : ''}
                     </span>
                     <div aria-hidden="true" style={{ height: 8, borderRadius: 999, background: 'var(--ground-2)', overflow: 'hidden', display: 'flex' }}>
                       <span style={{ width: `${pct(r.booked, r.capacity)}%`, background: full ? 'var(--ochre)' : 'var(--moss)' }} />
