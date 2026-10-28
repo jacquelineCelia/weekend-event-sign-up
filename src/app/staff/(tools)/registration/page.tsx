@@ -2,6 +2,9 @@ import Link from 'next/link';
 import { registrationAt, startTimes } from '@/lib/staff';
 import { EVENT, addMinutes, dayOf, fmtTime, requestTime } from '@/lib/event';
 import AutoRefresh from '../AutoRefresh';
+import { localText } from '@/lib/hans';
+import { nameRuns } from '@/components/ActivityName';
+import type { Lang } from '@/lib/event';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,8 +14,25 @@ const pct = (n: number, of: number) => (of > 0 ? Math.min(100, Math.round((n / o
  * Registration by time: pick a start time on the left, see every activity running then with how full
  * it is (booked, on hold, open, checked in, seating). Times are keyed by their start (?t=ISO).
  */
-export default async function Registration({ searchParams }: { searchParams: Promise<{ t?: string }> }) {
+// Activity names and places can be shown in English, Traditional or Simplified Chinese (?lang=);
+// the rest of the staff screen stays in English.
+const LANGS: { key: Lang; label: string; htmlLang: string }[] = [
+  { key: 'en', label: 'EN', htmlLang: 'en' },
+  { key: 'zh', label: '繁中', htmlLang: 'zh-Hant-TW' },
+  { key: 'zhs', label: '简中', htmlLang: 'zh-Hans-CN' },
+];
+
+export default async function Registration({ searchParams }: { searchParams: Promise<{ t?: string; lang?: string }> }) {
   const sp = await searchParams;
+  const lang: Lang = sp.lang === 'zh' || sp.lang === 'zhs' ? sp.lang : 'en';
+  const htmlLang = LANGS.find((l) => l.key === lang)!.htmlLang;
+  const href = (q: { t?: string; lang?: Lang }) => {
+    const p = new URLSearchParams();
+    if (q.t) p.set('t', q.t);
+    if ((q.lang ?? lang) !== 'en') p.set('lang', q.lang ?? lang);
+    const s = p.toString();
+    return `/staff/registration${s ? `?${s}` : ''}`;
+  };
   const now = requestTime();
   const times = await startTimes();
   // Default: the time that's on now or next; after the event, the last one.
@@ -43,7 +63,7 @@ export default async function Registration({ searchParams }: { searchParams: Pro
     const started = x.startsAt.getTime() <= now;
     const done = x.endsAt.getTime() <= now;
     return (
-      <Link key={x.startsAt.toISOString()} className="session" href={`/staff/registration?t=${encodeURIComponent(x.startsAt.toISOString())}`}
+      <Link key={x.startsAt.toISOString()} className="session" href={href({ t: x.startsAt.toISOString() })}
         aria-current={chosen && x.startsAt.getTime() === chosen.startsAt.getTime() ? 'true' : undefined}>
         <span style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
           <span style={{ fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{fmtTime(x.startsAt)}</span>
@@ -60,7 +80,16 @@ export default async function Registration({ searchParams }: { searchParams: Pro
     <div className="staffbody">
       <AutoRefresh seconds={20} />
       <aside className="staffside scrollside" aria-label="Time slots">
-        <h2 className="h2" style={{ fontSize: 18, color: 'var(--ink-2)' }}>Time slots</h2>
+        <nav aria-label="Activity names in" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 4, background: 'var(--ground-2)', padding: 4, borderRadius: 999 }}>
+          {LANGS.map((l) => (
+            <Link key={l.key} lang={l.htmlLang} href={href({ t: chosen?.startsAt.toISOString(), lang: l.key })} aria-current={l.key === lang ? 'true' : undefined}
+              style={{ minHeight: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 999, fontSize: 14, fontWeight: 600, textDecoration: 'none',
+                color: l.key === lang ? 'var(--ink)' : '#4c584f', background: l.key === lang ? 'var(--paper)' : 'transparent', boxShadow: l.key === lang ? '0 1px 3px rgba(42, 61, 49, 0.15)' : undefined }}>
+              {l.label}
+            </Link>
+          ))}
+        </nav>
+        <h2 className="h2" style={{ fontSize: 18, color: 'var(--ink-2)', marginTop: 6 }}>Time slots</h2>
         {byDay.map(({ d, items }) => (
           <section key={d.key} className="stack" style={{ gap: 8 }} aria-label={d.long}>
             <h3 style={{ margin: '6px 4px 0', fontSize: 14, fontWeight: 600, color: 'var(--muted)' }}>{d.long}</h3>
@@ -100,9 +129,12 @@ export default async function Registration({ searchParams }: { searchParams: Pro
               return (
                 <div key={r.slotId} className="rrow" style={{ alignItems: 'flex-start' }}>
                   <div className="stack" style={{ gap: 6, flex: '1 1 260px', minWidth: 0 }}>
-                    <span className="serif" style={{ fontSize: 18 }}>{r.activityName}</span>
+                    {(() => {
+                      const name = localText(r.activityName, r.activityNameZh, lang);
+                      return <span className={`serif${name !== r.activityName ? ' zhname' : ''}`} lang={name !== r.activityName ? htmlLang : 'en'} style={{ fontSize: 18 }}>{nameRuns(name)}</span>;
+                    })()}
                     <span className="muted" style={{ fontSize: 13.5 }}>
-                      {r.place} · {r.parties} {r.parties === 1 ? 'party' : 'parties'}
+                      <span lang={lang !== 'en' && r.placeZh ? htmlLang : 'en'}>{localText(r.place, r.placeZh, lang)}</span> · {r.parties} {r.parties === 1 ? 'party' : 'parties'}
                       {r.walkIns ? ` (${r.walkIns} walk-in${r.walkIns === 1 ? '' : 's'})` : ''}
                     </span>
                     <div aria-hidden="true" style={{ height: 8, borderRadius: 999, background: 'var(--ground-2)', overflow: 'hidden', display: 'flex' }}>

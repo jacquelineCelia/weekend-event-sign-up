@@ -84,14 +84,14 @@ export async function startTimes(): Promise<TimeSlotSummary[]> {
 
 /** One activity's registration in the slot starting at a given time. */
 export type SlotRegistration = {
-  slotId: string; activityName: string; activityNameZh: string; place: string; durationMin: number;
+  slotId: string; activityName: string; activityNameZh: string; place: string; placeZh: string; durationMin: number;
   capacity: number; booked: number; held: number; arrived: number; parties: number; walkIns: number;
   seats: { name: string; capacity: number; booked: number }[];
 };
 
 export async function registrationAt(startsAt: Date): Promise<SlotRegistration[]> {
   const { rows } = await getPool().query(
-    `select s.id, a.name, a.name_zh, a.place, a.duration_min, s.capacity,
+    `select s.id, a.name, a.name_zh, a.place, a.place_zh, a.duration_min, s.capacity,
             coalesce(sum(b.party_size) filter (where b.status = 'confirmed'), 0)::int as booked,
             coalesce(sum(b.party_size) filter (where b.status = 'held' and b.hold_expires_at > now()), 0)::int as held,
             coalesce(sum(b.checked_in) filter (where b.status = 'confirmed'), 0)::int as arrived,
@@ -110,7 +110,7 @@ export async function registrationAt(startsAt: Date): Promise<SlotRegistration[]
     [startsAt],
   );
   return rows.map((r) => ({
-    slotId: r.id, activityName: r.name, activityNameZh: r.name_zh, place: r.place, durationMin: r.duration_min,
+    slotId: r.id, activityName: r.name, activityNameZh: r.name_zh, place: r.place, placeZh: r.place_zh, durationMin: r.duration_min,
     capacity: r.capacity, booked: r.booked, held: r.held, arrived: r.arrived, parties: r.parties, walkIns: r.walk_ins,
     seats: (r.seats as { name: string; capacity: number; booked: number }[]).map((x) => ({ ...x, booked: Number(x.booked) })),
   }));

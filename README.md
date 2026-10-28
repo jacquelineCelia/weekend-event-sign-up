@@ -60,7 +60,8 @@ Built with Next.js 16 and Postgres (runs on Supabase as is).
   check in a whole party or some of it. Refreshes every 20 seconds.
 - **Registration**: pick a time slot on the left (grouped by day) to see every activity starting
   then: booked out of capacity, on hold, open, checked in, parties and walk-ins, and seating by type,
-  with totals for that time and a link to each roster. Refreshes every 20 seconds.
+  with totals for that time and a link to each roster. Activity names and places can be switched
+  between EN, 繁中 and 简中 (the rest of the page stays in English). Refreshes every 20 seconds.
 - **Walk-in sign-up**: any activity and time that hasn't ended yet, over-capacity only with an explicit lead approval,
   optional "check in now". Walk-ins are never texted; reminders go by email if they give one.
 - **Schedule & capacity**: add, move or delete time slots and change capacity per slot; edit or add
