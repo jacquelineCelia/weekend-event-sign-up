@@ -102,7 +102,7 @@ export default async function Registration({ searchParams }: { searchParams: Pro
                   <div className="stack" style={{ gap: 6, flex: '1 1 260px', minWidth: 0 }}>
                     <span className="serif" style={{ fontSize: 18 }}>{r.activityName}</span>
                     <span className="muted" style={{ fontSize: 13.5 }}>
-                      {r.place} · {r.durationMin} min · {r.parties} {r.parties === 1 ? 'party' : 'parties'}
+                      {r.place} · {r.parties} {r.parties === 1 ? 'party' : 'parties'}
                       {r.walkIns ? ` (${r.walkIns} walk-in${r.walkIns === 1 ? '' : 's'})` : ''}
                     </span>
                     <div aria-hidden="true" style={{ height: 8, borderRadius: 999, background: 'var(--ground-2)', overflow: 'hidden', display: 'flex' }}>
