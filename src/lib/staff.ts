@@ -66,6 +66,56 @@ export async function setCheckedIn(bookingId: string, count: number) {
   );
 }
 
+// ---------- Registration by time ----------
+
+/** Every start time in the event, with totals across the activities that start then. */
+export type TimeSlotSummary = { startsAt: Date; endsAt: Date; activities: number; capacity: number; booked: number };
+
+export async function startTimes(): Promise<TimeSlotSummary[]> {
+  const { rows } = await getPool().query<{ starts_at: Date; ends_at: Date; activities: number; capacity: number; booked: number }>(
+    `select s.starts_at, max(s.starts_at + make_interval(mins => a.duration_min)) as ends_at, count(distinct s.id)::int as activities, sum(s.capacity)::int as capacity,
+            coalesce(sum((select coalesce(sum(b.party_size), 0) from bookings b where b.slot_id = s.id and b.status = 'confirmed')), 0)::int as booked
+       from slots s join activities a on a.id = s.activity_id
+      group by s.starts_at
+      order by s.starts_at`,
+  );
+  return rows.map((r) => ({ startsAt: r.starts_at, endsAt: r.ends_at, activities: r.activities, capacity: r.capacity, booked: r.booked }));
+}
+
+/** One activity's registration in the slot starting at a given time. */
+export type SlotRegistration = {
+  slotId: string; activityName: string; activityNameZh: string; place: string; durationMin: number;
+  capacity: number; booked: number; held: number; arrived: number; parties: number; walkIns: number;
+  seats: { name: string; capacity: number; booked: number }[];
+};
+
+export async function registrationAt(startsAt: Date): Promise<SlotRegistration[]> {
+  const { rows } = await getPool().query(
+    `select s.id, a.name, a.name_zh, a.place, a.duration_min, s.capacity,
+            coalesce(sum(b.party_size) filter (where b.status = 'confirmed'), 0)::int as booked,
+            coalesce(sum(b.party_size) filter (where b.status = 'held' and b.hold_expires_at > now()), 0)::int as held,
+            coalesce(sum(b.checked_in) filter (where b.status = 'confirmed'), 0)::int as arrived,
+            count(b.id) filter (where b.status = 'confirmed')::int as parties,
+            count(b.id) filter (where b.status = 'confirmed' and b.source = 'walk_in')::int as walk_ins,
+            coalesce((select json_agg(json_build_object('name', st.name, 'capacity', st.capacity,
+                        'booked', (select coalesce(sum(bs.count), 0) from booking_seats bs join bookings x on x.id = bs.booking_id
+                                    where bs.seat_type_id = st.id and x.slot_id = s.id and x.status = 'confirmed'))
+                        order by st.sort_order, st.name)
+                        from seat_types st where st.activity_id = a.id), '[]') as seats
+       from slots s join activities a on a.id = s.activity_id
+       left join bookings b on b.slot_id = s.id
+      where s.starts_at = $1
+      group by s.id, a.id
+      order by a.sort_order, a.name`,
+    [startsAt],
+  );
+  return rows.map((r) => ({
+    slotId: r.id, activityName: r.name, activityNameZh: r.name_zh, place: r.place, durationMin: r.duration_min,
+    capacity: r.capacity, booked: r.booked, held: r.held, arrived: r.arrived, parties: r.parties, walkIns: r.walk_ins,
+    seats: (r.seats as { name: string; capacity: number; booked: number }[]).map((x) => ({ ...x, booked: Number(x.booked) })),
+  }));
+}
+
 // ---------- Schedule & capacity ----------
 
 export type SlotEdit = { id: string | null; time: string; capacity: number };
