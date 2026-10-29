@@ -20,7 +20,7 @@ export const dynamic = 'force-dynamic';
 
 type Row = {
   id: string; code: string; party_size: number; starts_at: Date; duration_min: number; remind_sms: boolean; remind_email: boolean;
-  activity_name: string; place: string; place_en?: string; name_zh: string; place_zh: string; activity_id: string; slot_id: string; score: number | null; person_name: string;
+  activity_name: string; place: string; place_en?: string; name_zh: string; place_zh: string; instructor: string; instructor_zh: string; activity_id: string; slot_id: string; score: number | null; person_name: string;
 };
 
 export default async function MySignups({ searchParams }: { searchParams: Promise<{ moved?: string; seated?: string }> }) {
@@ -34,7 +34,7 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
   const { rows } = await getPool().query<Row>(
     `select b.id, b.code, b.party_size, s.starts_at, a.duration_min, b.remind_sms, b.remind_email,
             a.name as activity_name, a.name_zh,
-            a.place, a.place_zh, a.id as activity_id, s.id as slot_id, r.score, p.name as person_name
+            a.place, a.place_zh, a.instructor, a.instructor_zh, a.id as activity_id, s.id as slot_id, r.score, p.name as person_name
        from bookings b join slots s on s.id = b.slot_id join activities a on a.id = s.activity_id
        join people p on p.id = b.person_id
        left join ratings r on r.booking_id = b.id
@@ -62,6 +62,7 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
     r.activity_name = localText(r.activity_name, r.name_zh, lang);
     r.place_en = r.place;
     r.place = localText(r.place, r.place_zh, lang);
+    r.instructor = localText(r.instructor, r.instructor_zh, lang);
   }
   const now = requestTime();
   // Every place on the grounds with what happens there, for the map in the Up next card (when shown).
@@ -126,6 +127,7 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
           <div className="stack" style={{ gap: 4, position: 'relative' }}>
             <span className={`serif${zhBold(next.activity_name)}`} style={{ fontSize: 24 }}>{nameRuns(next.activity_name)}</span>
             <span className="sub">{fmtTimeL(next.starts_at, lang)} · {next.place} · {t.spots(next.party_size)}{household ? ` · ${next.person_name}` : ''}</span>
+            {next.instructor ? <span className="sub">{t.ledBy(next.instructor)}</span> : null}
             {seatsOf(next.id) ? <span className="sub">{t.seatingIs(seatsOf(next.id))}</span> : null}
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, position: 'relative' }}>
