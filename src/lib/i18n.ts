@@ -19,15 +19,6 @@ export function langFromAcceptLanguage(header: string | null | undefined): Lang 
 
 const hasCJK = (s: string) => /[㐀-鿿豈-﫿]/.test(s);
 /** "Ben" from "Ben Park"; Chinese names are kept whole ("王小明"). */
-/**
- * "由法師引導" — the instructor in a Chinese sentence. English (Latin-script) names get a space on
- * each side, as Taiwan and mainland typesetting do: "由 Florence 引導".
- */
-export function zhGuidedBy(name: string, verb: '引導' | '引导') {
-  const pad = (c: string | undefined) => (c && /[A-Za-z0-9]/.test(c) ? ' ' : '');
-  return `由${pad(name[0])}${name}${pad(name[name.length - 1])}${verb}`;
-}
-
 export const firstName = (name: string | null | undefined) => {
   const n = (name ?? '').trim();
   return hasCJK(n) ? n : n.split(/\s+/)[0] ?? '';
@@ -310,7 +301,7 @@ const zh: Dict = {
   holdNote: '名額會為你保留 10 分鐘，請在時間內完成報名。',
   seating: '座位',
   seatingIs: (seats) => `座位：${seats}`,
-  ledBy: (name) => zhGuidedBy(name, '引導'),
+  ledBy: (name) => `引導者：${name}`,
   seatingLede: (n) => (n === 1 ? '請選擇你想坐的座位。' : `請為 ${n} 位選擇座位，可以混搭不同座位。`),
   seatsChosen: (done, n) => `已選 ${done} / ${n} 位`,
   addSeat: (name) => `增加一位：${name}`,
@@ -474,7 +465,7 @@ const zh: Dict = {
     loginSubject: (code) => `您的登入代碼：${code}`,
     loginTitle: '您的登入代碼',
     seatingLine: (seats) => `座位：${seats}。`,
-    ledByLine: (name) => `${zhGuidedBy(name, '引導')}。`,
+    ledByLine: (name) => `引導者：${name}。`,
     timeChange: (sender, act, to, from, code) => `${sender}：時段異動。${act}改為${to} 開始（原為${from}）。名額與代碼 ${code} 不變。`,
     timeChangeSubject: (act, to) => `時段異動：${act}改為${to}`,
   },
@@ -527,7 +518,7 @@ const zhs: Dict = {
   holdNote: '名额会为你保留 10 分钟，请在时间内完成报名。',
   seating: '座位',
   seatingIs: (seats) => `座位：${seats}`,
-  ledBy: (name) => zhGuidedBy(name, '引导'),
+  ledBy: (name) => `引导者：${name}`,
   seatingLede: (n) => (n === 1 ? '请选择你想坐的座位。' : `请为 ${n} 位选择座位，可以混搭不同座位。`),
   seatsChosen: (done, n) => `已选 ${done} / ${n} 位`,
   addSeat: (name) => `增加一位：${name}`,
@@ -691,7 +682,7 @@ const zhs: Dict = {
     loginSubject: (code) => `您的登录验证码：${code}`,
     loginTitle: '您的登录验证码',
     seatingLine: (seats) => `座位：${seats}。`,
-    ledByLine: (name) => `${zhGuidedBy(name, '引导')}。`,
+    ledByLine: (name) => `引导者：${name}。`,
     timeChange: (sender, act, to, from, code) => `${sender}：时段变更。${act}改为${to} 开始（原为${from}）。名额与签到码 ${code} 不变。`,
     timeChangeSubject: (act, to) => `时段变更：${act}改为${to}`,
   },
