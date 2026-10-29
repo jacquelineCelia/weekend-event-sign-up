@@ -147,9 +147,12 @@ export async function saveActivityAction(activityId: string | null, _prev: Sched
     nameZh: z.string().trim().max(80),
     placeZh: z.string().trim().max(80),
     descriptionZh: z.string().trim().max(600),
+    instructor: z.string().trim().max(80),
+    instructorZh: z.string().trim().max(80),
   }).safeParse({
     name: form.get('name'), place: form.get('place'), durationMin: form.get('durationMin'), description: form.get('description') ?? '',
     nameZh: form.get('nameZh') ?? '', placeZh: form.get('placeZh') ?? '', descriptionZh: form.get('descriptionZh') ?? '',
+    instructor: form.get('instructor') ?? '', instructorZh: form.get('instructorZh') ?? '',
   });
   if (!parsed.success) return { error: sdict(await staffLang()).err.activityFields };
   const id = await saveActivity(activityId, parsed.data);

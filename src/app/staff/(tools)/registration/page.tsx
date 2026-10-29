@@ -106,6 +106,7 @@ export default async function Registration({ searchParams }: { searchParams: Pro
                     })()}
                     <span className="muted" style={{ fontSize: 13.5 }}>
                       <span lang={lang !== 'en' && r.placeZh ? htmlLang : 'en'}>{localText(r.place, r.placeZh, lang)}</span>
+                      {r.instructor ? <> · <span lang={lang !== 'en' && r.instructorZh ? htmlLang : 'en'}>{t.ledBy(localText(r.instructor, r.instructorZh, lang))}</span></> : null}
                       {r.walkIns ? ` · ${t.walkIns(r.walkIns)}` : ''}
                     </span>
                     <div aria-hidden="true" style={{ height: 8, borderRadius: 999, background: 'var(--ground-2)', overflow: 'hidden', display: 'flex' }}>

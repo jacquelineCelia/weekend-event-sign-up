@@ -116,6 +116,7 @@ export default async function CheckIn({ searchParams }: { searchParams: Promise<
             <div className="stack" style={{ gap: 4 }}>
               <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--moss)' }}>{dayText(day, 'short', lang)} · {fmtTime(sel.startsAt)} · {place(sel)}</span>
               <h1 className={`h1${zhBold(name(sel))}`} style={{ fontSize: 34 }}>{nameRuns(name(sel))}</h1>
+              {sel.instructor ? <span className="muted" style={{ fontSize: 14 }}>{t.ledBy(localText(sel.instructor, sel.instructorZh, lang))}</span> : null}
             </div>
             <Link className="btn" style={{ minHeight: 50, background: 'var(--forest)', fontSize: 15 }} href={`/staff/walk-in?slot=${sel.slotId}`}>
               <Plus size={18} /> {t.addWalkIn}

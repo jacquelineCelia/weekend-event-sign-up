@@ -5,7 +5,7 @@ import { saveActivityAction, type ScheduleState } from '../../actions';
 import { sdict } from '@/lib/staff-i18n';
 import type { Lang } from '@/lib/event';
 
-type A = { id: string; name: string; place: string; durationMin: number; description: string; nameZh: string; placeZh: string; descriptionZh: string } | null;
+type A = { id: string; name: string; place: string; durationMin: number; description: string; nameZh: string; placeZh: string; descriptionZh: string; instructor: string; instructorZh: string } | null;
 
 export default function ActivityForm({ activity, lang }: { activity: A; lang: Lang }) {
   const t = sdict(lang);
@@ -18,6 +18,10 @@ export default function ActivityForm({ activity, lang }: { activity: A; lang: La
         <div className="field"><label htmlFor="ad">{t.lengthMin}</label><input id="ad" name="durationMin" type="number" min={5} max={600} step={5} className="input" defaultValue={activity?.durationMin ?? 60} required /></div>
       </div>
       <div className="field">
+        <label htmlFor="ai">{t.instructor} <span className="muted" style={{ fontWeight: 400 }}>{t.instructorNote}</span></label>
+        <input id="ai" name="instructor" className="input" defaultValue={activity?.instructor} maxLength={80} />
+      </div>
+      <div className="field">
         <label htmlFor="ades">{t.description} <span className="muted" style={{ fontWeight: 400 }}>{t.shownToAttendees}</span></label>
         <textarea id="ades" name="description" className="input" rows={3} style={{ padding: 12, minHeight: 90, resize: 'vertical' }} defaultValue={activity?.description} />
       </div>
@@ -28,6 +32,7 @@ export default function ActivityForm({ activity, lang }: { activity: A; lang: La
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 14 }}>
           <div className="field"><label htmlFor="anz">名稱{lang === 'en' ? <> <span lang="en" className="muted" style={{ fontWeight: 400 }}>Name</span></> : null}</label><input id="anz" name="nameZh" className="input" defaultValue={activity?.nameZh} /></div>
           <div className="field"><label htmlFor="apz">地點{lang === 'en' ? <> <span lang="en" className="muted" style={{ fontWeight: 400 }}>Place</span></> : null}</label><input id="apz" name="placeZh" className="input" defaultValue={activity?.placeZh} /></div>
+          <div className="field"><label htmlFor="aiz">帶領老師{lang === 'en' ? <> <span lang="en" className="muted" style={{ fontWeight: 400 }}>Instructor</span></> : null}</label><input id="aiz" name="instructorZh" className="input" defaultValue={activity?.instructorZh} maxLength={80} /></div>
         </div>
         <div className="field">
           <label htmlFor="adesz">說明{lang === 'en' ? <> <span lang="en" className="muted" style={{ fontWeight: 400 }}>Description</span></> : null}</label>

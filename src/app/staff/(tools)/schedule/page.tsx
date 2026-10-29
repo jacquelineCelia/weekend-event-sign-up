@@ -42,13 +42,13 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
         <FilterList lang={lang} label={t.searchActivities} placeholder={t.searchActivitiesHint} noun="activity" 
           items={acts.map((a) => ({
             key: a.id,
-            search: `${a.name} ${a.name_zh} ${a.place} ${a.place_zh}`,
+            search: `${a.name} ${a.name_zh} ${a.place} ${a.place_zh} ${a.instructor} ${a.instructor_zh}`,
             node: (
           <Link className="session" href={href({ a: a.id })} aria-current={a.id === cur?.id ? 'true' : undefined} style={{ padding: '13px 18px', borderRadius: 18 }}>
             <span className={`serif${zhBold(localText(a.name, a.name_zh, lang))}`} style={{ fontSize: 16 }}>{nameRuns(localText(a.name, a.name_zh, lang))}</span>
             <span className="meta">
               {t.actMeta(a.slots, a.spots, dayText(day, 'label', lang))}
-              {!a.name_zh || !a.place_zh || (a.description && !a.description_zh) ? (
+              {!a.name_zh || !a.place_zh || (a.description && !a.description_zh) || (a.instructor && !a.instructor_zh) ? (
                 <span title={t.zhMissingTitle}
                   style={{ marginLeft: 6, padding: '1px 7px', borderRadius: 999, background: 'var(--ochre-pale)', color: 'var(--ochre-dark)', fontWeight: 600, whiteSpace: 'nowrap' }}>
                   {lang === 'en' ? <><span lang="zh-Hant-TW">中</span> {t.zhMissing}</> : t.zhMissing}
@@ -79,7 +79,7 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
           <>
             <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-end', gap: 14 }}>
               <div className="stack" style={{ gap: 4 }}>
-                <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--moss)' }}>{t.sessionsLength(localText(cur.place, cur.place_zh, lang), cur.duration_min)}</span>
+                <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--moss)' }}>{t.sessionsLength(localText(cur.place, cur.place_zh, lang), cur.duration_min)}{cur.instructor ? ` · ${t.ledBy(localText(cur.instructor, cur.instructor_zh, lang))}` : ''}</span>
                 <h1 className={`h1${zhBold(localText(cur.name, cur.name_zh, lang))}`} style={{ fontSize: 34 }}>{nameRuns(localText(cur.name, cur.name_zh, lang))}</h1>
               </div>
               <nav className="segment" aria-label={t.dayNav} style={{ minWidth: 280 }}>
@@ -109,7 +109,7 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
             />
             <details className="panel" style={{ gap: 12 }}>
               <summary style={{ cursor: 'pointer', fontWeight: 600, minHeight: 32 }}>{t.editDetails}</summary>
-              <ActivityForm activity={{ id: cur.id, name: cur.name, place: cur.place, durationMin: cur.duration_min, description: cur.description, nameZh: cur.name_zh, placeZh: cur.place_zh, descriptionZh: cur.description_zh }} lang={lang} />
+              <ActivityForm activity={{ id: cur.id, name: cur.name, place: cur.place, durationMin: cur.duration_min, description: cur.description, nameZh: cur.name_zh, placeZh: cur.place_zh, descriptionZh: cur.description_zh, instructor: cur.instructor, instructorZh: cur.instructor_zh }} lang={lang} />
             </details>
           </>
         ) : (

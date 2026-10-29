@@ -3,10 +3,10 @@ import { EVENT, type Lang } from './event';
 import { localText, toSimplified } from './hans';
 
 export type SlotView = { id: string; startsAt: Date; capacity: number; remaining: number; booked: number };
-export type ActivityView = { id: string; name: string; place: string; description: string; durationMin: number; slots: SlotView[] };
+export type ActivityView = { id: string; name: string; place: string; instructor: string; description: string; durationMin: number; slots: SlotView[] };
 
 type Row = {
-  id: string; name: string; place: string; description: string; duration_min: number;
+  id: string; name: string; place: string; instructor: string; description: string; duration_min: number;
   slot_id: string | null; starts_at: Date | null; capacity: number | null; remaining: number | null; booked: number | null;
 };
 
@@ -16,7 +16,7 @@ function group(rows: Row[], lang: Lang = 'en'): ActivityView[] {
   for (const r of rows) {
     let a = map.get(r.id);
     if (!a) {
-      a = { id: r.id, name: t(r.name), place: t(r.place), description: t(r.description), durationMin: r.duration_min, slots: [] };
+      a = { id: r.id, name: t(r.name), place: t(r.place), instructor: t(r.instructor), description: t(r.description), durationMin: r.duration_min, slots: [] };
       map.set(r.id, a);
     }
     if (r.slot_id) a.slots.push({ id: r.slot_id, startsAt: r.starts_at!, capacity: r.capacity!, remaining: r.remaining!, booked: r.booked! });
@@ -29,6 +29,7 @@ const SELECT = `
   select a.id,
          case when $3 <> 'en' and a.name_zh <> '' then a.name_zh else a.name end as name,
          case when $3 <> 'en' and a.place_zh <> '' then a.place_zh else a.place end as place,
+         case when $3 <> 'en' and a.instructor_zh <> '' then a.instructor_zh else a.instructor end as instructor,
          case when $3 <> 'en' and a.description_zh <> '' then a.description_zh else a.description end as description,
          a.duration_min,
          v.slot_id, v.starts_at, v.capacity, v.remaining, v.booked
@@ -54,6 +55,8 @@ export type BookingView = {
   personName: string | null; personEmail: string | null; personPhone: string | null; personLang: Lang;
   slotId: string; startsAt: Date; activityId: string; activityName: string; place: string; durationMin: number;
   activityNameZh: string; placeZh: string;
+  /** Who leads the activity (blank when not set); the same for every time slot. */
+  instructor: string; instructorZh: string;
   /** How the party is seated, for activities with seat types (empty otherwise). */
   seats: BookedSeat[];
 };
@@ -103,10 +106,11 @@ export async function seatOptions(activityId: string, slotIds: string[]): Promis
   return [...map.values()];
 }
 
-/** The activity's name and place in a language (Chinese when filled in, else English). */
+/** The activity's name, place and instructor in a language (Chinese when filled in, else English). */
 export const bookingText = (b: BookingView, lang: Lang) => ({
   activity: localText(b.activityName, b.activityNameZh, lang),
   place: localText(b.place, b.placeZh, lang),
+  instructor: localText(b.instructor, b.instructorZh, lang),
 });
 
 export async function getBooking(id: string): Promise<BookingView | null> {
@@ -116,7 +120,7 @@ export async function getBooking(id: string): Promise<BookingView | null> {
             greatest(0, floor(extract(epoch from (b.hold_expires_at - clock_timestamp()))))::int as hold_left, b.remind_sms, b.remind_email, b.person_id,
             p.name as person_name, p.email as person_email, p.phone as person_phone, coalesce(p.lang, 'en') as person_lang,
             s.id as slot_id, s.starts_at, a.id as activity_id, a.name as activity_name, a.place, a.duration_min,
-            a.name_zh, a.place_zh
+            a.name_zh, a.place_zh, a.instructor, a.instructor_zh
        from bookings b
        join slots s on s.id = b.slot_id
        join activities a on a.id = s.activity_id
@@ -132,6 +136,7 @@ export async function getBooking(id: string): Promise<BookingView | null> {
     personName: r.person_name, personEmail: r.person_email, personPhone: r.person_phone, personLang: r.person_lang,
     slotId: r.slot_id, startsAt: r.starts_at, activityId: r.activity_id, activityName: r.activity_name,
     place: r.place, durationMin: r.duration_min, activityNameZh: r.name_zh, placeZh: r.place_zh,
+    instructor: r.instructor ?? '', instructorZh: r.instructor_zh ?? '',
     seats: (await seatsForBookings([r.id])).get(r.id) ?? [],
   };
 }

@@ -76,6 +76,7 @@ export default async function Browse({ searchParams }: { searchParams: Promise<{
               <div className="stack" style={{ gap: 4, minWidth: 0 }}>
                 <Link id={`a-${a.id}`} className={`card-title${zhBold(a.name)}`} href={`/activity/${a.id}?day=${day.key}`}>{nameRuns(a.name)}</Link>
                 <span className="card-sub">{a.place} · {fmtDurationL(a.durationMin, lang)}</span>
+                {a.instructor ? <span className="card-sub">{t.ledBy(a.instructor)}</span> : null}
               </div>
               {a.open.length === 0 ? <span className="badge">{t.fullyBooked}</span> : null}
             </div>

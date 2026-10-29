@@ -15,10 +15,11 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
   if (!b || b.status !== 'confirmed' || !b.personId || !ids.includes(b.personId)) return new Response('Not found', { status: 404 });
 
   const lang = await getLang();
-  const { activity, place } = bookingText(b, lang);
+  const { activity, place, instructor } = bookingText(b, lang);
   const summary = `${activity} · ${eventName(lang)}`;
-  const description =
-    lang === 'zh' ? `${b.partySize} 位。報到代碼 ${b.code}。` : lang === 'zhs' ? `${b.partySize} 位。签到码 ${b.code}。` : `${b.partySize} spot(s). Check-in code ${b.code}.`;
+  const led = instructor ? (lang === 'zh' ? `帶領：${instructor}。` : lang === 'zhs' ? `带领：${instructor}。` : `Led by ${instructor}. `) : '';
+  const description = led +
+    (lang === 'zh' ? `${b.partySize} 位。報到代碼 ${b.code}。` : lang === 'zhs' ? `${b.partySize} 位。签到码 ${b.code}。` : `${b.partySize} spot(s). Check-in code ${b.code}.`);
   const ics = [
     'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Mindfulness Weekend//Signup//EN', 'BEGIN:VEVENT',
     `UID:${b.id}@signup`, `DTSTAMP:${stamp(new Date())}`,

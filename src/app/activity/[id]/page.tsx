@@ -119,6 +119,7 @@ export default async function ActivityPage({
       <section className="pad stack" style={{ gap: 12, padding: '8px 20px 22px' }}>
         <span className="eyebrow"><Leaf /> {dayText(day, 'long', lang)}</span>
         <h1 className={`h1${zhBold(a.name)}`} style={{ fontSize: 34 }}>{nameRuns(a.name)}</h1>
+        {a.instructor ? <p style={{ margin: 0, fontSize: 15, fontWeight: 600, color: 'var(--moss-dark)' }}>{t.ledBy(a.instructor)}</p> : null}
         {a.description ? <p className="lede">{a.description}</p> : null}
         <div className="pills"><span>{a.place}</span><span>{fmtDurationL(a.durationMin, lang)}</span></div>
         {EVENT.days.length > 1 ? (

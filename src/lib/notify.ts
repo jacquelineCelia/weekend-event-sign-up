@@ -69,7 +69,7 @@ ${cta ? `<a href="${esc(cta.href)}" style="display:inline-block;margin-top:6px;b
 export async function sendConfirmation(b: BookingView) {
   const lang = b.personLang;
   const m = dict(lang).msg;
-  const { activity, place } = bookingText(b, lang);
+  const { activity, place, instructor } = bookingText(b, lang);
   const day = dayOf(b.startsAt);
   const dayLong = day ? dayText(day, 'long', lang) : '';
   const daySh = day ? dayText(day, 'short', lang) : '';
@@ -77,7 +77,8 @@ export async function sendConfirmation(b: BookingView) {
   const when = isChinese(lang) ? `${dayLong}${time}` : `${dayLong}, ${time}`;
   const reminder = b.remindSms || b.remindEmail ? m.willRemind(fmtTimeL(addMinutes(b.startsAt, -15), lang)) : '';
   const seating = b.seats.length ? m.seatingLine(seatLine(b.seats, lang)) : '';
-  const lines = [m.whenWhere(activity, when, place), m.partyFor(b.partySize, b.personName ?? '', b.code ?? ''), seating, reminder, m.plansChanged].filter(Boolean);
+  const ledBy = instructor ? m.ledByLine(instructor) : '';
+  const lines = [m.whenWhere(activity, when, place), ledBy, m.partyFor(b.partySize, b.personName ?? '', b.code ?? ''), seating, reminder, m.plansChanged].filter(Boolean);
   const url = `${appUrl()}/me`;
   if (b.personEmail) {
     await sendEmail(
@@ -97,7 +98,7 @@ export async function sendConfirmation(b: BookingView) {
 export async function sendReminder(b: BookingView) {
   const lang = b.personLang;
   const m = dict(lang).msg;
-  const { activity, place } = bookingText(b, lang);
+  const { activity, place, instructor } = bookingText(b, lang);
   const start = fmtTimeL(b.startsAt, lang);
   const url = `${appUrl()}/me`;
   const sent: string[] = [];
@@ -110,6 +111,7 @@ export async function sendReminder(b: BookingView) {
   if (b.personEmail && (b.remindEmail || emailFallback)) {
     const lines = m.reminderLines(activity, start, place, b.partySize);
     if (b.seats.length) lines.splice(2, 0, m.seatingLine(seatLine(b.seats, lang)));
+    if (instructor) lines.splice(1, 0, m.ledByLine(instructor));
     await sendEmail(
       b.personEmail,
       m.reminderSubject(activity, start),

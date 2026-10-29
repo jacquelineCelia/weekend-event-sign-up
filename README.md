@@ -10,6 +10,9 @@ Built with Next.js 16 and Postgres (runs on Supabase as is).
 
 **Attendees** (`/`)
 - Browse 13 activities by day, see spots left per time, pick a time and party size.
+- Each activity can show who leads it ("Led by Teacher Zhenru"), the same at every time: on the activity list,
+  the details page, the ticket, My sign-ups, the calendar file and the confirmation and reminder emails
+  (not in texts, whose wording is fixed by the carrier registration).
 - Spots are held for 10 minutes while they enter name, email and phone.
 - Confirmation page with a check-in code and a calendar file (with a 15-minute alarm).
 - **Seating choices** (e.g. Tea Ceremony: "High chair" and "Ground seat"): staff add seat types,
@@ -69,7 +72,7 @@ Built with Next.js 16 and Postgres (runs on Supabase as is).
 - **Schedule & capacity**: add, move or delete time slots and change capacity per slot; edit or add
   activities. Capacity can't drop below what's booked, booked slots can't be deleted, overlapping
   slots are blocked, and guests in a moved slot are told the new time. Each activity also has
-  Chinese name, place and description fields, typed once in Traditional; Simplified readers get them
+  Instructor (optional) and Chinese name, place, instructor and description fields, typed once in Traditional; Simplified readers get them
   converted automatically (OpenCC, character by character). Blank fields show the English, and the
   list marks activities with "中 missing" until they're filled in. Staff screens can be switched to Chinese (see Language above); the
   check-in list tags attendees 繁 or 简, and walk-ins can be given either Chinese for their messages.
@@ -89,7 +92,7 @@ testing (sign-in codes included).
 Tests run against a real Postgres database (set `TEST_DATABASE_URL`; it is wiped on each run):
 
 ```bash
-npm test     # 93 tests: capacity, holds, overlaps, seating, login codes, reminders, schedule edits, shared phones, Chinese
+npm test     # 97 tests: capacity, holds, overlaps, seating, instructors, login codes, reminders, schedule edits, shared phones, Chinese
 ```
 
 ## Deploy (Vercel + Supabase)

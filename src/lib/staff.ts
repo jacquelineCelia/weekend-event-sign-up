@@ -9,12 +9,13 @@ import type { Lang } from './event';
 
 export type StaffSession = {
   slotId: string; startsAt: Date; durationMin: number; activityName: string; activityNameZh: string; place: string; placeZh: string;
+  instructor: string; instructorZh: string;
   capacity: number; booked: number; arrived: number;
 };
 
 export async function sessionsForDay(date: string): Promise<StaffSession[]> {
   const { rows } = await getPool().query(
-    `select s.id, s.starts_at, a.duration_min, a.name, a.name_zh, a.place, a.place_zh, s.capacity,
+    `select s.id, s.starts_at, a.duration_min, a.name, a.name_zh, a.place, a.place_zh, a.instructor, a.instructor_zh, s.capacity,
             coalesce(sum(b.party_size) filter (where b.status = 'confirmed'), 0)::int as booked,
             coalesce(sum(b.checked_in) filter (where b.status = 'confirmed'), 0)::int as arrived
        from slots s join activities a on a.id = s.activity_id
@@ -26,6 +27,7 @@ export async function sessionsForDay(date: string): Promise<StaffSession[]> {
   );
   return rows.map((r) => ({
     slotId: r.id, startsAt: r.starts_at, durationMin: r.duration_min, activityName: r.name, activityNameZh: r.name_zh, place: r.place, placeZh: r.place_zh,
+    instructor: r.instructor, instructorZh: r.instructor_zh,
     capacity: r.capacity, booked: r.booked, arrived: r.arrived,
   }));
 }
@@ -89,13 +91,14 @@ export async function startTimes(): Promise<TimeSlotSummary[]> {
 /** One activity's registration in the slot starting at a given time. */
 export type SlotRegistration = {
   slotId: string; activityName: string; activityNameZh: string; place: string; placeZh: string; durationMin: number;
+  instructor: string; instructorZh: string;
   capacity: number; booked: number; held: number; arrived: number; parties: number; walkIns: number;
   seats: { name: string; nameZh: string; capacity: number; booked: number }[];
 };
 
 export async function registrationAt(startsAt: Date): Promise<SlotRegistration[]> {
   const { rows } = await getPool().query(
-    `select s.id, a.name, a.name_zh, a.place, a.place_zh, a.duration_min, s.capacity,
+    `select s.id, a.name, a.name_zh, a.place, a.place_zh, a.instructor, a.instructor_zh, a.duration_min, s.capacity,
             coalesce(sum(b.party_size) filter (where b.status = 'confirmed'), 0)::int as booked,
             coalesce(sum(b.party_size) filter (where b.status = 'held' and b.hold_expires_at > now()), 0)::int as held,
             coalesce(sum(b.checked_in) filter (where b.status = 'confirmed'), 0)::int as arrived,
@@ -115,6 +118,7 @@ export async function registrationAt(startsAt: Date): Promise<SlotRegistration[]
   );
   return rows.map((r) => ({
     slotId: r.id, activityName: r.name, activityNameZh: r.name_zh, place: r.place, placeZh: r.place_zh, durationMin: r.duration_min,
+    instructor: r.instructor, instructorZh: r.instructor_zh,
     capacity: r.capacity, booked: r.booked, held: r.held, arrived: r.arrived, parties: r.parties, walkIns: r.walk_ins,
     seats: (r.seats as { name: string; nameZh: string; capacity: number; booked: number }[]).map((x) => ({ ...x, nameZh: x.nameZh ?? '', booked: Number(x.booked) })),
   }));
@@ -128,9 +132,9 @@ export type ScheduleSlot = { id: string; time: string; capacity: number; booked:
 export async function activitiesWithCounts(date: string) {
   const { rows } = await getPool().query<{
     id: string; name: string; place: string; description: string; duration_min: number; slots: number; spots: number;
-    name_zh: string; place_zh: string; description_zh: string; last_start: Date | null;
+    name_zh: string; place_zh: string; description_zh: string; instructor: string; instructor_zh: string; last_start: Date | null;
   }>(
-    `select a.id, a.name, a.place, a.description, a.duration_min, a.name_zh, a.place_zh, a.description_zh,
+    `select a.id, a.name, a.place, a.description, a.duration_min, a.name_zh, a.place_zh, a.description_zh, a.instructor, a.instructor_zh,
             count(s.id)::int as slots, coalesce(sum(s.capacity), 0)::int as spots, max(s.starts_at) as last_start
        from activities a
        left join slots s on s.activity_id = a.id and (s.starts_at at time zone $1)::date = $2::date
@@ -254,21 +258,24 @@ export async function saveSchedule(activityId: string, date: string, edits: Slot
 export type ActivityInput = {
   name: string; place: string; durationMin: number; description: string;
   nameZh: string; placeZh: string; descriptionZh: string;
+  /** Who leads it; one per activity, so every time slot shows the same name. Blank: not shown. */
+  instructor: string; instructorZh: string;
 };
 
 export async function saveActivity(id: string | null, a: ActivityInput) {
-  const v = [a.name, a.place, a.durationMin, a.description, a.nameZh, a.placeZh, a.descriptionZh];
+  const v = [a.name, a.place, a.durationMin, a.description, a.nameZh, a.placeZh, a.descriptionZh, a.instructor, a.instructorZh];
   if (id) {
     await getPool().query(
-      `update activities set name = $2, place = $3, duration_min = $4, description = $5, name_zh = $6, place_zh = $7, description_zh = $8
+      `update activities set name = $2, place = $3, duration_min = $4, description = $5, name_zh = $6, place_zh = $7, description_zh = $8,
+                             instructor = $9, instructor_zh = $10
         where id = $1`,
       [id, ...v],
     );
     return id;
   }
   const r = await getPool().query<{ id: string }>(
-    `insert into activities (name, place, duration_min, description, name_zh, place_zh, description_zh, sort_order)
-     values ($1, $2, $3, $4, $5, $6, $7, coalesce((select max(sort_order) + 1 from activities), 1)) returning id`,
+    `insert into activities (name, place, duration_min, description, name_zh, place_zh, description_zh, instructor, instructor_zh, sort_order)
+     values ($1, $2, $3, $4, $5, $6, $7, $8, $9, coalesce((select max(sort_order) + 1 from activities), 1)) returning id`,
     v,
   );
   return r.rows[0].id;
