@@ -74,7 +74,7 @@ describe('instructor', () => {
       await sendReminder((await getBooking(r.bookingId))!);
       const emails = outbox.filter((m) => m.channel === 'email');
       expect(emails).toHaveLength(2);
-      for (const e of emails) expect(e.text).toContain('帶領：真如老師。');
+      for (const e of emails) expect(e.text).toContain('引導：真如老師。');
       const sms = fetchSpy.mock.calls.map((c) => new URLSearchParams(String((c[1] as RequestInit).body)).get('Body')!);
       expect(sms).toHaveLength(1);
       expect(sms[0]).not.toContain('真如');

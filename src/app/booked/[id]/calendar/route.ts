@@ -17,7 +17,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
   const lang = await getLang();
   const { activity, place, instructor } = bookingText(b, lang);
   const summary = `${activity} · ${eventName(lang)}`;
-  const led = instructor ? (lang === 'zh' ? `帶領：${instructor}。` : lang === 'zhs' ? `带领：${instructor}。` : `Led by ${instructor}. `) : '';
+  const led = instructor ? (lang === 'zh' ? `引導：${instructor}。` : lang === 'zhs' ? `引导：${instructor}。` : `Led by ${instructor}. `) : '';
   const description = led +
     (lang === 'zh' ? `${b.partySize} 位。報到代碼 ${b.code}。` : lang === 'zhs' ? `${b.partySize} 位。签到码 ${b.code}。` : `${b.partySize} spot(s). Check-in code ${b.code}.`);
   const ics = [

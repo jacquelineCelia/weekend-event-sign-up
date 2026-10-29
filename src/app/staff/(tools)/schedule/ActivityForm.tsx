@@ -32,7 +32,7 @@ export default function ActivityForm({ activity, lang }: { activity: A; lang: La
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 14 }}>
           <div className="field"><label htmlFor="anz">名稱{lang === 'en' ? <> <span lang="en" className="muted" style={{ fontWeight: 400 }}>Name</span></> : null}</label><input id="anz" name="nameZh" className="input" defaultValue={activity?.nameZh} /></div>
           <div className="field"><label htmlFor="apz">地點{lang === 'en' ? <> <span lang="en" className="muted" style={{ fontWeight: 400 }}>Place</span></> : null}</label><input id="apz" name="placeZh" className="input" defaultValue={activity?.placeZh} /></div>
-          <div className="field"><label htmlFor="aiz">帶領老師{lang === 'en' ? <> <span lang="en" className="muted" style={{ fontWeight: 400 }}>Instructor</span></> : null}</label><input id="aiz" name="instructorZh" className="input" defaultValue={activity?.instructorZh} maxLength={80} /></div>
+          <div className="field"><label htmlFor="aiz">引導者{lang === 'en' ? <> <span lang="en" className="muted" style={{ fontWeight: 400 }}>Instructor</span></> : null}</label><input id="aiz" name="instructorZh" className="input" defaultValue={activity?.instructorZh} maxLength={80} /></div>
         </div>
         <div className="field">
           <label htmlFor="adesz">說明{lang === 'en' ? <> <span lang="en" className="muted" style={{ fontWeight: 400 }}>Description</span></> : null}</label>
