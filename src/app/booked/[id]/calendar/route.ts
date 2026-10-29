@@ -2,6 +2,7 @@ import { bookingText, getBooking } from '@/lib/queries';
 import { addMinutes } from '@/lib/event';
 import { eventName } from '@/lib/hans';
 import { getLang } from '@/lib/lang';
+import { dict } from '@/lib/i18n';
 import { currentOwners } from '@/lib/viewer';
 
 const stamp = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
@@ -17,7 +18,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
   const lang = await getLang();
   const { activity, place, instructor } = bookingText(b, lang);
   const summary = `${activity} · ${eventName(lang)}`;
-  const led = instructor ? (lang === 'zh' ? `引導：${instructor}。` : lang === 'zhs' ? `引导：${instructor}。` : `Led by ${instructor}. `) : '';
+  const led = instructor ? dict(lang).msg.ledByLine(instructor) + (lang === 'en' ? ' ' : '') : '';
   const description = led +
     (lang === 'zh' ? `${b.partySize} 位。報到代碼 ${b.code}。` : lang === 'zhs' ? `${b.partySize} 位。签到码 ${b.code}。` : `${b.partySize} spot(s). Check-in code ${b.code}.`);
   const ics = [

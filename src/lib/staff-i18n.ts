@@ -23,6 +23,12 @@ export function clock(min: number, lang: Lang) {
   return `${period} ${h12}:${mm}`;
 }
 
+// Same as zhGuidedBy in i18n.ts (kept here so staff client components don't pull in attendee text).
+const zhGuidedBy = (name: string, verb: string) => {
+  const pad = (c: string | undefined) => (c && /[A-Za-z0-9]/.test(c) ? ' ' : '');
+  return `由${pad(name[0])}${name}${pad(name[name.length - 1])}${verb}`;
+};
+
 const s = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
 const en = {
@@ -452,7 +458,7 @@ const zh: StaffDict = {
   shownToAttendees: '（參加者會看到）',
   instructor: '引導者',
   instructorNote: '（選填，每個時段都一樣）',
-  ledBy: (name) => `引導：${name}`,
+  ledBy: (name) => zhGuidedBy(name, '引導'),
   chineseLegend: '中文',
   chineseLegendNote: '— 請以繁體輸入；簡體讀者會自動轉換。留白則顯示英文。',
   saveDetails: '儲存資料',
@@ -669,7 +675,7 @@ const zhs: StaffDict = {
   shownToAttendees: '（参加者会看到）',
   instructor: '引导者',
   instructorNote: '（选填，每个时段都一样）',
-  ledBy: (name) => `引导：${name}`,
+  ledBy: (name) => zhGuidedBy(name, '引导'),
   chineseLegend: '中文',
   chineseLegendNote: '— 请以繁体输入；简体读者会自动转换。留空则显示英文。',
   saveDetails: '保存信息',

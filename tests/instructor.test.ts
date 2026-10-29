@@ -3,6 +3,8 @@ import { getPool } from '@/lib/db';
 import { confirmBooking, holdSpots } from '@/lib/booking';
 import { contactSchema } from '@/lib/contact';
 import { outbox } from '@/lib/messaging';
+import { dict } from '@/lib/i18n';
+import { sdict } from '@/lib/staff-i18n';
 import { activitiesForDay, bookingText, getBooking } from '@/lib/queries';
 import { sendConfirmation, sendReminder } from '@/lib/notify';
 import { activitiesWithCounts, registrationAt, saveActivity, sessionsForDay } from '@/lib/staff';
@@ -33,6 +35,15 @@ const book = async (slotId: string, lang: 'en' | 'zh' | 'zhs', sms = false) => {
 };
 
 describe('instructor', () => {
+  it('reads as a sentence in Chinese, with spaces around English names', () => {
+    expect(dict('zh').ledBy('法師')).toBe('由法師引導');
+    expect(dict('zhs').ledBy('法师')).toBe('由法师引导');
+    expect(dict('zh').ledBy('Florence')).toBe('由 Florence 引導');
+    expect(dict('zh').msg.ledByLine('Florence')).toBe('由 Florence 引導。');
+    expect(sdict('zhs').ledBy('Jill')).toBe('由 Jill 引导');
+    expect(dict('en').ledBy('Jill')).toBe('Led by Jill');
+  });
+
   it('is one name per activity, shown the same at every time, in each language', async () => {
     const [en] = await activitiesForDay(DAY, 'en');
     const [zh] = await activitiesForDay(DAY, 'zh');
@@ -74,7 +85,7 @@ describe('instructor', () => {
       await sendReminder((await getBooking(r.bookingId))!);
       const emails = outbox.filter((m) => m.channel === 'email');
       expect(emails).toHaveLength(2);
-      for (const e of emails) expect(e.text).toContain('引導：真如老師。');
+      for (const e of emails) expect(e.text).toContain('由真如老師引導。');
       const sms = fetchSpy.mock.calls.map((c) => new URLSearchParams(String((c[1] as RequestInit).body)).get('Body')!);
       expect(sms).toHaveLength(1);
       expect(sms[0]).not.toContain('真如');
