@@ -87,6 +87,8 @@ button, input, select { font: inherit; color: inherit; }
 .card-title { font-family: var(--serif); font-size: 19px; line-height: 1.25; color: var(--ink); text-decoration: none; }
 .card-title:hover { color: var(--moss-dark); }
 .card-sub { font-size: 13px; color: var(--muted); }
+/* Who leads the activity: moss green, a little bolder than the text around it. */
+.led-by { color: var(--moss); font-weight: 600; }
 .badge { flex: none; font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 999px; white-space: nowrap; background: var(--stone); color: var(--muted); }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .chip { display: inline-flex; gap: 6px; align-items: center; padding: 9px 12px; border-radius: 999px; font-size: 13px; line-height: 1; text-decoration: none; min-height: 36px; }

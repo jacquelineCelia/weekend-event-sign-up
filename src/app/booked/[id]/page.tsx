@@ -45,7 +45,7 @@ export default async function Booked({ params }: { params: Promise<{ id: string 
             <span style={{ fontSize: 15, color: 'var(--ink-2)' }}>
               {fmtTimeL(b.startsAt, lang)} – {fmtTimeL(addMinutes(b.startsAt, b.durationMin), lang)} · {place}
             </span>
-            {instructor ? <span style={{ fontSize: 14, color: 'var(--ink-2)' }}>{t.ledBy(instructor)}</span> : null}
+            {instructor ? <span className="led-by" style={{ fontSize: 14 }}>{t.ledBy(instructor)}</span> : null}
           </div>
           <div className="mid">
             <div className="stack" style={{ gap: 2 }}>

@@ -158,7 +158,7 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
                     <span className={`serif${zhBold(r.activity_name)}`} style={{ fontSize: 17, color: started ? 'var(--muted-2)' : undefined }}>{nameRuns(r.activity_name)}</span>
                     {household ? <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--ochre)' }}>{r.person_name}</span> : null}
                     <span className="muted" style={{ fontSize: 13.5 }}>{r.place} · {t.spots(r.party_size)} · {t.code(r.code)}</span>
-                    {r.instructor ? <span style={{ fontSize: 13.5, color: started ? 'var(--muted-2)' : 'var(--ink-2)' }}>{t.ledBy(r.instructor)}</span> : null}
+                    {r.instructor ? <span className={started ? undefined : 'led-by'} style={{ fontSize: 13.5, color: started ? 'var(--muted-2)' : undefined }}>{t.ledBy(r.instructor)}</span> : null}
                     {seatsOf(r.id) ? <span style={{ fontSize: 13.5, color: started ? 'var(--muted-2)' : 'var(--ink-2)' }}>{t.seatingIs(seatsOf(r.id))}</span> : null}
                     <span style={{ fontSize: 12.5, fontWeight: 600, marginTop: 4, color: started ? 'var(--muted-2)' : 'var(--moss-dark)' }}>
                       {done ? t.done : started ? t.happening
