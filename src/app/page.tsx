@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { activitiesForDay } from '@/lib/queries';
 import { eventName } from '@/lib/hans';
 import { LegalFoot } from '@/components/LegalPage';
-import { EVENT, dateRangeL, dayByKey, dayText, fmtDurationL, fmtTimeL, isLow, requestTime } from '@/lib/event';
+import { EVENT, dateRangeL, dayByKey, dayText, fmtTimeL, isLow, requestTime } from '@/lib/event';
 import { getLang } from '@/lib/lang';
 import { dict, zhBold } from '@/lib/i18n';
 import LangToggle from '@/components/LangToggle';
@@ -75,8 +75,7 @@ export default async function Browse({ searchParams }: { searchParams: Promise<{
             <div className="card-head">
               <div className="stack" style={{ gap: 4, minWidth: 0 }}>
                 <Link id={`a-${a.id}`} className={`card-title${zhBold(a.name)}`} href={`/activity/${a.id}?day=${day.key}`}>{nameRuns(a.name)}</Link>
-                <span className="card-sub">{a.place} · {fmtDurationL(a.durationMin, lang)}</span>
-                {a.instructor ? <span className="card-sub">{t.ledBy(a.instructor)}</span> : null}
+                <span className="card-sub">{a.instructor ? `${a.place} · ${t.ledBy(a.instructor)}` : a.place}</span>
               </div>
               {a.open.length === 0 ? <span className="badge">{t.fullyBooked}</span> : null}
             </div>
