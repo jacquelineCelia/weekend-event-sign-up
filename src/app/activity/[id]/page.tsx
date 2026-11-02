@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { activityAllDays, getBooking, seatOptions } from '@/lib/queries';
 import { localText } from '@/lib/hans';
-import { addMinutes, fmtDayTimeL, fmtDurationL, fmtTimeL, isLow, requestTime } from '@/lib/event';
+import { addMinutes, dayOf, dayText, fmtDayTimeL, fmtDurationL, fmtTimeL, isLow, requestTime } from '@/lib/event';
 import { getLang } from '@/lib/lang';
 import { dict, zhBold } from '@/lib/i18n';
 import LangToggle from '@/components/LangToggle';
@@ -82,10 +82,11 @@ export default async function ActivityPage({
   const slots: PickerSlot[] = a.slots.map((s) => {
     const past = s.startsAt.getTime() <= now;
     const current = change?.currentSlotId === s.id;
+    const d = dayOf(s.startsAt);
     return {
       id: s.id,
-      // "11/14（六）下午 2:50 – 下午 3:40" / "Sat 14 Nov, 2:50 PM – 3:40 PM", on one line.
-      range: `${fmtDayTimeL(s.startsAt, lang)} – ${fmtTimeL(addMinutes(s.startsAt, a.durationMin), lang)}`,
+      date: d ? dayText(d, 'long', lang) : '',
+      range: `${fmtTimeL(s.startsAt, lang)} – ${fmtTimeL(addMinutes(s.startsAt, a.durationMin), lang)}`,
       short: fmtDayTimeL(s.startsAt, lang),
       remaining: past || current ? 0 : s.remaining,
       low: !past && !current && isLow(s.remaining, s.capacity),

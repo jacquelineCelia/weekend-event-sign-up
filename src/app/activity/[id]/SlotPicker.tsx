@@ -7,8 +7,8 @@ import { Minus, Plus } from '@/components/icons';
 import { dict, errorText, type Lang } from '@/lib/i18n';
 
 export type PickerSlot = {
-  /** range: day and times ("11/14（六）下午 2:50 – 下午 3:40"); short: day and start time, for sentences. */
-  id: string; range: string; short: string; remaining: number; low: boolean; past: boolean;
+  /** date: "Saturday 14 November" / "11月14日（星期六）"; short: day and start time, for sentences. */
+  id: string; date: string; range: string; short: string; remaining: number; low: boolean; past: boolean;
   current?: boolean; tooSmall?: boolean;
   /** Changing time: why this time can't take the party's seats (e.g. "High chair: 1 left, you need 2"). */
   seatsShort?: string;
@@ -73,6 +73,7 @@ export default function SlotPicker({ lang, slots, seats, preselected, change }: 
                   onChange={() => setSelected(s.id)} />
                 <span className="radio" aria-hidden="true" />
                 <span className="stack" style={{ gap: 3 }}>
+                  {s.date ? <span className="slot-date">{s.date}</span> : null}
                   <span className="time">{s.range}</span>
                   {why ? <span style={{ fontSize: 13, fontWeight: 500, color: blocked ? undefined : 'var(--ochre-dark)' }}>{why}</span> : null}
                 </span>
