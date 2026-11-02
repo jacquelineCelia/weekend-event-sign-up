@@ -10,6 +10,7 @@ import { walkInContactSchema } from '@/lib/contact';
 import { getBooking } from '@/lib/queries';
 import { sendConfirmation } from '@/lib/notify';
 import { setCheckedIn, saveSchedule, saveActivity, saveSeating, type SlotEdit } from '@/lib/staff';
+import { removePhoto } from '@/lib/photos';
 import { EVENT, addMinutes, dayOf, dayText, fmtTimeL } from '@/lib/event';
 import { localText } from '@/lib/hans';
 import { errorText } from '@/lib/i18n';
@@ -27,6 +28,12 @@ async function rememberSlot(slotId: string) {
 export async function rememberSlotAction(slotId: string) {
   await requireStaff();
   if (z.string().uuid().safeParse(slotId).success) await rememberSlot(slotId);
+}
+
+/** Takes a photo off the big screen and deletes it. */
+export async function removePhotoAction(id: string) {
+  await requireStaff();
+  await removePhoto(id);
 }
 
 /** The EN | 繁中 | 简中 switch on staff screens (and the staff sign-in page). */

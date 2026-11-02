@@ -10,6 +10,7 @@ type Section = { h: string; p: (string | string[])[] };
 export type LegalDoc = { title: string; updated: string; intro: string; sections: Section[]; note?: string };
 
 const UPDATED = { en: 'Last updated October 22, 2026', zh: '最後更新：2026 年 10 月 22 日', zhs: '最后更新：2026 年 10 月 22 日' };
+const PRIVACY_UPDATED = { en: 'Last updated November 2, 2026', zh: '最後更新：2026 年 11 月 2 日', zhs: '最后更新：2026 年 11 月 2 日' };
 const NOTE = { zh: '本頁為中文譯本，如與英文版本有出入，以英文版本為準。', zhs: '本页为中文译本，如与英文版本有出入，以英文版本为准。' };
 
 export function terms(lang: Lang, event: string): LegalDoc {
@@ -117,7 +118,7 @@ export function privacy(lang: Lang, event: string): LegalDoc {
   const { supportEmail: mail } = EVENT;
   const org = lang === 'en' ? `${EVENT.org}, part of ${EVENT.parentOrg}` : lang === 'zh' ? `${EVENT.org}（隸屬 ${EVENT.parentOrg}）` : `${EVENT.org}（隶属于 ${EVENT.parentOrg}）`;
   if (lang === 'en') return {
-    title: 'Privacy policy', updated: UPDATED.en,
+    title: 'Privacy policy', updated: PRIVACY_UPDATED.en,
     intro: `${org} (“we”, “us”) runs the ${event} activity sign-up. This policy explains what we collect and how we use it.`,
     sections: [
       { h: 'What we collect', p: ['Your name, email address and mobile number; the language you use the site in; the activities you sign up for, how many spots, and whether you checked in; ratings you give activities; and whether you chose text or email reminders.'] },
@@ -131,13 +132,14 @@ export function privacy(lang: Lang, event: string): LegalDoc {
           'Text messaging originator opt-in data and consent will not be shared with any third parties.',
         ],
       ] },
+      { h: 'Photos you share', p: ['If you upload a photo, we keep the photo, the name you enter and the topic you choose, and show them on a big screen at the event, where everyone there can see them. Your browser removes location data from the photo before sending it. To have a photo taken down, ask a staff member or email ' + mail + '.'] },
       { h: 'Who else sees it', p: ['We never sell or rent your information. Apart from the text-messaging data above, which is never shared, we share information only with the service providers that host this site and deliver our emails and texts on our behalf, and only as needed for them to do that.'] },
       { h: 'How long we keep it', p: [`We keep sign-up information only as long as we need it for the event and any follow-up, then delete it. To see or delete your information sooner, email ${mail}.`] },
       { h: 'Changes and contact', p: [`We may update this policy; the date above shows the latest version. Questions? Email ${mail}.`] },
     ],
   };
   if (lang === 'zh') return {
-    title: '隱私權政策', updated: UPDATED.zh, note: NOTE.zh,
+    title: '隱私權政策', updated: PRIVACY_UPDATED.zh, note: NOTE.zh,
     intro: `${event}活動報名由 ${org}（以下稱「我們」）營運。本政策說明我們收集哪些資料，以及如何使用。`,
     sections: [
       { h: '我們收集的資料', p: ['你的姓名、電子郵件與手機號碼；你使用網站的語言；你報名的活動、人數與報到狀態；你為活動給的評分；以及你選擇以簡訊或電子郵件接收提醒。'] },
@@ -151,13 +153,14 @@ export function privacy(lang: Lang, event: string): LegalDoc {
           '簡訊接收同意資料及同意紀錄不會提供給任何第三方。',
         ],
       ] },
+      { h: '你分享的照片', p: ['如果你上傳照片，我們會保存照片、你輸入的姓名和你選擇的主題，並在活動現場的大螢幕上播放，現場所有人都看得到。你的瀏覽器會在傳送前移除照片中的位置資料。如需撤下照片，請告知工作人員或寫信至 ' + mail + '。'] },
       { h: '資料分享', p: ['我們絕不出售或出租你的資料。除上述絕不分享的簡訊資料外，我們只會在必要範圍內，將資料提供給代我們架設本網站及寄送電子郵件與簡訊的服務供應商。'] },
       { h: '保存期限', p: [`報名資料僅保存至活動及後續聯繫所需，之後即刪除。如需提前查看或刪除你的資料，請寫信至 ${mail}。`] },
       { h: '政策變更與聯絡方式', p: [`我們可能更新本政策，上方日期為最新版本。如有疑問，請寫信至 ${mail}。`] },
     ],
   };
   return {
-    title: '隐私政策', updated: UPDATED.zhs, note: NOTE.zhs,
+    title: '隐私政策', updated: PRIVACY_UPDATED.zhs, note: NOTE.zhs,
     intro: `${event}活动报名由 ${org}（以下称“我们”）运营。本政策说明我们收集哪些信息，以及如何使用。`,
     sections: [
       { h: '我们收集的信息', p: ['你的姓名、邮箱和手机号码；你使用网站的语言；你报名的活动、人数和签到状态；你为活动打的分；以及你选择通过短信还是邮件接收提醒。'] },
@@ -171,6 +174,7 @@ export function privacy(lang: Lang, event: string): LegalDoc {
           '短信接收同意数据及同意记录不会提供给任何第三方。',
         ],
       ] },
+      { h: '你分享的照片', p: ['如果你上传照片，我们会保存照片、你输入的姓名和你选择的主题，并在活动现场的大屏幕上播放，现场所有人都能看到。你的浏览器会在发送前移除照片中的位置信息。如需撤下照片，请告知工作人员或发邮件至 ' + mail + '。'] },
       { h: '信息共享', p: ['我们绝不出售或出租你的信息。除上述绝不共享的短信数据外，我们只会在必要范围内，将信息提供给代我们托管本网站及发送邮件和短信的服务提供商。'] },
       { h: '保存期限', p: [`报名信息仅保存至活动及后续联系所需，之后即删除。如需提前查看或删除你的信息，请发邮件至 ${mail}。`] },
       { h: '政策变更与联系方式', p: [`我们可能更新本政策，上方日期为最新版本。如有疑问，请发邮件至 ${mail}。`] },

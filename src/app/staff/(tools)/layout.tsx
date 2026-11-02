@@ -21,7 +21,7 @@ export default async function StaffLayout({ children }: { children: React.ReactN
           <path d="M0 56 C 240 38, 480 44, 720 54 S 1200 60, 1440 46 L1440 68 L0 68 Z" fill="#3B5644" />
         </svg>
         <span className="brand"><span style={{ color: 'var(--sun)', display: 'flex' }}><Leaf size={20} /></span> {eventName(lang)} · {t.staff}</span>
-        <StaffTabs labels={[t.tabCheckIn, t.tabWalkIn, t.tabRegistration, t.tabSchedule]} />
+        <StaffTabs labels={[t.tabCheckIn, t.tabWalkIn, t.tabRegistration, t.tabSchedule, t.tabPhotos]} />
         <StaffLangSwitch lang={lang} label={t.language} onDark />
         <form action={staffSignOutAction}><button type="submit">{t.signOut}</button></form>
       </nav>

@@ -61,6 +61,11 @@ Built with Next.js 16 and Postgres (runs on Supabase as is).
   Shareable links: `yoursite/tw` (or `/zh`) for Traditional, `yoursite/cn` for Simplified, `/en`.
   Each attendee's language is saved, so confirmations, reminders, sign-in codes and time-change
   notices come in it.
+- **Photo sharing** (`/photos`): enter a name, choose one of nine topics and upload a photo; it goes on
+  the big screen (see Photo show below). The browser resizes each photo to 1600px and strips its
+  location data. Photos are stored in the database, with uploads stopping at 400 MB in total so a full
+  database can't affect sign-ups. To rename topics, update `photo_topics` by `sort_order` (Chinese typed
+  in Traditional).
 
 **Staff** (`/staff`, behind a shared passcode)
 - **Language**: an EN | 繁中 | 简中 switch in the staff bar (and on the sign-in page) shows every staff
@@ -81,6 +86,9 @@ Built with Next.js 16 and Postgres (runs on Supabase as is).
   converted automatically (OpenCC, character by character). Blank fields show the English, and the
   list marks activities with "中 missing" until they're filled in. Staff screens can be switched to Chinese (see Language above); the
   check-in list tags attendees 繁 or 简, and walk-ins can be given either Chinese for their messages.
+- **Photo show**: every uploaded photo in random order, 8 seconds each, with its topic and the
+  person's name, in the language of the staff switch. No photo repeats until all have been shown, and new uploads join
+  within 15 seconds. Pause, Next, Full screen and Remove (deletes the photo, after a confirmation).
 
 ## Run it locally
 
@@ -97,7 +105,7 @@ testing (sign-in codes included).
 Tests run against a real Postgres database (set `TEST_DATABASE_URL`; it is wiped on each run):
 
 ```bash
-npm test     # 100 tests: capacity, holds, overlaps, seating, instructors, login codes, reminders, schedule edits, shared phones, Chinese
+npm test     # 124 tests: capacity, holds, overlaps, seating, instructors, login codes, reminders, schedule edits, shared phones, Chinese, photos
 ```
 
 ## Deploy (Vercel + Supabase)

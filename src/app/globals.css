@@ -326,3 +326,42 @@ select.input { padding: 0 14px; }
 .langsw.dark { background: rgba(255, 255, 255, 0.08); border: 1px solid #5c7a63; }
 .langsw.dark button { color: var(--on-dark); }
 .langsw.dark button[aria-pressed='true'] { background: var(--paper); color: var(--ink); }
+
+/* ---------- Photo sharing (attendees) ---------- */
+.photo-form { display: flex; flex-direction: column; gap: 22px; padding-top: 12px; padding-bottom: 40px; }
+.photo-lede { margin: 0; color: var(--ink-2); }
+.photo-topics { display: flex; flex-direction: column; gap: 8px; border: 0; padding: 0; margin: 0; min-width: 0; }
+.photo-topics .legend { padding: 0; margin-bottom: 6px; }
+.photo-topic { display: flex; align-items: center; gap: 12px; min-height: 54px; padding: 8px 16px; border: 1px solid var(--line-strong); border-radius: 16px; background: var(--paper); font-size: 17.5px; cursor: pointer; }
+.photo-topic[data-on='true'] { border: 2px solid var(--moss); padding: 7px 15px; background: var(--sage-pale); font-weight: 600; }
+.photo-topic input { width: 22px; height: 22px; margin: 0; flex: none; accent-color: var(--moss); }
+.photo-topic:focus-within { outline: 3px solid var(--focus); outline-offset: 2px; }
+.photo-pick { cursor: pointer; }
+.photo-pick:focus-within { outline: 3px solid var(--focus); outline-offset: 2px; }
+.photo-preview { display: block; width: 100%; max-height: 360px; object-fit: contain; border-radius: 16px; background: var(--ground-2); }
+.photo-notice { margin: 0; font-size: 15px; }
+
+/* ---------- Photo show (staff, big screen) ---------- */
+/* The page is exactly one screen tall, however many rows the staff bar wraps to, so the caption always shows. */
+.staff:has(.show) { height: 100dvh; min-height: 480px; }
+.show { flex: 1; min-height: 0; position: relative; display: flex; flex-direction: column; background: #141c17; color: var(--on-dark); }
+.show[data-full='true'] { height: 100dvh; }
+.show[data-idle='true'] { cursor: none; }
+.show-frame { flex: 1; min-height: 0; position: relative; }
+.show-photo { position: absolute; inset: 2vh 2vw 0; width: calc(100% - 4vw); height: calc(100% - 2vh); object-fit: contain; animation: show-in 0.8s ease; }
+@keyframes show-in { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .show-photo { animation: none; } }
+.show-caption { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 4vw; padding: 2vh 3vw 2.5vh; }
+.show-topic { margin: 0; font-family: var(--serif); font-size: clamp(26px, 3.4vw, 72px); line-height: 1.15; color: var(--sun); overflow-wrap: anywhere; }
+.show-name { font-size: clamp(22px, 2.6vw, 56px); font-weight: 500; line-height: 1.2; overflow-wrap: anywhere; }
+.show-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 24px 24px 90px; text-align: center; }
+.show-address { margin: 0; font-size: clamp(18px, 2vw, 36px); color: var(--on-dark-2); overflow-wrap: anywhere; }
+.show-controls { position: absolute; top: 16px; right: 16px; left: 16px; display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; font-size: 15.5px; pointer-events: none; }
+.show-controls[hidden] { display: none; }
+.show-controls > * { pointer-events: auto; }
+.show-controls span { padding: 6px 12px; border-radius: 999px; background: rgba(20, 28, 23, 0.82); }
+.show-controls button { min-height: 44px; padding: 0 16px; border: 1px solid #5c7a63; border-radius: 999px; background: rgba(20, 28, 23, 0.82); color: var(--on-dark); font-size: 15.5px; font-weight: 600; cursor: pointer; }
+.show-controls button:hover:not(:disabled) { background: var(--forest-2); }
+.show-controls button:disabled { opacity: 0.5; cursor: not-allowed; }
+.show-controls button.show-danger { background: var(--paper); border-color: var(--paper); color: var(--ochre-dark); }
+.show-controls button.show-danger:hover:not(:disabled) { background: var(--ochre-pale); }
