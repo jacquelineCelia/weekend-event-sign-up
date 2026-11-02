@@ -5,14 +5,11 @@ import { outbox } from '@/lib/messaging';
 
 vi.spyOn(console, 'info').mockImplementation(() => {});
 const pool = getPool();
-let personId: string;
 
 beforeEach(async () => {
   await pool.query('truncate login_codes, ratings, bookings, people, slots, activities cascade');
   outbox.length = 0;
-  personId = (await pool.query<{ id: string }>(
-    `insert into people (name, email, phone) values ('Jordan Lee', 'jordan@example.com', '+14125550148') returning id`,
-  )).rows[0].id;
+  await pool.query(`insert into people (name, email, phone) values ('Jordan Lee', 'jordan@example.com', '+14125550148')`);
 });
 afterAll(() => pool.end());
 
@@ -31,7 +28,7 @@ describe('sign in with a one-time code', () => {
 
   it('finds people by email too, case-insensitively', async () => {
     const r = await startLogin('JORDAN@example.com');
-    expect(await verifyLogin(r.ticket!, lastCode())).toEqual({ viewer: { kind: 'person', personId } });
+    expect(await verifyLogin(r.ticket!, lastCode())).toEqual({ viewer: { kind: 'email', email: 'jordan@example.com' } });
   });
 
   it('gives an unknown person the same kind of answer, and no code', async () => {
@@ -61,7 +58,7 @@ describe('sign in with a one-time code', () => {
     const r2 = await startLogin('jordan@example.com');
     const c2 = lastCode();
     expect(await verifyLogin(r1.ticket!, c1)).toHaveProperty('error');
-    expect(await verifyLogin(r2.ticket!, c2)).toEqual({ viewer: { kind: 'person', personId } });
+    expect(await verifyLogin(r2.ticket!, c2)).toEqual({ viewer: { kind: 'email', email: 'jordan@example.com' } });
   });
 
   it('limits how many codes are sent', async () => {

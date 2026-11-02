@@ -22,7 +22,7 @@ Built with Next.js 16 and Postgres (runs on Supabase as is).
   each person (a party can mix types). Attendees can change their seating later from My sign-ups (same party,
   same time). Seating shows on the ticket, My sign-ups, the confirmation
   and reminder emails, the staff roster, and the walk-in form.
-- **No overlapping sign-ups**: one person (one email) can't sign up for two activities whose times
+- **No overlapping sign-ups**: one person (one name on an email) can't sign up for two activities whose times
   overlap (back-to-back is fine). The details screen explains the clash and offers to cancel the
   other sign-up and take this one, in one step, or keep it and pick another time. The clashing
   sign-up is only shown — and can only be cancelled — once the browser is signed in as that person;
@@ -48,9 +48,12 @@ Built with Next.js 16 and Postgres (runs on Supabase as is).
   the button is off (`SHOW_VENUE_MAP = false` in `src/lib/venue-map.ts`). To use it, replace the
   drawing in `src/components/VenueMap.tsx` and the pin positions in `src/lib/venue-map.ts` with the
   real site, then set `SHOW_VENUE_MAP` to true.
-- **Shared phone numbers** (families, couples): people are told apart by email, so several can use
-  one phone. Signing in with that phone shows everyone's sign-ups, each labelled with a name;
-  signing in with an email shows just that person's. Texts start with the person's first name.
+- **Shared phone numbers and emails** (families, couples): a person is a name together with an email
+  (or, for a walk-in with no email, a phone number), compared ignoring case and spaces, so several
+  people can share either. Signing in with a shared phone or email shows everyone's sign-ups on it,
+  each labelled with a name. Two people signing up one after the other on one browser stay signed in
+  together. A different spelling of a name ("Anna" / "Anna Park") counts as a different person.
+  Texts start with the person's first name; reminder and time-change emails say who they're for.
 - **Chinese, Traditional (Taiwan wording) and Simplified (mainland wording)**: opens in 繁體中文 on
   phones set to Taiwan/Hong Kong Chinese and in 简体中文 on mainland/Singapore Chinese, with an
   EN | 繁中 | 简中 switch on every screen (switching keeps a half-filled form and the 10-minute hold).

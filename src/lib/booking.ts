@@ -172,28 +172,24 @@ async function uniqueCode(c: PoolClient) {
 }
 
 /**
- * Finds or creates the person behind a sign-up. People are told apart by email; a phone number
- * can be shared (a family, a couple), so it only identifies someone together with their name.
- *  - With an email: that email's person (name and phone kept current), else a walk-in record with
- *    the same phone and name but no email yet (the email is added to it), else a new person.
- *  - Without an email (walk-ins): someone with the same phone and the same name, else a new person.
- */
-/**
  * The existing person a sign-up's contact details belong to, without changing anything.
- * Mirrors upsertPerson: by email; else a walk-in record with the same phone and name but no email;
- * without an email, someone with the same phone and the same name.
+ * Mirrors upsertPerson: by email and name; else a walk-in record with the same phone and name but no
+ * email; without an email, someone with the same phone and the same name.
  */
 async function findPerson(c: PoolClient, contact: Contact): Promise<{ id: string; via: 'email' | 'walk_in' | 'phone' } | null> {
   const sameNameOnPhone = async (onlyWithoutEmail: boolean) =>
     contact.phone
       ? (await c.query<{ id: string }>(
-          `select id from people where phone = $1 and lower(trim(name)) = lower(trim($2))
+          `select id from people where phone = $1 and person_name_key(name) = person_name_key($2)
              ${onlyWithoutEmail ? 'and email is null' : ''} order by created_at limit 1`,
           [contact.phone, contact.name],
         )).rows[0]?.id ?? null
       : null;
   if (contact.email) {
-    const byEmail = (await c.query<{ id: string }>('select id from people where lower(email) = $1', [contact.email])).rows[0]?.id;
+    const byEmail = (await c.query<{ id: string }>(
+      'select id from people where lower(email) = $1 and person_name_key(name) = person_name_key($2)',
+      [contact.email, contact.name],
+    )).rows[0]?.id;
     if (byEmail) return { id: byEmail, via: 'email' };
     const walkIn = await sameNameOnPhone(true);
     return walkIn ? { id: walkIn, via: 'walk_in' } : null;
@@ -202,7 +198,7 @@ async function findPerson(c: PoolClient, contact: Contact): Promise<{ id: string
   return existing ? { id: existing, via: 'phone' } : null;
 }
 
-// Serialise sign-ups for the same email (or, without one, the same phone) so two at once
+// Serialise sign-ups for the same email (or, without one, the same phone), whoever they're for, so two at once
 // can't both create a new person, or both slip past the overlap check.
 async function lockContact(c: PoolClient, contact: Contact) {
   const key = contact.email ?? contact.phone;
@@ -210,10 +206,11 @@ async function lockContact(c: PoolClient, contact: Contact) {
 }
 
 /**
- * Finds or creates the person behind a sign-up. People are told apart by email; a phone number
- * can be shared (a family, a couple), so it only identifies someone together with their name.
- *  - With an email: that email's person (name and phone kept current), else a walk-in record with
- *    the same phone and name but no email yet (the email is added to it), else a new person.
+ * Finds or creates the person behind a sign-up. Emails and phone numbers can both be shared (a family,
+ * a couple), so either one only identifies someone together with their name.
+ *  - With an email: the person with that email and name (spelling and phone kept current), else a
+ *    walk-in record with the same phone and name but no email yet (the email is added to it), else a
+ *    new person.
  *  - Without an email (walk-ins): someone with the same phone and the same name, else a new person.
  */
 export async function upsertPerson(c: PoolClient, contact: Contact, lang: Lang = 'en'): Promise<string> {

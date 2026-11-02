@@ -128,7 +128,7 @@ export default function DetailsForm({ lang, smsFrom, eventName, holdId, secondsL
             <input type="checkbox" name="remember" defaultChecked /> {t.rememberMe}
           </label>
 
-          {state?.conflict ? <OverlapPanel lang={lang} holdId={holdId} conflict={state.conflict} email={v.email} pending={pending} /> : null}
+          {state?.conflict ? <OverlapPanel lang={lang} holdId={holdId} conflict={state.conflict} name={v.name} email={v.email} pending={pending} /> : null}
         </div>
 
         <div className="footer">
@@ -147,7 +147,7 @@ export default function DetailsForm({ lang, smsFrom, eventName, holdId, secondsL
  * email first, so nobody can see or cancel someone else's sign-ups by typing their email.
  * Its buttons submit the details form with an "intent".
  */
-function OverlapPanel({ lang, holdId, conflict, email, pending }: { lang: Lang; holdId: string; conflict: Conflict; email: string; pending: boolean }) {
+function OverlapPanel({ lang, holdId, conflict, name, email, pending }: { lang: Lang; holdId: string; conflict: Conflict; name: string; email: string; pending: boolean }) {
   const t = dict(lang);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -161,7 +161,8 @@ function OverlapPanel({ lang, holdId, conflict, email, pending }: { lang: Lang; 
       <strong style={{ fontSize: 17 }}>{t.overlapTitle}</strong>
       {conflict.owned ? (
         <>
-          <p style={{ margin: 0 }}>{t.overlapOwned}</p>
+          <p style={{ margin: 0 }}>{t.overlapOwned(name)}</p>
+          <p style={{ margin: 0 }}>{t.overlapSomeoneElse}</p>
           <ul className="stack" style={{ listStyle: 'none', margin: 0, padding: 0, gap: 8 }}>
             {conflict.items.map((c) => (
               <li key={c.id} className="stack" style={{ gap: 2, background: 'var(--paper)', color: 'var(--ink)', borderRadius: 14, padding: '10px 14px' }}>
@@ -178,7 +179,8 @@ function OverlapPanel({ lang, holdId, conflict, email, pending }: { lang: Lang; 
         </>
       ) : (
         <>
-          <p style={{ margin: 0 }}>{t.overlapOther(email)}</p>
+          <p style={{ margin: 0 }}>{t.overlapOther(name, email)}</p>
+          <p style={{ margin: 0 }}>{t.overlapSomeoneElse}</p>
           {conflict.ticket ? (
             <>
               <p style={{ margin: 0 }}>{t.codeSentTo(conflict.masked ?? '')}</p>

@@ -5,7 +5,7 @@ import { dayOf, dayText, fmtTimeL } from '@/lib/event';
 import { getLang } from '@/lib/lang';
 import { dict, firstName } from '@/lib/i18n';
 import LangToggle from '@/components/LangToggle';
-import { currentPersonId } from '@/lib/session';
+import { currentOwners } from '@/lib/viewer';
 import { Back } from '@/components/icons';
 import DetailsForm from './DetailsForm';
 import { eventName, seatLine, smsSender } from '@/lib/hans';
@@ -32,8 +32,9 @@ export default async function Details({ params }: { params: Promise<{ holdId: st
     );
   }
 
-  const personId = await currentPersonId();
-  const person = personId ? await getPerson(personId) : null;
+  // Signed in as one person: fill in their details. With several (a shared phone or email), start blank.
+  const { ids } = await currentOwners();
+  const person = ids.length === 1 ? await getPerson(ids[0]) : null;
   const day = dayOf(b.startsAt);
   const { activity, place } = bookingText(b, lang);
 

@@ -8,7 +8,16 @@ export async function viewerPersonIds(v: Viewer | null): Promise<string[]> {
     const r = await getPool().query<{ id: string }>('select id from people where id = $1', [v.personId]);
     return r.rows.map((x) => x.id);
   }
-  const r = await getPool().query<{ id: string }>('select id from people where phone = $1 order by created_at', [v.phone]);
+  if (v.kind === 'people') {
+    const r = await getPool().query<{ id: string }>('select id from people where id = any($1::uuid[]) order by created_at', [v.personIds]);
+    return r.rows.map((x) => x.id);
+  }
+  const r = await getPool().query<{ id: string }>(
+    v.kind === 'phone'
+      ? 'select id from people where phone = $1 order by created_at'
+      : 'select id from people where lower(email) = $1 order by created_at',
+    [v.kind === 'phone' ? v.phone : v.email],
+  );
   return r.rows.map((x) => x.id);
 }
 

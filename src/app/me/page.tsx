@@ -81,8 +81,8 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
   const byDay = EVENT.days.map((d) => ({ d, items: rows.filter((r) => dayOf(r.starts_at)?.key === d.key) })).filter((g) => g.items.length);
   const minsUntil = next ? Math.round((next.starts_at.getTime() - now) / 60000) : 0;
   // Signed in with a phone several people share: label each activity with whose it is.
-  const household = new Set(rows.map((r) => r.person_name)).size > 1 || (viewer.kind === 'phone' && names.length > 1);
-  const who = viewer.kind === 'phone' ? (names.length > 1 ? t.peopleOn(names.length, viewer.phone.slice(-4)) : names[0]) : names[0];
+  const household = new Set(rows.map((r) => r.person_name)).size > 1 || (viewer.kind !== 'person' && names.length > 1);
+  const who = names.length < 2 ? names[0] : viewer.kind === 'phone' ? t.peopleOn(names.length, viewer.phone.slice(-4)) : names.join(', ');
   const nextDay = next ? dayOf(next.starts_at) : null;
   // Next activity's row: "Up next · Reminder at 12:45 PM" (or "· No reminder"; just "Up next" once the reminder time has passed).
   const upNextStatus = (r: Row) => {

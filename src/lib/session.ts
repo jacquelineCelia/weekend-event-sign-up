@@ -13,15 +13,24 @@ function secret() {
 const sign = (value: string) => createHmac('sha256', secret()).update(value).digest('base64url');
 
 /**
- * Who this browser is signed in as: one person (after booking, or signing in by email), or
- * everyone who uses a phone number (after signing in by phone — a family may share one).
+ * Who this browser is signed in as: one person (after booking); everyone who uses a phone number or
+ * an email (after signing in with it — a family may share either); or the people who signed up on
+ * this browser with one email (a couple signing up one after the other).
  */
-export type Viewer = { kind: 'person'; personId: string } | { kind: 'phone'; phone: string };
+export type Viewer =
+  | { kind: 'person'; personId: string }
+  | { kind: 'phone'; phone: string }
+  | { kind: 'email'; email: string }
+  | { kind: 'people'; personIds: string[] };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export function encodeSession(v: Viewer | string) {
-  const value = typeof v === 'string' ? `p:${v}` : v.kind === 'person' ? `p:${v.personId}` : `h:${v.phone}`;
+  const value = typeof v === 'string' ? `p:${v}`
+    : v.kind === 'person' ? `p:${v.personId}`
+    : v.kind === 'phone' ? `h:${v.phone}`
+    : v.kind === 'email' ? `e:${v.email}`
+    : `m:${v.personIds.join(',')}`;
   return `${value}.${sign(value)}`;
 }
 
@@ -35,6 +44,11 @@ export function decodeViewer(raw: string | undefined): Viewer | null {
   if (given.length !== expected.length || !timingSafeEqual(given, expected)) return null;
   if (value.startsWith('p:') && UUID.test(value.slice(2))) return { kind: 'person', personId: value.slice(2) };
   if (value.startsWith('h:') && /^\+\d{8,15}$/.test(value.slice(2))) return { kind: 'phone', phone: value.slice(2) };
+  if (value.startsWith('e:') && value.includes('@')) return { kind: 'email', email: value.slice(2) };
+  if (value.startsWith('m:')) {
+    const personIds = value.slice(2).split(',');
+    return personIds.every((id) => UUID.test(id)) ? { kind: 'people', personIds } : null;
+  }
   if (UUID.test(value)) return { kind: 'person', personId: value }; // cookies set before shared phones
   return null;
 }

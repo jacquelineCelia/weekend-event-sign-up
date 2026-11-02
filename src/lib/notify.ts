@@ -112,6 +112,7 @@ export async function sendReminder(b: BookingView) {
     const lines = m.reminderLines(activity, start, place, b.partySize);
     if (b.seats.length) lines.splice(2, 0, m.seatingLine(seatLine(b.seats, lang)));
     if (instructor) lines.splice(1, 0, m.ledByLine(instructor));
+    if (b.personName) lines.unshift(m.forPerson(b.personName));
     await sendEmail(
       b.personEmail,
       m.reminderSubject(activity, start),
@@ -140,7 +141,7 @@ export async function sendLoginCode(to: { email: string } | { phone: string }, c
 
 /** Staff moved a booked time slot: tell the guest, in their language. */
 export async function sendTimeChange(
-  p: { email: string | null; phone: string | null; code: string; lang: Lang; sms: boolean },
+  p: { name: string; email: string | null; phone: string | null; code: string; lang: Lang; sms: boolean },
   act: { name: string; nameZh: string },
   from: Date,
   to: Date,
@@ -149,5 +150,5 @@ export async function sendTimeChange(
   const activity = localText(act.name, act.nameZh, p.lang);
   const text = m.timeChange(smsSender(), activity, fmtTimeL(to, p.lang), fmtTimeL(from, p.lang), p.code);
   if (p.sms && p.phone && smsEnabled() && (await trySms(p.phone, text))) return;
-  if (p.email) return sendEmail(p.email, m.timeChangeSubject(activity, fmtTimeL(to, p.lang)), text);
+  if (p.email) return sendEmail(p.email, m.timeChangeSubject(activity, fmtTimeL(to, p.lang)), `${m.forPerson(p.name)}\n\n${text}`);
 }

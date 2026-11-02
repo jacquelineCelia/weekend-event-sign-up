@@ -47,9 +47,9 @@ describe('people sharing a phone number', () => {
   it('still recognises the same person by email, even on a new phone', async () => {
     const a1 = await book(anna);
     await cancelBooking(a1.bookingId, a1.personId); // one person can't have two overlapping sign-ups
-    const a2 = await book(contactSchema.parse({ name: 'Anna P.', email: 'ANNA@example.com', phone: '412 555 0199' }));
+    const a2 = await book(contactSchema.parse({ name: 'ANNA  park', email: 'ANNA@example.com', phone: '412 555 0199' }));
     expect(a2.personId).toBe(a1.personId);
-    expect(await people()).toEqual([{ name: 'Anna P.', email: 'anna@example.com', phone: '+14125550199' }]);
+    expect(await people()).toEqual([{ name: 'ANNA  park', email: 'anna@example.com', phone: '+14125550199' }]);
   });
 
   it('walk-ins without email match on phone + name, otherwise become a new person', async () => {

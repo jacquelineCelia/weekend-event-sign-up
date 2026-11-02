@@ -100,7 +100,7 @@ export async function confirmAction(holdId: string, prev: FormState, form: FormD
   if (intent === 'send_code' && prev?.conflict && !prev.conflict.owned) {
     // The code goes to the email they typed (or, for a walk-in record with no email yet, the emails on
     // that phone). Never by text here: this screen has no texting disclosure for sign-in codes.
-    const byEmail = await getPool().query('select 1 from people where lower(email) = $1', [parsed.data.email]);
+    const byEmail = await getPool().query('select 1 from people where lower(email) = $1 limit 1', [parsed.data.email]);
     const r = await startLogin((byEmail.rowCount ? parsed.data.email : parsed.data.phone) ?? '', lang);
     if (r.limited || !r.ticket) {
       return { values, conflict: { owned: false, codeError: { code: r.limited ? 'too_many_codes' : 'bad_who' } } };
@@ -138,11 +138,19 @@ export async function confirmAction(holdId: string, prev: FormState, form: FormD
     if (err instanceof BookingError) return { error: { code: err.code, remaining: err.remaining }, values };
     throw err;
   }
-  // Signed in with a shared phone and booking for someone on it? Stay signed in for the whole
-  // household; otherwise this browser now belongs to the person who just booked.
+  // Signed in with a shared phone or email and booking for someone on it? Stay signed in for the whole
+  // household. Signed in as someone else on the same email (a couple signing up one after the other)?
+  // Keep them too, and add the new person. Otherwise this browser now belongs to the person who just booked.
   const viewer = await currentViewer();
-  if (!(viewer?.kind === 'phone' && viewer.phone === parsed.data.phone)) {
-    await setPersonSession(result.personId, remember);
+  const covered = (viewer?.kind === 'phone' && viewer.phone === parsed.data.phone)
+    || (viewer?.kind === 'email' && viewer.email === parsed.data.email);
+  if (!covered) {
+    const sameEmail = (await getPool().query<{ id: string }>(
+      'select id from people where id = any($1::uuid[]) and lower(email) = $2 and id <> $3 order by created_at',
+      [owners, parsed.data.email, result.personId],
+    )).rows.map((x) => x.id);
+    if (sameEmail.length) await setViewerSession({ kind: 'people', personIds: [...sameEmail, result.personId].slice(-10) }, remember);
+    else await setPersonSession(result.personId, remember);
   }
   const booking = await getBooking(result.bookingId);
   if (booking) await sendConfirmation(booking).catch((e) => console.error('confirmation failed', e));

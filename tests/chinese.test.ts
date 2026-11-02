@@ -137,7 +137,7 @@ describe('messages in the attendee’s saved language', () => {
     outbox.length = 0;
     const [s] = await scheduleFor(actId, DAY);
     expect(await saveSchedule(actId, DAY, [{ id: s.id, time: '13:00', capacity: 10 }])).toEqual({ notified: 1 });
-    expect(outbox[0].text).toBe(`The Oneness Truth Foundation：時段異動。拉坯體驗改為下午 1:00 開始（原為上午 11:30）。名額與代碼 ${outbox[0].text.match(/代碼 (\w{4})/)![1]} 不變。`);
+    expect(outbox[0].text).toBe(`報名人：王美玲\n\nThe Oneness Truth Foundation：時段異動。拉坯體驗改為下午 1:00 開始（原為上午 11:30）。名額與代碼 ${outbox[0].text.match(/代碼 (\w{4})/)![1]} 不變。`);
   });
 });
 

@@ -83,7 +83,7 @@ describe('holds and confirmation', () => {
   it('reuses the same person for a returning attendee', async () => {
     const a = await confirmBooking((await holdSpots(slotId, 1)).holdId, { contact: jordan, remindSms: true, remindEmail: true });
     const b = await confirmBooking((await holdSpots(otherSlotId, 1)).holdId, {
-      contact: { ...jordan, name: 'Jordan L.' },
+      contact: { ...jordan, name: 'JORDAN  lee' },
       remindSms: false,
       remindEmail: true,
     });
