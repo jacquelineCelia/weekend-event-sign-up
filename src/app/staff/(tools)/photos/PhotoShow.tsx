@@ -17,6 +17,7 @@ export default function PhotoShow({ initial, lang, uploadAddress }: { initial: P
   const t = sdict(lang).photos;
   const [photos, setPhotos] = useState(initial);
   const [currentId, setCurrentId] = useState<string | null>(null);
+  const [portrait, setPortrait] = useState(false);
   const [paused, setPaused] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [removing, setRemoving] = useState(false);
@@ -49,6 +50,7 @@ export default function PhotoShow({ initial, lang, uploadAddress }: { initial: P
         if (loaded && photosRef.current.some((p) => p.id === id)) {
           currentRef.current = id;
           setCurrentId(id);
+          setPortrait(img.naturalHeight > img.naturalWidth);
           return;
         }
       }
@@ -165,13 +167,12 @@ export default function PhotoShow({ initial, lang, uploadAddress }: { initial: P
       onPointerMove={fullscreen ? wake : undefined} onPointerDown={fullscreen ? wake : undefined}>
       {current ? (
         <>
-          <div className="show-frame">
-            {/* eslint-disable-next-line @next/next/no-img-element -- served from the database by a staff-only route */}
-            <img key={current.id} className="show-photo" src={`/staff/photos/image/${current.id}`} alt={t.photoAlt(current.topic, current.name)} />
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element -- served from the database by a staff-only route */}
+          <img key={current.id} className="show-photo" data-portrait={portrait} src={`/staff/photos/image/${current.id}`} alt={t.photoAlt(current.topic, current.name)} />
           <div className="show-caption">
-            <span className="show-topic">{current.topic}</span>
-            <span className="show-name">{current.name}</span>
+            <span>{current.topic}</span>
+            <span aria-hidden="true" className="show-bar">|</span>
+            <span>{current.name}</span>
           </div>
         </>
       ) : (

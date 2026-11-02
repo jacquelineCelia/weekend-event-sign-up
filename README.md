@@ -86,8 +86,9 @@ Built with Next.js 16 and Postgres (runs on Supabase as is).
   converted automatically (OpenCC, character by character). Blank fields show the English, and the
   list marks activities with "中 missing" until they're filled in. Staff screens can be switched to Chinese (see Language above); the
   check-in list tags attendees 繁 or 简, and walk-ins can be given either Chinese for their messages.
-- **Photo show**: every uploaded photo in random order, 8 seconds each, with its topic and the
-  person's name, in the language of the staff switch. No photo repeats until all have been shown, and new uploads join
+- **Photo show**: every uploaded photo in random order, 8 seconds each. Landscape photos fill the
+  screen (edges may be cropped); portrait photos show whole on black. The topic and the person's name
+  sit at the lower right, in the language of the staff switch. No photo repeats until all have been shown, and new uploads join
   within 15 seconds. Pause, Next, Full screen and Remove (deletes the photo, after a confirmation).
 
 ## Run it locally

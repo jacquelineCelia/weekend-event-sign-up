@@ -347,16 +347,19 @@ select.input { padding: 0 14px; }
 /* ---------- Photo show (staff, big screen) ---------- */
 /* The page is exactly one screen tall, however many rows the staff bar wraps to, so the caption always shows. */
 .staff:has(.show) { height: 100dvh; min-height: 480px; }
-.show { flex: 1; min-height: 0; position: relative; display: flex; flex-direction: column; background: #141c17; color: var(--on-dark); }
+.show { flex: 1; min-height: 0; position: relative; overflow: hidden; display: flex; flex-direction: column; background: #000; color: #fff; }
 .show[data-full='true'] { height: 100dvh; }
 .show[data-idle='true'] { cursor: none; }
-.show-frame { flex: 1; min-height: 0; position: relative; }
-.show-photo { position: absolute; inset: 2vh 2vw 0; width: calc(100% - 4vw); height: calc(100% - 2vh); object-fit: contain; animation: show-in 0.8s ease; }
+/* Landscape photos fill the screen; portrait photos show whole, on black. */
+.show-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; animation: show-in 0.8s ease; }
+.show-photo[data-portrait='true'] { object-fit: contain; }
 @keyframes show-in { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .show-photo { animation: none; } }
-.show-caption { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 4vw; padding: 2vh 3vw 2.5vh; }
+.show-caption { position: absolute; z-index: 1; right: 0; bottom: 0; max-width: 100%; display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: baseline; gap: 0 0.6em; padding: 4vh 3vw 3.5vh; font-size: clamp(22px, 2.4vw, 52px); font-weight: 500; line-height: 1.25; text-align: right; overflow-wrap: anywhere; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.75), 0 2px 16px rgba(0, 0, 0, 0.6); }
+/* A soft shadow in the corner, so the caption stays clear even on a bright photo. */
+.show-caption::before { content: ''; position: absolute; z-index: -1; right: 0; bottom: 0; width: 150%; height: 240%; background: radial-gradient(ellipse at 100% 100%, rgba(0, 0, 0, 0.62), rgba(0, 0, 0, 0.42) 40%, transparent 72%); pointer-events: none; }
+.show-bar { font-weight: 300; opacity: 0.85; }
 .show-topic { margin: 0; font-family: var(--serif); font-size: clamp(26px, 3.4vw, 72px); line-height: 1.15; color: var(--sun); overflow-wrap: anywhere; }
-.show-name { font-size: clamp(22px, 2.6vw, 56px); font-weight: 500; line-height: 1.2; overflow-wrap: anywhere; }
 .show-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 24px 24px 90px; text-align: center; }
 .show-address { margin: 0; font-size: clamp(18px, 2vw, 36px); color: var(--on-dark-2); overflow-wrap: anywhere; }
 .show-controls { position: absolute; top: 16px; right: 16px; left: 16px; display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; font-size: 15.5px; pointer-events: none; }
