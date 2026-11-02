@@ -52,22 +52,23 @@ export default function Roster({ rows, lang, seating, open }: { rows: RosterRow[
                   {t.code} <b style={{ letterSpacing: '0.08em', color: 'var(--ink-2)' }}>{r.code}</b>{r.phoneLast4 ? ` · ••${r.phoneLast4}` : ''} · {t.partyOf(r.partySize)}{r.seats ? ` · ${r.seats}` : ''}
                 </span>
               </div>
+              <div className="rrow-actions">
+              {changeButton}
               {r.checkedIn === 0 ? (
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  {changeButton}
-                  <button type="button" className="btn" style={{ minHeight: 48, minWidth: 150, fontSize: 16.5 }} onClick={() => set(r.bookingId, r.partySize)}>
+                <div className="rrow-status">
+                  <button type="button" className="btn" style={{ minHeight: 48, width: '100%', fontSize: 16.5 }} onClick={() => set(r.bookingId, r.partySize)}>
                     {t.startCheckIn}
                   </button>
                 </div>
               ) : (
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                  {changeButton}
+                <div className="rrow-status">
                   <span className="pill-status" data-done={done}><Check size={16} /> {t.nCheckedIn(r.checkedIn)}</span>
                   <button type="button" style={round} aria-label={t.oneFewerArrived(r.name)} onClick={() => set(r.bookingId, r.checkedIn - 1)}>−</button>
                   <button type="button" style={{ ...round, opacity: done ? 0.4 : 1, cursor: done ? 'not-allowed' : 'pointer' }} disabled={done}
                     aria-label={t.oneMoreArrived(r.name)} onClick={() => set(r.bookingId, r.checkedIn + 1)}>+</button>
                 </div>
               )}
+              </div>
               {editing === r.bookingId ? (
                 <PartyEditor row={r} lang={lang} seating={seating} open={open} onClose={() => setEditing(null)} />
               ) : null}
