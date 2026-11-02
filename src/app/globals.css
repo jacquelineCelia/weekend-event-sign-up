@@ -113,7 +113,6 @@ a.chip:hover { filter: brightness(0.96); }
 .slot input { position: absolute; opacity: 0; pointer-events: none; }
 .slot .radio { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #8c9688; flex: none; }
 .slot .time { font-size: 16px; font-weight: 600; font-variant-numeric: tabular-nums; }
-.slot .slot-date { font-size: 13px; font-weight: 600; color: var(--moss); }
 .slot:has(input:checked) { border: 2px solid var(--moss); background: var(--sage-pale); margin: 0; }
 .slot:has(input:checked) .radio { border: 7px solid var(--moss); background: var(--paper); }
 .slot:has(input:focus-visible) { outline: 3px solid var(--focus); outline-offset: 2px; }
