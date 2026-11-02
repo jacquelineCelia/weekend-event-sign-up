@@ -19,7 +19,8 @@ const IP_WINDOW_MIN = 10;
 
 export type PhotoError = 'name' | 'topic' | 'image' | 'busy' | 'full';
 export type PhotoTopic = { id: string; name: string; hint: string };
-export type ShowPhoto = { id: string; name: string; topic: string };
+/** `fresh`: not shown yet, so it plays first. `uploaded`: when it arrived, in milliseconds. */
+export type ShowPhoto = { id: string; name: string; topic: string; fresh: boolean; uploaded: number };
 
 const uuid = z.string().uuid();
 const isJpeg = (b: Buffer) => b.length > 3 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff;
@@ -67,17 +68,23 @@ export async function savePhoto(
 
 /** Every photo in the show, by topic and oldest first within a topic, without the image data. */
 export async function photoFeed(lang: Lang): Promise<ShowPhoto[]> {
-  const { rows } = await getPool().query<{ id: string; name: string; topic: string; topic_zh: string }>(
-    `select p.id, p.name, t.name as topic, t.name_zh as topic_zh
+  const { rows } = await getPool().query<{ id: string; name: string; topic: string; topic_zh: string; fresh: boolean; created_at: Date }>(
+    `select p.id, p.name, t.name as topic, t.name_zh as topic_zh, p.first_shown_at is null as fresh, p.created_at
        from photos p join photo_topics t on t.id = p.topic_id order by t.sort_order, p.created_at, p.id`,
   );
-  return rows.map((r) => ({ id: r.id, name: r.name, topic: localText(r.topic, r.topic_zh, lang) }));
+  return rows.map((r) => ({ id: r.id, name: r.name, topic: localText(r.topic, r.topic_zh, lang), fresh: r.fresh, uploaded: r.created_at.getTime() }));
 }
 
 export async function photoImage(id: string): Promise<Buffer | null> {
   if (!uuid.safeParse(id).success) return null;
   const { rows } = await getPool().query<{ image: Buffer }>('select image from photos where id = $1', [id]);
   return rows[0]?.image ?? null;
+}
+
+/** Records that a photo has appeared in the show, so it stops counting as new. */
+export async function markPhotoShown(id: string) {
+  if (!uuid.safeParse(id).success) return;
+  await getPool().query('update photos set first_shown_at = now() where id = $1 and first_shown_at is null', [id]);
 }
 
 export async function removePhoto(id: string) {

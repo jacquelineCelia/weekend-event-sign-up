@@ -1,7 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { getPool } from '@/lib/db';
 import { PhotoOrder } from '@/lib/photo-order';
-import { hashIp, photoFeed, photoImage, photoTopics, removePhoto, savePhoto } from '@/lib/photos';
+import { hashIp, markPhotoShown, photoFeed, photoImage, photoTopics, removePhoto, savePhoto } from '@/lib/photos';
 
 const pool = getPool();
 const jpeg = (size = 100) => Buffer.concat([Buffer.from([0xff, 0xd8, 0xff]), Buffer.alloc(size)]);
@@ -45,6 +45,17 @@ describe('photo uploads', () => {
     expect((await photoFeed('en')).map((p) => p.name)).toEqual(['first topic, older', 'first topic, newer', 'second topic', 'ninth topic']);
   });
 
+  it('a photo counts as new until it has been shown', async () => {
+    const { id } = (await save()) as { id: string };
+    expect((await photoFeed('en'))[0].fresh).toBe(true);
+    await markPhotoShown(id);
+    await markPhotoShown('not-a-uuid');
+    expect((await photoFeed('en'))[0].fresh).toBe(false);
+    const first = (await pool.query('select first_shown_at from photos where id = $1', [id])).rows[0].first_shown_at;
+    await markPhotoShown(id);
+    expect((await pool.query('select first_shown_at from photos where id = $1', [id])).rows[0].first_shown_at).toEqual(first);
+  });
+
   it('refuses a missing or overlong name, an unknown topic and anything but a JPEG', async () => {
     expect(await save({ name: '   ' })).toEqual({ error: 'name' });
     expect(await save({ name: 'x'.repeat(61) })).toEqual({ error: 'name' });
@@ -82,61 +93,63 @@ describe('photo uploads', () => {
 
 describe('photo order', () => {
   const take = (o: PhotoOrder, n: number) => Array.from({ length: n }, () => o.next());
+  /** Lists photos in order; a number marks a new photo, with its upload time. */
+  const list = (...xs: (string | [string, number])[]) =>
+    xs.map((x) => (typeof x === 'string' ? { id: x, fresh: false, uploaded: 0 } : { id: x[0], fresh: true, uploaded: x[1] }));
 
   it('goes through the list in order and starts again', () => {
     const o = new PhotoOrder();
-    o.sync(['a', 'b', 'c']);
+    o.sync(list('a', 'b', 'c'));
     expect(take(o, 5)).toEqual(['a', 'b', 'c', 'a', 'b']);
   });
 
-  it('shows new uploads next, then returns to its place, and keeps them in later rounds', () => {
+  it('shows new photos next, oldest upload first, then returns to its place', () => {
     const o = new PhotoOrder();
-    o.sync(['a', 'b', 'c']);
+    o.sync(list('a', 'b', 'c'));
     take(o, 2); // on b
-    o.sync(['new1', 'a', 'b', 'new2', 'c']);
-    expect(take(o, 7)).toEqual(['new1', 'new2', 'new2', 'c', 'new1', 'a', 'b']);
+    o.sync(list(['later', 2], 'a', 'b', ['earlier', 1], 'c'));
+    expect(take(o, 7)).toEqual(['earlier', 'later', 'earlier', 'c', 'later', 'a', 'b']);
   });
 
-  it('treats the photos already there at the start as the normal list, not new', () => {
-    const o = new PhotoOrder();
-    o.sync(['a', 'b']);
-    expect(take(o, 2)).toEqual(['a', 'b']);
+  it('plays photos not yet shown first after a reload, and not ones already shown', () => {
+    const o = new PhotoOrder(); // a reloaded page: 'seen' was shown before, 'new' never was
+    o.sync(list('seen', ['new', 1]));
+    expect(take(o, 3)).toEqual(['new', 'seen', 'new']);
   });
 
-  it('counts the first photos of an empty show as new', () => {
+  it('does not repeat a new photo while the server has yet to record it as shown', () => {
     const o = new PhotoOrder();
-    o.sync([]);
-    o.sync(['a']);
+    o.sync(list('a', ['new', 1]));
+    expect(o.next()).toBe('new');
+    o.sync(list('a', ['new', 1])); // the feed still says new
     expect(o.next()).toBe('a');
   });
 
-  it('forgets a new upload that was removed before it showed', () => {
+  it('forgets a new photo that was removed before it showed', () => {
     const o = new PhotoOrder();
-    o.sync(['a', 'b']);
+    o.sync(list('a', 'b'));
     o.next();
-    o.sync(['a', 'new', 'b']);
-    o.sync(['a', 'b']);
+    o.sync(list('a', ['new', 1], 'b'));
+    o.sync(list('a', 'b'));
     expect(o.next()).toBe('b');
   });
 
   it('moves on to what followed a removed photo', () => {
     const o = new PhotoOrder();
-    o.sync(['a', 'b', 'c']);
+    o.sync(list('a', 'b', 'c'));
     take(o, 2); // on b
-    o.sync(['a', 'c']);
+    o.sync(list('a', 'c'));
     expect(o.next()).toBe('c');
-    o.sync(['a']); // c, the last one, is gone: back to the start
+    o.sync(list('a')); // c, the last one, is gone: back to the start
     expect(o.next()).toBe('a');
   });
 
   it('handles none and one', () => {
     const o = new PhotoOrder();
     expect(o.next()).toBeNull();
-    o.sync(['a']);
+    o.sync(list('a'));
     expect(take(o, 2)).toEqual(['a', 'a']);
     o.sync([]);
     expect(o.next()).toBeNull();
-    o.sync(['b']);
-    expect(o.next()).toBe('b');
   });
 });

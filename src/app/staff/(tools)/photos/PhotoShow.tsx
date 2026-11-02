@@ -2,11 +2,12 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { PhotoOrder } from '@/lib/photo-order';
+import type { ShowPhoto } from '@/lib/photos';
 import type { Lang } from '@/lib/event';
 import { sdict } from '@/lib/staff-i18n';
-import { removePhotoAction } from '../../actions';
+import { markPhotoShownAction, removePhotoAction } from '../../actions';
 
-type Photo = { id: string; name: string; topic: string };
+type Photo = ShowPhoto;
 
 const SECONDS_PER_PHOTO = 8;
 const FEED_SECONDS = 15;
@@ -47,7 +48,10 @@ export default function PhotoShow({ initial, lang, uploadAddress }: { initial: P
         const img = new Image();
         img.src = `/staff/photos/image/${id}`;
         const loaded = await img.decode().then(() => true, () => false);
-        if (loaded && photosRef.current.some((p) => p.id === id)) {
+        const photo = photosRef.current.find((p) => p.id === id);
+        if (loaded && photo) {
+          // If this fails it still counts as new after a reload, which does no harm.
+          if (photo.fresh) void markPhotoShownAction(id).catch(() => {});
           currentRef.current = id;
           setCurrentId(id);
           setPortrait(img.naturalHeight > img.naturalWidth);
@@ -68,7 +72,7 @@ export default function PhotoShow({ initial, lang, uploadAddress }: { initial: P
     const next = list.filter((p) => !removedRef.current.has(p.id));
     photosRef.current = next;
     setPhotos(next);
-    order().sync(next.map((p) => p.id));
+    order().sync(next);
     if (!next.some((p) => p.id === currentRef.current)) void advance();
   }, [advance, order]);
 

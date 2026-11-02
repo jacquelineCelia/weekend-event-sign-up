@@ -10,7 +10,7 @@ import { walkInContactSchema } from '@/lib/contact';
 import { getBooking } from '@/lib/queries';
 import { sendConfirmation } from '@/lib/notify';
 import { setCheckedIn, saveSchedule, saveActivity, saveSeating, type SlotEdit } from '@/lib/staff';
-import { removePhoto } from '@/lib/photos';
+import { markPhotoShown, removePhoto } from '@/lib/photos';
 import { EVENT, addMinutes, dayOf, dayText, fmtTimeL } from '@/lib/event';
 import { localText } from '@/lib/hans';
 import { errorText } from '@/lib/i18n';
@@ -34,6 +34,11 @@ export async function rememberSlotAction(slotId: string) {
 export async function removePhotoAction(id: string) {
   await requireStaff();
   await removePhoto(id);
+}
+
+/** Called by the show when a new photo appears. No redirect: a running show must stay on screen. */
+export async function markPhotoShownAction(id: string) {
+  if (await isStaff()) await markPhotoShown(id);
 }
 
 /** The EN | 繁中 | 简中 switch on staff screens (and the staff sign-in page). */
