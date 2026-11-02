@@ -66,6 +66,7 @@ export default function DetailsForm({ lang, smsFrom, eventName, holdId, secondsL
   // Carriers require texting to be opted in to, never pre-ticked.
   const [sms, setSms] = useState(false);
   const [mail, setMail] = useState(true);
+  const [remember, setRemember] = useState(true);
   const left = useCountdown(secondsLeft);
   const v = state?.values ?? known ?? { name: '', email: '', phone: '' };
   const err = state?.fields ?? {};
@@ -125,7 +126,7 @@ export default function DetailsForm({ lang, smsFrom, eventName, holdId, secondsL
           </fieldset>
 
           <label className="check" style={{ alignItems: 'flex-start', fontSize: 15.5, color: 'var(--ink-2)' }}>
-            <input type="checkbox" name="remember" defaultChecked /> {t.rememberMe}
+            <input type="checkbox" name="remember" checked={remember} onChange={(e) => setRemember(e.target.checked)} /> {t.rememberMe}
           </label>
 
           {state?.conflict ? <OverlapPanel lang={lang} holdId={holdId} conflict={state.conflict} name={v.name} email={v.email} pending={pending} /> : null}
