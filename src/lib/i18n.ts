@@ -42,7 +42,7 @@ const en = {
   photos: {
     title: 'Share a photo',
     cardText: 'What you discover becomes part of our view.',
-    lede: 'Take a photo of one of the topics below and upload it. Photos are shown on the big screen at the event.',
+    lede: 'Take a photo of one of the topics below and upload it. What you discover becomes part of our view.',
     name: 'Your name',
     topic: 'Choose a topic',
     photo: 'Your photo',
@@ -308,7 +308,7 @@ const zh: Dict = {
   photos: {
     title: '分享照片',
     cardText: '你的發現，也是我們的風景',
-    lede: '請以下列其中一個主題拍照並上傳，照片會在活動現場的大螢幕上播放。',
+    lede: '請以下列其中一個主題拍照並上傳。你的發現，也是我們的風景。',
     name: '你的姓名',
     topic: '選擇主題',
     photo: '你的照片',
@@ -560,7 +560,7 @@ const zhs: Dict = {
   photos: {
     title: '分享照片',
     cardText: '你的发现，也是我们的风景',
-    lede: '请以下列其中一个主题拍照并上传，照片会在活动现场的大屏幕上播放。',
+    lede: '请以下列其中一个主题拍照并上传。你的发现，也是我们的风景。',
     name: '你的姓名',
     topic: '选择主题',
     photo: '你的照片',
