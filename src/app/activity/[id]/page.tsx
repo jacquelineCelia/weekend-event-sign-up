@@ -85,7 +85,7 @@ export default async function ActivityPage({
     const d = dayOf(s.startsAt);
     return {
       id: s.id,
-      date: d ? dayText(d, 'long', lang) : '',
+      date: d ? dayText(d, 'short', lang) : '',
       range: `${fmtTimeL(s.startsAt, lang)} – ${fmtTimeL(addMinutes(s.startsAt, a.durationMin), lang)}`,
       short: fmtDayTimeL(s.startsAt, lang),
       remaining: past || current ? 0 : s.remaining,

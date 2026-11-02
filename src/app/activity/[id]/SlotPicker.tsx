@@ -7,7 +7,7 @@ import { Minus, Plus } from '@/components/icons';
 import { dict, errorText, type Lang } from '@/lib/i18n';
 
 export type PickerSlot = {
-  /** date: "Saturday 14 November" / "11月14日（星期六）"; short: day and start time, for sentences. */
+  /** date: "Sat 14 Nov" / "11/14（六）"; short: day and start time, for sentences. */
   id: string; date: string; range: string; short: string; remaining: number; low: boolean;
   /** past: has started (can't be picked); ended: has finished too (tagged Ended instead of Started). */
   past: boolean; ended?: boolean;
