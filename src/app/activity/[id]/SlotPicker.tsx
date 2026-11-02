@@ -8,7 +8,9 @@ import { dict, errorText, type Lang } from '@/lib/i18n';
 
 export type PickerSlot = {
   /** date: "Saturday 14 November" / "11月14日（星期六）"; short: day and start time, for sentences. */
-  id: string; date: string; range: string; short: string; remaining: number; low: boolean; past: boolean;
+  id: string; date: string; range: string; short: string; remaining: number; low: boolean;
+  /** past: has started (can't be picked); ended: has finished too (tagged Ended instead of Started). */
+  past: boolean; ended?: boolean;
   current?: boolean; tooSmall?: boolean;
   /** Changing time: why this time can't take the party's seats (e.g. "High chair: 1 left, you need 2"). */
   seatsShort?: string;
@@ -64,7 +66,7 @@ export default function SlotPicker({ lang, slots, seats, preselected, change }: 
         {slots.map((s) => {
           const blocked = s.remaining === 0 || !!s.tooSmall || !!s.seatsShort;
           const why = blocked ? s.seatsShort : s.clash?.text;
-          const tag = s.current ? t.yourTime : s.past ? t.started : s.remaining === 0 ? t.full : s.seatsShort ? t.seatsTag : s.clash ? t.clashTag : s.tooSmall || s.low ? t.onlyLeft(s.remaining) : t.left(s.remaining);
+          const tag = s.current ? t.yourTime : s.ended ? t.activityEnded : s.past ? t.started : s.remaining === 0 ? t.full : s.seatsShort ? t.seatsTag : s.clash ? t.clashTag : s.tooSmall || s.low ? t.onlyLeft(s.remaining) : t.left(s.remaining);
           const tone = s.current ? 'open' : blocked ? 'full' : s.clash || s.low ? 'low' : 'open';
           return (
             <label key={s.id} className="slot" data-full={blocked}>

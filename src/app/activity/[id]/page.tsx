@@ -91,6 +91,7 @@ export default async function ActivityPage({
       remaining: past || current ? 0 : s.remaining,
       low: !past && !current && isLow(s.remaining, s.capacity),
       past,
+      ended: addMinutes(s.startsAt, a.durationMin).getTime() <= now,
       current,
       tooSmall: !!change && !current && s.remaining > 0 && s.remaining < change.partySize,
       seatsShort: change && !current && !past && s.remaining >= change.partySize && seatsShort(s.id).length ? t.seatsShort(seatsShort(s.id)) : undefined,
