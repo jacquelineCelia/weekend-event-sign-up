@@ -104,7 +104,9 @@ button, input, select { font: inherit; color: inherit; }
 .chip.open { background: var(--sage); color: var(--moss-dark); }
 .chip.low { background: var(--ochre-pale); color: var(--ochre); }
 .chip.full { background: var(--stone); color: var(--muted); }
-.chip.full b { font-weight: 600; text-decoration: line-through; text-decoration-thickness: 1px; }
+.chip.full b { font-weight: 600; }
+.chip.full .chip-when { text-decoration: line-through; text-decoration-thickness: 1px; }
+.chip.full .chip-date { margin-right: 0; }
 a.chip:hover { filter: brightness(0.96); }
 .list { padding: 6px 20px 32px; display: flex; flex-direction: column; gap: 12px; }
 .empty { padding: 28px 16px; text-align: center; color: var(--muted); font-size: 16.5px; }

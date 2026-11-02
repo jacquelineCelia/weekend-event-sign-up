@@ -84,8 +84,8 @@ export default async function Browse({ searchParams }: { searchParams: Promise<{
                         if (s.remaining === 0) {
                           return (
                             <span key={s.id} className="chip full" aria-label={t.chipFullAria(a.name, fmtDayTimeL(s.startsAt, lang))}>
-                              <span className="chip-date">{dayText(d, 'short', lang)}</span>
-                              <b>{fmtTimeL(s.startsAt, lang)}</b>
+                              {/* One unbroken line through the date and time. */}
+                              <span className="chip-when"><span className="chip-date">{dayText(d, 'short', lang)}</span> <b>{fmtTimeL(s.startsAt, lang)}</b></span>
                               <span>{t.full}</span>
                             </span>
                           );
