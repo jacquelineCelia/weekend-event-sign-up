@@ -65,11 +65,11 @@ export async function savePhoto(
   return { id: rows[0].id };
 }
 
-/** Every photo in the show, by topic and newest first within a topic, without the image data. */
+/** Every photo in the show, by topic and oldest first within a topic, without the image data. */
 export async function photoFeed(lang: Lang): Promise<ShowPhoto[]> {
   const { rows } = await getPool().query<{ id: string; name: string; topic: string; topic_zh: string }>(
     `select p.id, p.name, t.name as topic, t.name_zh as topic_zh
-       from photos p join photo_topics t on t.id = p.topic_id order by t.sort_order, p.created_at desc, p.id`,
+       from photos p join photo_topics t on t.id = p.topic_id order by t.sort_order, p.created_at, p.id`,
   );
   return rows.map((r) => ({ id: r.id, name: r.name, topic: localText(r.topic, r.topic_zh, lang) }));
 }

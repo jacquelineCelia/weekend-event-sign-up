@@ -32,7 +32,7 @@ describe('photo uploads', () => {
     expect((await photoImage((r as { id: string }).id))?.equals(jpeg())).toBe(true);
   });
 
-  it('orders the feed by topic, newest first within a topic', async () => {
+  it('orders the feed by topic, oldest first within a topic', async () => {
     const topics = await photoTopics('en');
     const add = async (name: string, t: number, ago: number) => {
       const { id } = (await save({ name, topicId: topics[t].id })) as { id: string };
@@ -42,7 +42,7 @@ describe('photo uploads', () => {
     await add('first topic, older', 0, 30);
     await add('ninth topic', 8, 0);
     await add('first topic, newer', 0, 5);
-    expect((await photoFeed('en')).map((p) => p.name)).toEqual(['first topic, newer', 'first topic, older', 'second topic', 'ninth topic']);
+    expect((await photoFeed('en')).map((p) => p.name)).toEqual(['first topic, older', 'first topic, newer', 'second topic', 'ninth topic']);
   });
 
   it('refuses a missing or overlong name, an unknown topic and anything but a JPEG', async () => {
@@ -89,12 +89,34 @@ describe('photo order', () => {
     expect(take(o, 5)).toEqual(['a', 'b', 'c', 'a', 'b']);
   });
 
-  it('keeps its place when a photo is added ahead of it or after it', () => {
+  it('shows new uploads next, then returns to its place, and keeps them in later rounds', () => {
     const o = new PhotoOrder();
     o.sync(['a', 'b', 'c']);
     take(o, 2); // on b
-    o.sync(['new', 'a', 'b', 'c', 'last']);
-    expect(take(o, 3)).toEqual(['c', 'last', 'new']);
+    o.sync(['new1', 'a', 'b', 'new2', 'c']);
+    expect(take(o, 7)).toEqual(['new1', 'new2', 'new2', 'c', 'new1', 'a', 'b']);
+  });
+
+  it('treats the photos already there at the start as the normal list, not new', () => {
+    const o = new PhotoOrder();
+    o.sync(['a', 'b']);
+    expect(take(o, 2)).toEqual(['a', 'b']);
+  });
+
+  it('counts the first photos of an empty show as new', () => {
+    const o = new PhotoOrder();
+    o.sync([]);
+    o.sync(['a']);
+    expect(o.next()).toBe('a');
+  });
+
+  it('forgets a new upload that was removed before it showed', () => {
+    const o = new PhotoOrder();
+    o.sync(['a', 'b']);
+    o.next();
+    o.sync(['a', 'new', 'b']);
+    o.sync(['a', 'b']);
+    expect(o.next()).toBe('b');
   });
 
   it('moves on to what followed a removed photo', () => {

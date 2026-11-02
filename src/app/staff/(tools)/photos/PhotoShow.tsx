@@ -12,7 +12,7 @@ const SECONDS_PER_PHOTO = 8;
 const FEED_SECONDS = 15;
 const CONTROLS_IDLE_MS = 3000;
 
-/** The big-screen slideshow: every photo, topic by topic and newest first, with its topic and who took it. */
+/** The big-screen slideshow: new uploads first, then every photo topic by topic, oldest first, with its topic and who took it. */
 export default function PhotoShow({ initial, lang, uploadAddress }: { initial: Photo[]; lang: Lang; uploadAddress: string }) {
   const t = sdict(lang).photos;
   const [photos, setPhotos] = useState(initial);
