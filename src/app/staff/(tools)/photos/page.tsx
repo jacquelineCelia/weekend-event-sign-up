@@ -1,3 +1,7 @@
+// Only the big-screen caption uses these, so they load only on this page.
+import '@fontsource/cormorant-garamond/600.css';
+import '@fontsource/noto-serif-tc/500.css';
+import '@fontsource/noto-serif-sc/500.css';
 import { headers } from 'next/headers';
 import { photoFeed } from '@/lib/photos';
 import { staffLang } from '@/lib/staff-lang';
