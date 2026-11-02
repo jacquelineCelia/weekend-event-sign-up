@@ -13,6 +13,14 @@ export class PhotoOrder {
   private fresh: OrderItem[] = []; // not yet shown, next up
   private taken = new Set<string>(); // handed out here, though the server may not have heard yet
 
+  /** `resumeAfter`: the list photo reached before a reload; the show carries on from there. */
+  constructor(private resumeAfter: string | null = null) {}
+
+  /** The photo last reached in the list (new photos played ahead of the list don't count). */
+  position(): string | null {
+    return this.ids[this.index] ?? null;
+  }
+
   /** Brings in the current list. If the current photo is gone, the next one is whichever followed it. */
   sync(items: OrderItem[]) {
     const ids = items.map((x) => x.id);
@@ -23,6 +31,8 @@ export class PhotoOrder {
       this.index = survivor === this.ids[this.index] ? at : at - 1;
     }
     this.ids = ids;
+    if (this.resumeAfter && this.index < 0) this.index = ids.indexOf(this.resumeAfter);
+    this.resumeAfter = null;
   }
 
   next(): string | null {

@@ -90,7 +90,8 @@ Built with Next.js 16 and Postgres (runs on Supabase as is).
   screen (edges may be cropped); portrait photos show whole on black. The topic and the person's name
   sit at the lower right, in the language of the staff switch. The show then starts again from the first topic. A new upload is noticed
   within 15 seconds, shows next, and keeps its place in later rounds. Each photo's first showing is
-  recorded, so a photo not yet shown still plays first after the page is reloaded. Pause, Next, Full screen and Remove (deletes the photo, after a confirmation).
+  recorded, so a photo not yet shown still plays first after the page is reloaded. The device also remembers its place in
+  the topic order, so a reload carries on from there. Pause, Next, Full screen and Remove (deletes the photo, after a confirmation).
 
 ## Run it locally
 
@@ -107,7 +108,7 @@ testing (sign-in codes included).
 Tests run against a real Postgres database (set `TEST_DATABASE_URL`; it is wiped on each run):
 
 ```bash
-npm test     # 129 tests: capacity, holds, overlaps, seating, instructors, login codes, reminders, schedule edits, shared phones, Chinese, photos
+npm test     # 132 tests: capacity, holds, overlaps, seating, instructors, login codes, reminders, schedule edits, shared phones, Chinese, photos
 ```
 
 ## Deploy (Vercel + Supabase)

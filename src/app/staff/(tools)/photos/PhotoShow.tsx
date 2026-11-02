@@ -12,6 +12,20 @@ type Photo = ShowPhoto;
 const SECONDS_PER_PHOTO = 8;
 const FEED_SECONDS = 15;
 const CONTROLS_IDLE_MS = 3000;
+const POSITION_KEY = 'mw_photo_show_position'; // this device's place in the topic order
+
+function savedPosition() {
+  try {
+    return localStorage.getItem(POSITION_KEY);
+  } catch {
+    return null;
+  }
+}
+function savePosition(id: string | null) {
+  try {
+    if (id) localStorage.setItem(POSITION_KEY, id);
+  } catch { /* storage blocked: a reload just starts again at the first topic */ }
+}
 
 /** The big-screen slideshow: new uploads first, then every photo topic by topic, oldest first, with its topic and who took it. */
 export default function PhotoShow({ initial, lang, uploadAddress }: { initial: Photo[]; lang: Lang; uploadAddress: string }) {
@@ -34,7 +48,7 @@ export default function PhotoShow({ initial, lang, uploadAddress }: { initial: P
   const advancingRef = useRef(false);
   const removedRef = useRef(new Set<string>());
 
-  const order = useCallback(() => (orderRef.current ??= new PhotoOrder()), []);
+  const order = useCallback(() => (orderRef.current ??= new PhotoOrder(savedPosition())), []);
 
   /** Loads the next photo first, so the screen never shows a half-drawn image. */
   const advance = useCallback(async () => {
@@ -52,6 +66,7 @@ export default function PhotoShow({ initial, lang, uploadAddress }: { initial: P
         if (loaded && photo) {
           // If this fails it still counts as new after a reload, which does no harm.
           if (photo.fresh) void markPhotoShownAction(id).catch(() => {});
+          savePosition(order().position());
           currentRef.current = id;
           setCurrentId(id);
           setPortrait(img.naturalHeight > img.naturalWidth);

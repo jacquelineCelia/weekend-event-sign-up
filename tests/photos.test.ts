@@ -144,6 +144,31 @@ describe('photo order', () => {
     expect(o.next()).toBe('a');
   });
 
+  it('carries on from the saved place after a reload, new photos first', () => {
+    const o = new PhotoOrder('b');
+    o.sync(list('a', 'b', ['new', 1], 'c'));
+    expect(take(o, 3)).toEqual(['new', 'new', 'c']);
+    expect(o.position()).toBe('c');
+  });
+
+  it('does not count a new photo played ahead of the list as its place', () => {
+    const o = new PhotoOrder();
+    o.sync(list('a', ['new', 1], 'b'));
+    o.next();
+    expect(o.position()).toBeNull();
+    o.next();
+    expect(o.position()).toBe('a');
+  });
+
+  it('starts from the top if the saved photo is gone, and wraps after the last', () => {
+    const gone = new PhotoOrder('removed');
+    gone.sync(list('a', 'b'));
+    expect(gone.next()).toBe('a');
+    const last = new PhotoOrder('b');
+    last.sync(list('a', 'b'));
+    expect(last.next()).toBe('a');
+  });
+
   it('handles none and one', () => {
     const o = new PhotoOrder();
     expect(o.next()).toBeNull();
