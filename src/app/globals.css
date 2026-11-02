@@ -368,3 +368,9 @@ select.input { padding: 0 14px; }
 .show-controls button:disabled { opacity: 0.5; cursor: not-allowed; }
 .show-controls button.show-danger { background: var(--paper); border-color: var(--paper); color: var(--ochre-dark); }
 .show-controls button.show-danger:hover:not(:disabled) { background: var(--ochre-pale); }
+
+/* Link to photo sharing, at the end of the activity list */
+.photo-card { flex-direction: row; align-items: center; gap: 14px; margin-top: 8px; background: var(--sage-pale); border-color: var(--line-strong); color: var(--ink); text-decoration: none; }
+.photo-card:hover { border-color: var(--moss); color: var(--ink); }
+.photo-card-icon { display: flex; flex: none; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 50%; background: var(--sage); color: var(--moss-dark); }
+.photo-card-text { font-size: 15.5px; line-height: 1.35; color: var(--ink-2); }

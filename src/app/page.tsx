@@ -6,7 +6,7 @@ import { EVENT, dateRangeL, dayOf, dayText, fmtDayTimeL, fmtTimeL, isLow, reques
 import { getLang } from '@/lib/lang';
 import { dict, zhBold } from '@/lib/i18n';
 import LangToggle from '@/components/LangToggle';
-import { Calendar, Hills, Leaf, Check } from '@/components/icons';
+import { Calendar, Camera, Hills, Leaf, Check } from '@/components/icons';
 import { nameRuns } from '@/components/ActivityName';
 
 export const dynamic = 'force-dynamic';
@@ -108,6 +108,13 @@ export default async function Browse({ searchParams }: { searchParams: Promise<{
           </section>
         ))}
         {acts.length === 0 ? <p className="empty">{t.dayFull}</p> : null}
+        <Link className="card photo-card" href="/photos">
+          <span className="photo-card-icon"><Camera /></span>
+          <span className="stack" style={{ gap: 4, minWidth: 0 }}>
+            <span className={`card-title${zhBold(t.photos.title)}`}>{t.photos.title}</span>
+            <span className="photo-card-text">{t.photos.cardText}</span>
+          </span>
+        </Link>
       </main>
       <LegalFoot lang={lang} />
     </div>

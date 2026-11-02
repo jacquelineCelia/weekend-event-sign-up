@@ -44,6 +44,9 @@ export const Hills = () => (
 export const MapIcon = ({ size = 16 }: P) => (
   <svg {...base(size)}><path d="M9 4L3 6.5v13.5L9 17.5l6 2.5 6-2.5V4l-6 2.5L9 4z" /><path d="M9 4v13.5M15 6.5V20" /></svg>
 );
+export const Camera = ({ size = 24 }: P) => (
+  <svg {...base(size)}><path d="M3 8.5A1.5 1.5 0 0 1 4.5 7H8l1.5-2.5h5L16 7h3.5A1.5 1.5 0 0 1 21 8.5v10a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5z" /><circle cx="12" cy="13" r="3.5" /></svg>
+);
 export const Close = ({ size = 20 }: P) => (
   <svg {...base(size)} strokeWidth={2}><path d="M6 6l12 12M18 6L6 18" /></svg>
 );
