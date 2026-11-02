@@ -90,9 +90,28 @@ describe('messages in the attendee’s saved language', () => {
     const [confirm, remind] = outbox;
     expect(confirm.subject).toBe('報名成功：拉坯體驗，11/14（六） 上午 11:30');
     expect(confirm.text).toContain('王美玲，共 2 位。報到時請出示代碼');
-    expect(confirm.text).toContain('我們會在上午 11:15 提醒您。');
+    expect(confirm.text).toContain('我們會在11/14（六）上午 11:15提醒您。');
     expect(remind.subject).toBe('15 分鐘後開始：拉坯體驗，上午 11:30');
     expect(remind.text).toContain('拉坯體驗將於上午 11:30 在穀倉工作室開始。');
+  });
+
+  it('gives the reminder date in the confirmation email but keeps the registered wording in the text', async () => {
+    const r = await book('zh');
+    process.env.TWILIO_ACCOUNT_SID = 'x'; process.env.TWILIO_AUTH_TOKEN = 'x'; process.env.TWILIO_FROM = '+15550000000';
+    await pool.query('update bookings set remind_sms = true where id = $1', [r.bookingId]);
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('{"sid":"SM1"}', { status: 201 }));
+    try {
+      await sendConfirmation((await getBooking(r.bookingId))!);
+      const sent = [
+        ...outbox.map((m) => m.text),
+        ...fetchSpy.mock.calls.map((c) => new URLSearchParams(String((c[1] as RequestInit).body)).get('Body') ?? ''),
+      ];
+      expect(sent.some((t) => t.includes('我們會在11/14（六）上午 11:15提醒您。'))).toBe(true);
+      expect(sent.some((t) => t.includes('我們會在上午 11:15 提醒您。'))).toBe(true);
+    } finally {
+      fetchSpy.mockRestore();
+      delete process.env.TWILIO_ACCOUNT_SID; delete process.env.TWILIO_AUTH_TOKEN; delete process.env.TWILIO_FROM;
+    }
   });
 
   it('keeps reminder texts short in Chinese (two text-message parts at most)', async () => {

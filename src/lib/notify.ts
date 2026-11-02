@@ -78,7 +78,10 @@ export async function sendConfirmation(b: BookingView) {
   const reminder = b.remindSms || b.remindEmail ? m.willRemind(fmtTimeL(addMinutes(b.startsAt, -15), lang)) : '';
   const seating = b.seats.length ? m.seatingLine(seatLine(b.seats, lang)) : '';
   const ledBy = instructor ? m.ledByLine(instructor) : '';
-  const lines = [m.whenWhere(activity, when, place), ledBy, m.partyFor(b.partySize, b.personName ?? '', b.code ?? ''), seating, reminder, m.plansChanged].filter(Boolean);
+  // The email also gives the reminder's date. The text keeps its time only: that wording is the one registered with the carriers.
+  const remindAt = fmtTimeL(addMinutes(b.startsAt, -15), lang);
+  const reminderEmail = reminder && daySh ? m.willRemindOn(daySh, remindAt) : reminder;
+  const lines = [m.whenWhere(activity, when, place), ledBy, m.partyFor(b.partySize, b.personName ?? '', b.code ?? ''), seating, reminderEmail, m.plansChanged].filter(Boolean);
   const url = `${appUrl()}/me`;
   if (b.personEmail) {
     await sendEmail(

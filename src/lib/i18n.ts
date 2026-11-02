@@ -265,6 +265,7 @@ const en = {
     partyFor: (n: number, name: string, code: string) =>
       `${n} ${n === 1 ? 'spot' : 'spots'} for ${name}. Show your code ${code}, your name or your phone number at the door.`,
     willRemind: (t: string) => `We'll remind you at ${t}.`,
+    willRemindOn: (day: string, t: string) => `We'll remind you on ${day} at ${t}.`,
     plansChanged: 'Plans changed? Cancel from My sign-ups so someone else can take your spots.',
     confirmSms: (from: string, first: string, act: string, when: string, place: string, n: number, code: string, reminder: string) =>
       `${from}: ${first} is in for ${act}, ${when}, ${place}. ${n} ${n === 1 ? 'spot' : 'spots'}, code ${code}. ${reminder} Msg frequency varies. Msg & data rates may apply. Reply HELP for help, STOP to opt out.`.replace(/\s+/g, ' ').trim(),
@@ -526,6 +527,7 @@ const zh: Dict = {
     whenWhere: (act, when, place) => `${act} — ${when}，地點：${place}。`,
     partyFor: (n, name, code) => `${name}，共 ${n} 位。報到時請出示代碼 ${code}、姓名或手機號碼。`,
     willRemind: (t) => `我們會在${t} 提醒您。`,
+    willRemindOn: (day, t) => `我們會在${day}${t}提醒您。`,
     plansChanged: '行程有變？請到「我的報名」取消，以釋放您的名額，謝謝。',
     // Kept short: a Chinese text message holds about 70 characters per part.
     confirmSms: (from, first, act, when, place, n, code, reminder) => `${from}：${first}已報名${act}，${when}，${place}。${n}位，代碼 ${code}。${reminder}簡訊頻率不一。可能產生簡訊及數據傳輸費用。回覆 HELP 取得協助，回覆 STOP 取消簡訊。`,
@@ -778,6 +780,7 @@ const zhs: Dict = {
     whenWhere: (act, when, place) => `${act} — ${when}，地点：${place}。`,
     partyFor: (n, name, code) => `${name}，共 ${n} 位。签到时请出示签到码 ${code}、姓名或手机号码。`,
     willRemind: (t) => `我们会在${t} 提醒您。`,
+    willRemindOn: (day, t) => `我们会在${day}${t}提醒您。`,
     plansChanged: '行程有变？请到“我的报名”取消，以释放您的名额，谢谢。',
     // Kept short: a Chinese text message holds about 70 characters per part.
     confirmSms: (from, first, act, when, place, n, code, reminder) => `${from}：${first}已报名${act}，${when}，${place}。${n}位，签到码 ${code}。${reminder}短信频率不一。可能产生短信和数据流量费用。回复 HELP 获取帮助，回复 STOP 退订短信。`,
