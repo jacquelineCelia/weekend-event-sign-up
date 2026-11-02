@@ -374,3 +374,6 @@ select.input { padding: 0 14px; }
 .photo-card:hover { border-color: var(--moss); color: var(--ink); }
 .photo-card-icon { display: flex; flex: none; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 50%; background: var(--sage); color: var(--moss-dark); }
 .photo-card-text { font-size: 15.5px; line-height: 1.35; color: var(--ink-2); }
+
+/* Thank-you screen: the extra space below sets it slightly above the true middle, where it looks centered. */
+.photo-form.photo-done { flex: 1; justify-content: center; text-align: center; overflow-wrap: anywhere; padding-top: 0; padding-bottom: 14dvh; }

@@ -107,7 +107,7 @@ export default function PhotoForm({ lang, topics }: { lang: Lang; topics: { id: 
 
   if (done) {
     return (
-      <main className="pad photo-form" aria-live="polite">
+      <main className="pad photo-form photo-done" aria-live="polite">
         <h1 className="h1">{t.doneTitle(name.trim())}</h1>
         <p className="photo-lede">{t.doneBody}</p>
         <button type="button" className="btn" onClick={another}>{t.another}</button>
