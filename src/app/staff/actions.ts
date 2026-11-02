@@ -5,7 +5,7 @@ import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { LAST_SLOT_COOKIE, clearStaffSession, isStaff, setStaffSession, staffPasscodeMatches } from '@/lib/session';
-import { BookingError, walkInBooking } from '@/lib/booking';
+import { BookingError, staffChangeParty, walkInBooking } from '@/lib/booking';
 import { walkInContactSchema } from '@/lib/contact';
 import { getBooking } from '@/lib/queries';
 import { sendConfirmation } from '@/lib/notify';
@@ -65,6 +65,31 @@ export async function checkInAction(bookingId: string, count: number) {
   await requireStaff();
   await setCheckedIn(bookingId, count);
   revalidatePath('/staff');
+}
+
+const partySchema = z.object({
+  id: z.string().uuid(),
+  size: z.number().int().min(1).max(50),
+  seats: z.array(z.object({ seatTypeId: z.string().uuid(), count: z.number().int().min(0).max(50) })).max(20),
+  allowOver: z.boolean(),
+});
+
+/** Check-in: change a party's size and seating. `full`: refused for lack of room, so a lead can approve. */
+export async function changePartyAction(input: z.infer<typeof partySchema>): Promise<{ error?: string; full?: boolean }> {
+  await requireStaff();
+  const ui = await staffLang();
+  const v = partySchema.safeParse(input);
+  if (!v.success) return { error: sdict(ui).chooseSeatsAll };
+  try {
+    await staffChangeParty(v.data.id, v.data.size, v.data.seats, { allowOver: v.data.allowOver });
+  } catch (err) {
+    if (err instanceof BookingError) {
+      return { error: errorText(ui, { code: err.code, remaining: err.remaining }), full: err.code === 'not_enough_spots' || err.code === 'seats_taken' };
+    }
+    throw err;
+  }
+  revalidatePath('/staff', 'layout');
+  return {};
 }
 
 export type WalkInState = {

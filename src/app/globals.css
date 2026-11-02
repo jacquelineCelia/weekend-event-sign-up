@@ -200,6 +200,8 @@ a.chip:hover { filter: brightness(0.96); }
 .stats span:last-child { font-family: var(--serif); font-size: 31.5px; }
 .roster { background: var(--paper); border: 1px solid var(--line); border-radius: 22px; overflow: hidden; }
 .rrow { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; padding: 16px 22px; border-bottom: 1px solid var(--line); }
+.party-editor { flex: 1 0 100%; display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 16px; background: var(--ground); }
+.party-line { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .rrow:last-child { border-bottom: 0; }
 .rrow[data-done='true'] { background: var(--sage-pale); }
 .pill-status { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 16px; border-radius: 999px; font-size: 15.5px; font-weight: 600; background: var(--sage); color: var(--moss-dark); }

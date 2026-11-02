@@ -4,16 +4,18 @@ import { useOptimistic, useState, useTransition } from 'react';
 import type { RosterRow } from '@/lib/staff';
 import { checkInAction } from '../actions';
 import { Check } from '@/components/icons';
+import PartyEditor, { type SeatType } from './PartyEditor';
 import { sdict } from '@/lib/staff-i18n';
 import type { Lang } from '@/lib/event';
 
-export default function Roster({ rows, lang }: { rows: RosterRow[]; lang: Lang }) {
+export default function Roster({ rows, lang, seating, open }: { rows: RosterRow[]; lang: Lang; seating: SeatType[]; open: number }) {
   const t = sdict(lang);
   const [q, setQ] = useState('');
   const [optimistic, setOptimistic] = useOptimistic(rows, (cur, u: { id: string; n: number }) =>
     cur.map((r) => (r.bookingId === u.id ? { ...r, checkedIn: u.n } : r)),
   );
   const [, start] = useTransition();
+  const [editing, setEditing] = useState<string | null>(null);
   const set = (id: string, n: number) =>
     start(async () => {
       setOptimistic({ id, n });
@@ -63,6 +65,11 @@ export default function Roster({ rows, lang }: { rows: RosterRow[]; lang: Lang }
                   <button type="button" style={{ ...round, opacity: done ? 0.4 : 1, cursor: done ? 'not-allowed' : 'pointer' }} disabled={done}
                     aria-label={t.oneMoreArrived(r.name)} onClick={() => set(r.bookingId, r.checkedIn + 1)}>+</button>
                 </div>
+              )}
+              {editing === r.bookingId ? (
+                <PartyEditor row={r} lang={lang} seating={seating} open={open} onClose={() => setEditing(null)} />
+              ) : (
+                <button type="button" className="btn ghost" style={{ minHeight: 48, fontSize: 15.5 }} onClick={() => setEditing(r.bookingId)}>{t.changeParty}</button>
               )}
             </div>
           );

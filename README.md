@@ -73,7 +73,7 @@ Built with Next.js 16 and Postgres (runs on Supabase as is).
   It's remembered on each device. Staff text lives in `src/lib/staff-i18n.ts`.
 - **Check-in**: sessions by day (with a search box above the list; finished sessions are hidden,
   with a "Show finished" link to look back), live roster with search by name, last 4 of phone or code;
-  check in a whole party or some of it. Refreshes every 20 seconds.
+  check in a whole party or some of it. Change a party's size and seating (also once the session has started; going over capacity needs a lead's approval; no message is sent). Refreshes every 20 seconds.
 - **Registration**: pick a time slot on the left (grouped by day) to see every activity starting
   then: booked out of capacity, on hold, open, checked in, parties and walk-ins, and seating by type,
   with totals for that time and a link to each roster. Refreshes every 20 seconds.
@@ -108,7 +108,7 @@ testing (sign-in codes included).
 Tests run against a real Postgres database (set `TEST_DATABASE_URL`; it is wiped on each run):
 
 ```bash
-npm test     # 133 tests: capacity, holds, overlaps, seating, instructors, login codes, reminders, schedule edits, shared phones, Chinese, photos
+npm test     # 135 tests: capacity, holds, overlaps, seating, instructors, login codes, reminders, schedule edits, shared phones, Chinese, photos
 ```
 
 ## Deploy (Vercel + Supabase)

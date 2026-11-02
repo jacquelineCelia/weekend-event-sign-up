@@ -423,3 +423,27 @@ export async function changeSeats(bookingId: string, personId: string | string[]
     await saveSeats(c, bookingId, picks);
   });
 }
+
+/**
+ * Staff change a party's size and seating at check-in. Unlike changeSeats, this also works once the
+ * session has started, and a lead can approve going over capacity. Arrivals are capped at the new size.
+ */
+export async function staffChangeParty(bookingId: string, partySize: number, seats: SeatPick[], opts: { allowOver?: boolean } = {}) {
+  if (!Number.isInteger(partySize) || partySize < 1 || partySize > 50) throw new RangeError('partySize must be between 1 and 50');
+  return withTx(async (c) => {
+    const b = await c.query<{ slot_id: string; party_size: number }>(
+      `select slot_id, party_size from bookings where id = $1 and status = 'confirmed' for update`,
+      [bookingId],
+    );
+    const row = b.rows[0];
+    if (!row) throw new BookingError('booking_not_found', 'That booking could not be found.');
+    const { remaining } = await lockSlot(c, row.slot_id, bookingId);
+    if (partySize > row.party_size && remaining < partySize && !opts.allowOver) {
+      throw new BookingError('not_enough_spots', `Only ${remaining} left at this time.`, remaining);
+    }
+    const picks = await checkSeats(c, row.slot_id, partySize, seats, { exclude: bookingId, allowOver: opts.allowOver });
+    await c.query('update bookings set party_size = $2, checked_in = least(checked_in, $2) where id = $1', [bookingId, partySize]);
+    await c.query('delete from booking_seats where booking_id = $1', [bookingId]);
+    await saveSeats(c, bookingId, picks);
+  });
+}

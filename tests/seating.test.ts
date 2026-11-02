@@ -1,6 +1,6 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { getPool } from '@/lib/db';
-import { changeSeats, changeSlot, confirmBooking, holdSpots, walkInBooking } from '@/lib/booking';
+import { changeSeats, changeSlot, confirmBooking, holdSpots, staffChangeParty, walkInBooking } from '@/lib/booking';
 import { contactSchema, walkInContactSchema } from '@/lib/contact';
 import { getBooking, seatOptions } from '@/lib/queries';
 import { roster, saveSchedule, saveSeating, seatTypesFor } from '@/lib/staff';
@@ -79,6 +79,18 @@ describe('seating', () => {
     await expect(changeSlot(r.bookingId, r.personId, slotB)).rejects.toMatchObject({ code: 'seats_taken' });
     const g = await book(slotA, 0, 3);
     await expect(changeSlot(g.bookingId, g.personId, slotB)).resolves.toBeUndefined();
+  });
+
+  it('lets staff change a party and its seats, going over a seat type only with approval', async () => {
+    const r = await book(slotA, 1, 1);
+    const seats = (c: number, g: number) => [{ seatTypeId: chair, count: c }, { seatTypeId: ground, count: g }];
+    await expect(staffChangeParty(r.bookingId, 3, seats(1, 1))).rejects.toMatchObject({ code: 'seats_needed' });
+    await staffChangeParty(r.bookingId, 3, seats(2, 1));
+    await expect(staffChangeParty(r.bookingId, 3, seats(3, 0))).rejects.toMatchObject({ code: 'seats_taken' });
+    await staffChangeParty(r.bookingId, 3, seats(3, 0), { allowOver: true });
+    const row = (await roster(slotA)).find((x) => x.bookingId === r.bookingId)!;
+    expect(row.partySize).toBe(3);
+    expect(row.seatPicks).toEqual([{ seatTypeId: chair, count: 3 }]);
   });
 
   it('changes the number of guests together with the seating', async () => {
