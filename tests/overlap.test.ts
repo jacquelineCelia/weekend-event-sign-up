@@ -2,6 +2,7 @@ import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { getPool } from '@/lib/db';
 import { BookingError, changeSlot, confirmBooking, holdSpots, walkInBooking } from '@/lib/booking';
 import { contactSchema, walkInContactSchema } from '@/lib/contact';
+import { noEmail } from './helpers';
 
 const pool = getPool();
 
@@ -145,7 +146,7 @@ describe('overlaps when changing time and for walk-ins', () => {
 
   it('matches walk-ins without email by phone and name', async () => {
     await book(yoga);
-    await expect(walkInBooking(tea, 1, walkInContactSchema.parse({ name: 'jordan lee', phone: '412 555 0148', email: '' }))).rejects.toMatchObject({ code: 'overlap' });
-    await expect(walkInBooking(tea, 1, walkInContactSchema.parse({ name: 'Riley Lee', phone: '412 555 0148', email: '' }))).resolves.toBeTruthy();
+    await expect(walkInBooking(tea, 1, noEmail('jordan lee', '412 555 0148'))).rejects.toMatchObject({ code: 'overlap' });
+    await expect(walkInBooking(tea, 1, noEmail('Riley Lee', '412 555 0148'))).resolves.toBeTruthy();
   });
 });

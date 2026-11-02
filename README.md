@@ -78,7 +78,7 @@ Built with Next.js 16 and Postgres (runs on Supabase as is).
   then: booked out of capacity, on hold, open, checked in, parties and walk-ins, and seating by type,
   with totals for that time and a link to each roster. Refreshes every 20 seconds.
 - **Walk-in sign-up**: any activity and time that hasn't ended yet, over-capacity only with an explicit lead approval,
-  optional "check in now". Walk-ins are never texted; reminders go by email if they give one.
+  optional "check in now". Name, mobile number and email are all required. Walk-ins are never texted; reminders go by email.
 - **Schedule & capacity**: add, move or delete time slots and change capacity per slot; edit or add
   activities. Capacity can't drop below what's booked, booked slots can't be deleted, overlapping
   slots are blocked, and guests in a moved slot are told the new time. Each activity also has
@@ -108,7 +108,7 @@ testing (sign-in codes included).
 Tests run against a real Postgres database (set `TEST_DATABASE_URL`; it is wiped on each run):
 
 ```bash
-npm test     # 135 tests: capacity, holds, overlaps, seating, instructors, login codes, reminders, schedule edits, shared phones, Chinese, photos
+npm test     # 136 tests: capacity, holds, overlaps, seating, instructors, login codes, reminders, schedule edits, shared phones, Chinese, photos
 ```
 
 ## Deploy (Vercel + Supabase)

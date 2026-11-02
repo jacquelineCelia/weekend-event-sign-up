@@ -1,7 +1,8 @@
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getPool } from '@/lib/db';
 import { cancelBooking, confirmBooking, holdSpots, walkInBooking } from '@/lib/booking';
-import { contactSchema, walkInContactSchema } from '@/lib/contact';
+import { contactSchema } from '@/lib/contact';
+import { noEmail } from './helpers';
 import { startLogin, verifyLogin } from '@/lib/login';
 import { outbox } from '@/lib/messaging';
 import { decodeViewer, encodeSession } from '@/lib/session';
@@ -56,10 +57,10 @@ describe('people sharing a phone number', () => {
     // (Each earlier sign-up is cancelled first: one person can't hold two at the same time.)
     const a = await book(anna);
     await cancelBooking(a.bookingId, a.personId);
-    const sameAnna = await walkInBooking(slotId, 1, walkInContactSchema.parse({ name: 'anna park', phone: PHONE, email: '' }));
-    const grandma = await walkInBooking(slotId, 1, walkInContactSchema.parse({ name: 'Rose Park', phone: PHONE, email: '' }));
+    const sameAnna = await walkInBooking(slotId, 1, noEmail('anna park', PHONE));
+    const grandma = await walkInBooking(slotId, 1, noEmail('Rose Park', PHONE));
     await cancelBooking(grandma.bookingId, grandma.personId);
-    const grandmaAgain = await walkInBooking(slotId, 1, walkInContactSchema.parse({ name: 'Rose Park', phone: PHONE, email: '' }));
+    const grandmaAgain = await walkInBooking(slotId, 1, noEmail('Rose Park', PHONE));
     const all = await people();
     expect(all.map((p) => p.name)).toEqual(['Anna Park', 'Rose Park']);
     expect(grandmaAgain.personId).toBe(grandma.personId);
@@ -67,7 +68,7 @@ describe('people sharing a phone number', () => {
   });
 
   it('adds an email to a walk-in record when that person later signs up online', async () => {
-    const w = await walkInBooking(slotId, 1, walkInContactSchema.parse({ name: 'Rose Park', phone: PHONE, email: '' }));
+    const w = await walkInBooking(slotId, 1, noEmail('Rose Park', PHONE));
     await cancelBooking(w.bookingId, w.personId); // one person can't have two overlapping sign-ups
     const online = await book(contactSchema.parse({ name: 'Rose Park', email: 'rose@example.com', phone: PHONE }));
     expect(online.personId).toBe(w.personId);

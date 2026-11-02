@@ -1,7 +1,8 @@
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getPool } from '@/lib/db';
 import { confirmBooking, holdSpots, walkInBooking } from '@/lib/booking';
-import { contactSchema, walkInContactSchema } from '@/lib/contact';
+import { contactSchema } from '@/lib/contact';
+import { noEmail } from './helpers';
 import { startLogin, verifyLogin } from '@/lib/login';
 import { outbox } from '@/lib/messaging';
 import { getBooking } from '@/lib/queries';
@@ -69,7 +70,7 @@ describe('texting only with consent', () => {
   });
 
   it('never texts walk-ins', async () => {
-    const guest = walkInContactSchema.parse({ name: 'Walk In', phone: '412 555 0199', email: '' });
+    const guest = noEmail('Walk In', '412 555 0199');
     const w = await walkInBooking(slotId, 1, guest);
     expect((await getBooking(w.bookingId))!.remindSms).toBe(false);
     await sendConfirmation((await getBooking(w.bookingId))!);

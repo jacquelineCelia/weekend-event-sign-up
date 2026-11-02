@@ -1,7 +1,8 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { getPool } from '@/lib/db';
 import { changeSeats, changeSlot, confirmBooking, holdSpots, staffChangeParty, walkInBooking } from '@/lib/booking';
-import { contactSchema, walkInContactSchema } from '@/lib/contact';
+import { contactSchema } from '@/lib/contact';
+import { noEmail } from './helpers';
 import { getBooking, seatOptions } from '@/lib/queries';
 import { roster, saveSchedule, saveSeating, seatTypesFor } from '@/lib/staff';
 
@@ -125,7 +126,7 @@ describe('seating', () => {
   });
 
   it('walk-ins choose seats; a lead can approve going over', async () => {
-    const guest = (name: string) => walkInContactSchema.parse({ name, phone: '412 555 0199', email: '' });
+    const guest = (name: string) => noEmail(name, '412 555 0199');
     await walkInBooking(slotA, 2, guest('Walk In'), { seats: [{ seatTypeId: chair, count: 2 }] });
     await expect(walkInBooking(slotA, 1, guest('Second'), { seats: [{ seatTypeId: chair, count: 1 }] })).rejects.toMatchObject({ code: 'seats_taken' });
     await expect(walkInBooking(slotA, 1, guest('Second'), { seats: [{ seatTypeId: chair, count: 1 }], allowOver: true })).resolves.toBeTruthy();

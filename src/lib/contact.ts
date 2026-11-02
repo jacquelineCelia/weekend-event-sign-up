@@ -54,7 +54,7 @@ function build(emailRequired: boolean) {
 
 /** Online sign-ups collect name, email and phone. */
 export const contactSchema = build(true);
-/** Staff walk-in sign-ups need name and phone; email is optional. */
-export const walkInContactSchema = build(false);
+/** Staff walk-in sign-ups need the same three. */
+export const walkInContactSchema = build(true);
 
 export type Contact = { name: string; email: string | null; phone: string | null };

@@ -1,7 +1,8 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { getPool } from '@/lib/db';
 import { confirmBooking, holdSpots, walkInBooking } from '@/lib/booking';
-import { contactSchema, walkInContactSchema } from '@/lib/contact';
+import { contactSchema } from '@/lib/contact';
+import { noEmail } from './helpers';
 import { registrationAt, saveSeating, seatTypesFor, setCheckedIn, startTimes } from '@/lib/staff';
 
 const pool = getPool();
@@ -42,7 +43,7 @@ describe('registration by time', () => {
     const [chair, ground] = (await seatTypesFor(tea)).map((s) => s.id);
     const { holdId } = await holdSpots(teaSlot, 3, [{ seatTypeId: chair, count: 1 }, { seatTypeId: ground, count: 2 }]);
     await confirmBooking(holdId, { contact: contactSchema.parse({ name: 'B', email: 'b@example.com', phone: '412 555 0101' }), remindSms: false, remindEmail: true });
-    const w = await walkInBooking(teaSlot, 2, walkInContactSchema.parse({ name: 'W', phone: '412 555 0102', email: '' }), { seats: [{ seatTypeId: ground, count: 2 }] });
+    const w = await walkInBooking(teaSlot, 2, noEmail('W', '412 555 0102'), { seats: [{ seatTypeId: ground, count: 2 }] });
     await setCheckedIn(w.bookingId, 2);
     await holdSpots(teaSlot, 1, [{ seatTypeId: chair, count: 1 }]); // someone still typing their details
 
