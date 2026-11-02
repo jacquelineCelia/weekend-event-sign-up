@@ -41,7 +41,7 @@ const en = {
   mySignups: 'My sign-ups',
   photos: {
     title: 'Share a photo',
-    cardText: 'Take a photo on one of nine topics and see it on the big screen.',
+    cardText: 'What you discover becomes part of our view.',
     lede: 'Take a photo of one of the topics below and upload it. Photos are shown on the big screen at the event.',
     name: 'Your name',
     topic: 'Choose a topic',
@@ -307,7 +307,7 @@ const zh: Dict = {
   mySignups: '我的報名',
   photos: {
     title: '分享照片',
-    cardText: '以九個主題之一拍照，在大螢幕上看見你的照片。',
+    cardText: '你的發現，也是我們的風景',
     lede: '請以下列其中一個主題拍照並上傳，照片會在活動現場的大螢幕上播放。',
     name: '你的姓名',
     topic: '選擇主題',
@@ -559,7 +559,7 @@ const zhs: Dict = {
   mySignups: '我的报名',
   photos: {
     title: '分享照片',
-    cardText: '以九个主题之一拍照，在大屏幕上看见你的照片。',
+    cardText: '你的发现，也是我们的风景',
     lede: '请以下列其中一个主题拍照并上传，照片会在活动现场的大屏幕上播放。',
     name: '你的姓名',
     topic: '选择主题',
