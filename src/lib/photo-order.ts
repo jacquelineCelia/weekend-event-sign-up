@@ -1,42 +1,23 @@
-// The order photos appear in on the big screen. Safe to import from client components.
+// Steps through the big-screen show in the feed's order. Safe to import from client components.
 
-export function shuffled<T>(items: T[], rand: () => number = Math.random): T[] {
-  const out = [...items];
-  for (let i = out.length - 1; i > 0; i--) {
-    const j = Math.floor(rand() * (i + 1));
-    [out[i], out[j]] = [out[j], out[i]];
-  }
-  return out;
-}
-
-/**
- * Shows every photo once in random order, then reshuffles, so none repeats before all have been
- * seen. A new upload joins the photos still to come, at a random place.
- */
+/** Goes through the list and starts again, keeping its place when photos are added or removed. */
 export class PhotoOrder {
-  private known = new Set<string>();
-  private queue: string[] = [];
+  private ids: string[] = [];
+  private index = -1; // the photo last handed out; -1 before the first
 
-  constructor(private rand: () => number = Math.random) {}
-
-  /** Brings in the current list of ids: drops removed photos and mixes in new ones. */
+  /** Brings in the current list. If the current photo is gone, the next one is whichever followed it. */
   sync(ids: string[]) {
-    const now = new Set(ids);
-    this.queue = this.queue.filter((id) => now.has(id));
-    for (const id of ids) {
-      if (this.known.has(id)) continue;
-      this.queue.splice(Math.floor(this.rand() * (this.queue.length + 1)), 0, id);
+    if (this.index >= 0) {
+      const survivor = this.ids.slice(this.index).find((id) => ids.includes(id));
+      const at = survivor ? ids.indexOf(survivor) : ids.length;
+      this.index = survivor === this.ids[this.index] ? at : at - 1;
     }
-    this.known = now;
+    this.ids = ids;
   }
 
-  /** The next photo to show, never the one on screen unless it is the only one. */
-  next(current: string | null): string | null {
-    if (!this.known.size) return null;
-    if (!this.queue.length) {
-      this.queue = shuffled([...this.known], this.rand);
-      if (this.queue.length > 1 && this.queue[0] === current) this.queue.push(this.queue.shift()!);
-    }
-    return this.queue.shift()!;
+  next(): string | null {
+    if (!this.ids.length) return null;
+    this.index = (this.index + 1) % this.ids.length;
+    return this.ids[this.index];
   }
 }

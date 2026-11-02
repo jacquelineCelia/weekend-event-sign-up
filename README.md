@@ -86,10 +86,10 @@ Built with Next.js 16 and Postgres (runs on Supabase as is).
   converted automatically (OpenCC, character by character). Blank fields show the English, and the
   list marks activities with "中 missing" until they're filled in. Staff screens can be switched to Chinese (see Language above); the
   check-in list tags attendees 繁 or 简, and walk-ins can be given either Chinese for their messages.
-- **Photo show**: every uploaded photo in random order, 8 seconds each. Landscape photos fill the
+- **Photo show**: every uploaded photo, topic by topic and newest first within a topic, 8 seconds each. Landscape photos fill the
   screen (edges may be cropped); portrait photos show whole on black. The topic and the person's name
-  sit at the lower right, in the language of the staff switch. No photo repeats until all have been shown, and new uploads join
-  within 15 seconds. Pause, Next, Full screen and Remove (deletes the photo, after a confirmation).
+  sit at the lower right, in the language of the staff switch. The show then starts again from the first topic. New uploads join the list
+  within 15 seconds and appear when the show reaches their place. Pause, Next, Full screen and Remove (deletes the photo, after a confirmation).
 
 ## Run it locally
 
@@ -106,7 +106,7 @@ testing (sign-in codes included).
 Tests run against a real Postgres database (set `TEST_DATABASE_URL`; it is wiped on each run):
 
 ```bash
-npm test     # 124 tests: capacity, holds, overlaps, seating, instructors, login codes, reminders, schedule edits, shared phones, Chinese, photos
+npm test     # 125 tests: capacity, holds, overlaps, seating, instructors, login codes, reminders, schedule edits, shared phones, Chinese, photos
 ```
 
 ## Deploy (Vercel + Supabase)

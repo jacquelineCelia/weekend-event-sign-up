@@ -12,7 +12,7 @@ const SECONDS_PER_PHOTO = 8;
 const FEED_SECONDS = 15;
 const CONTROLS_IDLE_MS = 3000;
 
-/** The big-screen slideshow: every photo in random order, with its topic and who took it. */
+/** The big-screen slideshow: every photo, topic by topic and newest first, with its topic and who took it. */
 export default function PhotoShow({ initial, lang, uploadAddress }: { initial: Photo[]; lang: Lang; uploadAddress: string }) {
   const t = sdict(lang).photos;
   const [photos, setPhotos] = useState(initial);
@@ -42,7 +42,7 @@ export default function PhotoShow({ initial, lang, uploadAddress }: { initial: P
     try {
       // A photo that won't load is skipped; give up after trying each once.
       for (let tries = photosRef.current.length; tries > 0; tries--) {
-        const id = order().next(currentRef.current);
+        const id = order().next();
         if (!id) break;
         const img = new Image();
         img.src = `/staff/photos/image/${id}`;

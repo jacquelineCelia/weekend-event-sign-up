@@ -1,6 +1,6 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { getPool } from '@/lib/db';
-import { PhotoOrder, shuffled } from '@/lib/photo-order';
+import { PhotoOrder } from '@/lib/photo-order';
 import { hashIp, photoFeed, photoImage, photoTopics, removePhoto, savePhoto } from '@/lib/photos';
 
 const pool = getPool();
@@ -30,6 +30,19 @@ describe('photo uploads', () => {
     expect(r).toHaveProperty('id');
     expect((await photoFeed('en')).map((p) => [p.name, p.topic])).toEqual([['Anna Park', 'Around the Corner']]);
     expect((await photoImage((r as { id: string }).id))?.equals(jpeg())).toBe(true);
+  });
+
+  it('orders the feed by topic, newest first within a topic', async () => {
+    const topics = await photoTopics('en');
+    const add = async (name: string, t: number, ago: number) => {
+      const { id } = (await save({ name, topicId: topics[t].id })) as { id: string };
+      await pool.query(`update photos set created_at = now() - make_interval(mins => $2) where id = $1`, [id, ago]);
+    };
+    await add('second topic', 1, 1);
+    await add('first topic, older', 0, 30);
+    await add('ninth topic', 8, 0);
+    await add('first topic, newer', 0, 5);
+    expect((await photoFeed('en')).map((p) => p.name)).toEqual(['first topic, newer', 'first topic, older', 'second topic', 'ninth topic']);
   });
 
   it('refuses a missing or overlong name, an unknown topic and anything but a JPEG', async () => {
@@ -68,45 +81,40 @@ describe('photo uploads', () => {
 });
 
 describe('photo order', () => {
-  const round = (o: PhotoOrder, n: number, start: string | null = null) => {
-    const out: string[] = [];
-    let cur = start;
-    for (let i = 0; i < n; i++) out.push((cur = o.next(cur)!));
-    return out;
-  };
+  const take = (o: PhotoOrder, n: number) => Array.from({ length: n }, () => o.next());
 
-  it('shuffles without losing anything', () => {
-    expect(shuffled([1, 2, 3, 4, 5]).sort()).toEqual([1, 2, 3, 4, 5]);
-  });
-
-  it('shows every photo once before any repeats, and never the same one twice in a row', () => {
-    const ids = ['a', 'b', 'c', 'd', 'e'];
-    const o = new PhotoOrder();
-    o.sync(ids);
-    let last: string | null = null;
-    for (let i = 0; i < 50; i++) {
-      const pass = round(o, 5, last);
-      expect([...pass].sort()).toEqual(ids);
-      if (last) expect(pass[0]).not.toBe(last);
-      last = pass[4];
-    }
-  });
-
-  it('brings in new photos before the current round ends and drops removed ones', () => {
+  it('goes through the list in order and starts again', () => {
     const o = new PhotoOrder();
     o.sync(['a', 'b', 'c']);
-    const first = o.next(null)!;
-    const rest = ['a', 'b', 'c'].filter((x) => x !== first);
-    o.sync([first, rest[0], 'new']);
-    expect(round(o, 2, first).sort()).toEqual([rest[0], 'new'].sort());
+    expect(take(o, 5)).toEqual(['a', 'b', 'c', 'a', 'b']);
+  });
+
+  it('keeps its place when a photo is added ahead of it or after it', () => {
+    const o = new PhotoOrder();
+    o.sync(['a', 'b', 'c']);
+    take(o, 2); // on b
+    o.sync(['new', 'a', 'b', 'c', 'last']);
+    expect(take(o, 3)).toEqual(['c', 'last', 'new']);
+  });
+
+  it('moves on to what followed a removed photo', () => {
+    const o = new PhotoOrder();
+    o.sync(['a', 'b', 'c']);
+    take(o, 2); // on b
+    o.sync(['a', 'c']);
+    expect(o.next()).toBe('c');
+    o.sync(['a']); // c, the last one, is gone: back to the start
+    expect(o.next()).toBe('a');
   });
 
   it('handles none and one', () => {
     const o = new PhotoOrder();
-    expect(o.next(null)).toBeNull();
+    expect(o.next()).toBeNull();
     o.sync(['a']);
-    expect(round(o, 3)).toEqual(['a', 'a', 'a']);
+    expect(take(o, 2)).toEqual(['a', 'a']);
     o.sync([]);
-    expect(o.next('a')).toBeNull();
+    expect(o.next()).toBeNull();
+    o.sync(['b']);
+    expect(o.next()).toBe('b');
   });
 });
