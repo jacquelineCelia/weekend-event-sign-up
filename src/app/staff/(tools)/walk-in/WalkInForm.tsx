@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useState } from 'react';
+import { useActionState, useState, startTransition } from 'react';
 import { walkInAction, type WalkInState } from '../../actions';
 import { sdict } from '@/lib/staff-i18n';
 import { zhBold } from '@/lib/i18n';
@@ -67,7 +67,14 @@ export default function WalkInForm({ options, initialKey, initialSlot, lang }: {
   if (!act) return <p className="muted">{t.noActivitiesWalkIn}</p>;
 
   return (
-    <form key={formKey} action={action} style={{ display: 'contents' }}>
+    <form key={formKey} style={{ display: 'contents' }} onSubmit={(e) => {
+      // Not <form action>: React then resets the form after every submission, which would put the time,
+      // language and check-in choices back to their first values after a refused sign-up, while the summary
+      // still showed the chosen ones. The sign-up would then go to the wrong time.
+      e.preventDefault();
+      const data = new FormData(e.currentTarget, (e.nativeEvent as SubmitEvent).submitter);
+      startTransition(() => action(data));
+    }}>
       <div className="sheet staffmain" style={{ gap: 22 }}>
         <h1 className="h1" style={{ fontSize: 31.5 }}>{t.walkInTitle}</h1>
 
