@@ -54,10 +54,10 @@ export default function Roster({ rows, lang, seating, open }: { rows: RosterRow[
               </div>
               {r.checkedIn === 0 ? (
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {changeButton}
                   {r.partySize > 1 ? (
                     <button type="button" className="btn ghost" style={{ minHeight: 48, fontSize: 15.5 }} onClick={() => set(r.bookingId, 1)}>{t.someArrived}</button>
                   ) : null}
-                  {changeButton}
                   <button type="button" className="btn" style={{ minHeight: 48, minWidth: 150, fontSize: 16.5 }} onClick={() => set(r.bookingId, r.partySize)}>
                     {r.partySize === 1 ? t.checkIn : t.checkInAll(r.partySize)}
                   </button>
