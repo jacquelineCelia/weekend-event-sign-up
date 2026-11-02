@@ -72,14 +72,14 @@ export default function SignUpSample({ lang, smsFrom, eventName, summary, ticket
       </div>
 
       <section className="pad stack" style={{ gap: 14, padding: '8px 20px 20px' }}>
-        <h1 className="h1" style={{ fontSize: 30 }}>{t.almostThere}</h1>
+        <h1 className="h1" style={{ fontSize: 31.5 }}>{t.almostThere}</h1>
         <div className="summary">
           <div className="stack" style={{ gap: 4 }}>
-            <span className={`serif${zhBold(summary.activity)}`} style={{ fontSize: 19 }}>{nameRuns(summary.activity)}</span>
+            <span className={`serif${zhBold(summary.activity)}`} style={{ fontSize: 20.5 }}>{nameRuns(summary.activity)}</span>
             <span className="sub">{summary.when}</span>
-            <span style={{ fontSize: 13.5, fontWeight: 600, marginTop: 4 }}>{summary.spots}</span>
+            <span style={{ fontSize: 15, fontWeight: 600, marginTop: 4 }}>{summary.spots}</span>
           </div>
-          <Link href="/" className="change" style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--on-dark)', fontSize: 14, fontWeight: 600, minHeight: 44, padding: '0 14px', border: '1px solid #5c7a63', borderRadius: 999, textDecoration: 'none' }}>{t.change}</Link>
+          <Link href="/" className="change" style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--on-dark)', fontSize: 15.5, fontWeight: 600, minHeight: 44, padding: '0 14px', border: '1px solid #5c7a63', borderRadius: 999, textDecoration: 'none' }}>{t.change}</Link>
         </div>
       </section>
 
@@ -98,11 +98,11 @@ export default function SignUpSample({ lang, smsFrom, eventName, summary, ticket
                 <a href="/terms" target="_blank" rel="noopener">{t.terms}</a> · <a href="/privacy" target="_blank" rel="noopener">{t.privacy}</a>
               </p>
               <label className="check"><input type="checkbox" name="remindEmail" checked={mail} onChange={(e) => setMail(e.target.checked)} /> {t.byEmail}</label>
-              {!sms && !mail ? <span className="note" role="status" style={{ fontSize: 13, padding: '9px 12px', borderRadius: 12 }}>{t.noReminderWarn}</span> : null}
+              {!sms && !mail ? <span className="note" role="status" style={{ fontSize: 14.5, padding: '9px 12px', borderRadius: 12 }}>{t.noReminderWarn}</span> : null}
             </div>
           </fieldset>
 
-          <label className="check" style={{ alignItems: 'flex-start', fontSize: 14, color: 'var(--ink-2)' }}>
+          <label className="check" style={{ alignItems: 'flex-start', fontSize: 15.5, color: 'var(--ink-2)' }}>
             <input type="checkbox" name="remember" defaultChecked /> {t.rememberMe}
           </label>
         </div>
@@ -147,23 +147,23 @@ function Success({ lang, done, summary, ticket, calendar }: { lang: Lang; done: 
       <div className="pad stack" style={{ gap: 24, padding: '12px 20px 28px' }}>
         <div className="stack" style={{ gap: 14, alignItems: 'flex-start' }}>
           <span className="leafmark"><Sprout /></span>
-          <h1 className="h1" style={{ fontSize: 34 }}>{t.youreIn(done.first)}</h1>
+          <h1 className="h1" style={{ fontSize: 35.5 }}>{t.youreIn(done.first)}</h1>
           <p className="lede">{t.allSet}{done.email ? t.confirmationTo(done.email) : ''}</p>
         </div>
 
         <article className="ticket">
           <div className="top">
-            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--moss)' }}>{ticket.day}</span>
-            <span className={`serif${zhBold(summary.activity)}`} style={{ fontSize: 24 }}>{nameRuns(summary.activity)}</span>
-            <span style={{ fontSize: 15, color: 'var(--ink-2)' }}>{ticket.time}</span>
+            <span style={{ fontSize: 14.5, fontWeight: 600, color: 'var(--moss)' }}>{ticket.day}</span>
+            <span className={`serif${zhBold(summary.activity)}`} style={{ fontSize: 25.5 }}>{nameRuns(summary.activity)}</span>
+            <span style={{ fontSize: 16.5, color: 'var(--ink-2)' }}>{ticket.time}</span>
           </div>
           <div className="mid">
             <div className="stack" style={{ gap: 2 }}>
-              <span className="muted" style={{ fontSize: 12.5 }}>{t.party}</span>
-              <span style={{ fontSize: 17, fontWeight: 600 }}>{t.spots(summary.partySize)}</span>
+              <span className="muted" style={{ fontSize: 14 }}>{t.party}</span>
+              <span style={{ fontSize: 18.5, fontWeight: 600 }}>{t.spots(summary.partySize)}</span>
             </div>
             <div className="stack" style={{ gap: 2 }}>
-              <span className="muted" style={{ fontSize: 12.5 }}>{t.checkInCode}</span>
+              <span className="muted" style={{ fontSize: 14 }}>{t.checkInCode}</span>
               <span className="code">{done.code}</span>
             </div>
           </div>
@@ -181,7 +181,7 @@ function Success({ lang, done, summary, ticket, calendar }: { lang: Lang; done: 
           </div>
         </div>
 
-        <p className="muted" style={{ margin: 0, fontSize: 13.5, lineHeight: 1.55 }}>{t.doorNote}</p>
+        <p className="muted" style={{ margin: 0, fontSize: 15, lineHeight: 1.55 }}>{t.doorNote}</p>
       </div>
     </div>
   );

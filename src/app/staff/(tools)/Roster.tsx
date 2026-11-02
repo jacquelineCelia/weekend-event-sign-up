@@ -22,7 +22,7 @@ export default function Roster({ rows, lang }: { rows: RosterRow[]; lang: Lang }
 
   const ql = q.trim().toLowerCase();
   const shown = optimistic.filter((r) => !ql || r.name.toLowerCase().includes(ql) || r.phoneLast4.includes(ql) || r.code.toLowerCase().includes(ql));
-  const round = { width: 44, height: 44, borderRadius: '50%', border: '1px solid var(--line-strong)', background: 'var(--paper)', fontSize: 20, cursor: 'pointer' } as const;
+  const round = { width: 44, height: 44, borderRadius: '50%', border: '1px solid var(--line-strong)', background: 'var(--paper)', fontSize: 21.5, cursor: 'pointer' } as const;
 
   return (
     <>
@@ -40,19 +40,19 @@ export default function Roster({ rows, lang }: { rows: RosterRow[]; lang: Lang }
           return (
             <div key={r.bookingId} role="listitem" className="rrow" data-done={done}>
               <div className="stack" style={{ gap: 3, flex: '1 1 220px', minWidth: 0 }}>
-                <span className="serif" style={{ fontSize: 18 }}>{r.name}
+                <span className="serif" style={{ fontSize: 19.5 }}>{r.name}
                   {r.lang !== 'en' ? <span className="stag" lang={r.lang === 'zh' ? 'zh-Hant-TW' : 'zh-Hans-CN'} title={r.lang === 'zh' ? t.signedUpZh : t.signedUpZhs} style={{ marginLeft: 8, fontFamily: 'var(--sans)', background: 'var(--ochre-pale)', color: 'var(--ochre-dark)' }}>{r.lang === 'zh' ? '繁' : '简'}</span> : null}
                   {r.walkIn ? <span className="stag" style={{ marginLeft: 8, fontFamily: 'var(--sans)' }}>{t.walkInTag}</span> : null}</span>
-                <span className="muted" style={{ fontSize: 13.5 }}>
+                <span className="muted" style={{ fontSize: 15 }}>
                   {t.code} <b style={{ letterSpacing: '0.08em', color: 'var(--ink-2)' }}>{r.code}</b>{r.phoneLast4 ? ` · ••${r.phoneLast4}` : ''} · {t.partyOf(r.partySize)}{r.seats ? ` · ${r.seats}` : ''}
                 </span>
               </div>
               {r.checkedIn === 0 ? (
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                   {r.partySize > 1 ? (
-                    <button type="button" className="btn ghost" style={{ minHeight: 48, fontSize: 14 }} onClick={() => set(r.bookingId, 1)}>{t.someArrived}</button>
+                    <button type="button" className="btn ghost" style={{ minHeight: 48, fontSize: 15.5 }} onClick={() => set(r.bookingId, 1)}>{t.someArrived}</button>
                   ) : null}
-                  <button type="button" className="btn" style={{ minHeight: 48, minWidth: 150, fontSize: 15 }} onClick={() => set(r.bookingId, r.partySize)}>
+                  <button type="button" className="btn" style={{ minHeight: 48, minWidth: 150, fontSize: 16.5 }} onClick={() => set(r.bookingId, r.partySize)}>
                     {r.partySize === 1 ? t.checkIn : t.checkInAll(r.partySize)}
                   </button>
                 </div>

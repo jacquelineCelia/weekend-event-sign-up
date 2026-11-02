@@ -60,7 +60,7 @@ export default function SlotPicker({ lang, slots, seats, preselected, change }: 
       <fieldset className="pad stack" style={{ gap: 10, border: 0, margin: 0, padding: '0 20px 22px', minWidth: 0 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
           <legend className="h2" style={{ float: 'left', padding: 0 }}>{change ? t.pickNewTime : t.pickTime}</legend>
-          <span className="muted" style={{ fontSize: 12.5 }}>{change ? t.forYour(change.partySize) : t.spotsLive}</span>
+          <span className="muted" style={{ fontSize: 14 }}>{change ? t.forYour(change.partySize) : t.spotsLive}</span>
         </div>
         {slots.length === 0 ? <p className="muted">{t.noTimes}</p> : null}
         {slots.map((s) => {
@@ -76,8 +76,11 @@ export default function SlotPicker({ lang, slots, seats, preselected, change }: 
                 <span className="radio" aria-hidden="true" />
                 <span className="stack" style={{ gap: 3 }}>
                   {s.date ? <span className="slot-date">{s.date}</span> : null}
-                  <span className="time">{s.range}</span>
-                  {why ? <span style={{ fontSize: 13, fontWeight: 500, color: blocked ? undefined : 'var(--ochre-dark)' }}>{why}</span> : null}
+                  {/* Wraps only at the dash on small phones ("上午 7:30 –" / "上午 8:15"). */}
+                  <span className="time">{s.range.split(' – ').map((part, i, all) => (
+                    <span key={i} style={{ whiteSpace: 'nowrap' }}>{part}{i < all.length - 1 ? ' – ' : ''}</span>
+                  ))}</span>
+                  {why ? <span style={{ fontSize: 14.5, fontWeight: 500, color: blocked ? undefined : 'var(--ochre-dark)' }}>{why}</span> : null}
                 </span>
               </span>
               <span className={`tag ${tone}`}>{tag}</span>
@@ -92,8 +95,8 @@ export default function SlotPicker({ lang, slots, seats, preselected, change }: 
           <div className="panel">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
               <div className="stack" style={{ gap: 2 }}>
-                <span style={{ fontSize: 16, fontWeight: 600 }} id="guests-label">{t.guests}</span>
-                <span className="muted" style={{ fontSize: 13 }}>{t.notCountingYou}</span>
+                <span style={{ fontSize: 17.5, fontWeight: 600 }} id="guests-label">{t.guests}</span>
+                <span className="muted" style={{ fontSize: 14.5 }}>{t.notCountingYou}</span>
               </div>
               <div className="stepper" role="group" aria-labelledby="guests-label">
                 <button type="button" className="round" aria-label={t.removeGuest} disabled={guests <= 0}
@@ -105,7 +108,7 @@ export default function SlotPicker({ lang, slots, seats, preselected, change }: 
             </div>
             <input type="hidden" name="guests" value={guests} />
             {cur ? (
-              <div style={{ borderTop: '1px solid var(--line)', paddingTop: 14, fontSize: 14.5, color: 'var(--ink-2)' }}>
+              <div style={{ borderTop: '1px solid var(--line)', paddingTop: 14, fontSize: 16, color: 'var(--ink-2)' }}>
                 {t.partyLine(guests, party, cur.short)}
               </div>
             ) : null}
@@ -120,8 +123,8 @@ export default function SlotPicker({ lang, slots, seats, preselected, change }: 
           {seats.length ? (
             <div className="panel" role="group" aria-labelledby="seating-h" aria-describedby="seating-d">
               <div className="stack" style={{ gap: 2 }}>
-                <h3 id="seating-h" style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>{t.seating}</h3>
-                <span id="seating-d" className="muted" style={{ fontSize: 13 }}>{t.seatingLede(party)}</span>
+                <h3 id="seating-h" style={{ margin: 0, fontSize: 17.5, fontWeight: 600 }}>{t.seating}</h3>
+                <span id="seating-d" className="muted" style={{ fontSize: 14.5 }}>{t.seatingLede(party)}</span>
               </div>
               {seats.map((x) => {
                 const left = seatLeft(x.id);
@@ -129,8 +132,8 @@ export default function SlotPicker({ lang, slots, seats, preselected, change }: 
                 return (
                   <div key={x.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, borderTop: '1px solid var(--line)', paddingTop: 12 }}>
                     <div className="stack" style={{ gap: 2, minWidth: 0 }}>
-                      <span style={{ fontSize: 15.5, fontWeight: 600 }} id={`seat-${x.id}`}>{x.name}</span>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: !cur ? 'var(--muted)' : left === 0 ? 'var(--muted-2)' : 'var(--moss-dark)' }}>
+                      <span style={{ fontSize: 17, fontWeight: 600 }} id={`seat-${x.id}`}>{x.name}</span>
+                      <span style={{ fontSize: 14.5, fontWeight: 600, color: !cur ? 'var(--muted)' : left === 0 ? 'var(--muted-2)' : 'var(--moss-dark)' }}>
                         {!cur ? '' : left === 0 ? t.full : t.left(left)}
                       </span>
                     </div>
@@ -144,7 +147,7 @@ export default function SlotPicker({ lang, slots, seats, preselected, change }: 
                   </div>
                 );
               })}
-              <div role="status" style={{ borderTop: '1px solid var(--line)', paddingTop: 12, fontSize: 14.5, fontWeight: 600, color: seated === party ? 'var(--moss-dark)' : 'var(--ochre-dark)' }}>
+              <div role="status" style={{ borderTop: '1px solid var(--line)', paddingTop: 12, fontSize: 16, fontWeight: 600, color: seated === party ? 'var(--moss-dark)' : 'var(--ochre-dark)' }}>
                 {t.seatsChosen(seated, party)}
               </div>
               <input type="hidden" name="seats" value={JSON.stringify(seats.map((x) => ({ seatTypeId: x.id, count: seatCount[x.id] })).filter((x) => x.count > 0))} />
@@ -158,7 +161,7 @@ export default function SlotPicker({ lang, slots, seats, preselected, change }: 
         {change && cur?.clash ? (
           // The chosen time overlaps another sign-up: keep that one (and pick again), or cancel it and move here.
           <>
-            <p role="status" style={{ margin: 0, fontSize: 14.5, fontWeight: 600, color: 'var(--ochre-dark)', textAlign: 'center' }}>{t.clashAsk(cur.clash.names)}</p>
+            <p role="status" style={{ margin: 0, fontSize: 16, fontWeight: 600, color: 'var(--ochre-dark)', textAlign: 'center' }}>{t.clashAsk(cur.clash.names)}</p>
             <button className="btn" type="submit" name="replace" value={cur.clash.ids.join(',')} disabled={pending}>
               {pending ? t.moving : t.clashReplace(cur.clash.names, cur.short)}
             </button>

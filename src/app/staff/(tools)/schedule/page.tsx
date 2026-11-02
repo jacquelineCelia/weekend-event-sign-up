@@ -38,14 +38,14 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
   return (
     <div className="staffbody">
       <aside className="staffside scrollside" aria-label={t.activities} style={{ maxWidth: 360 }}>
-        <h2 className="h2" style={{ fontSize: 18, color: 'var(--ink-2)' }}>{t.activities}</h2>
+        <h2 className="h2" style={{ fontSize: 19.5, color: 'var(--ink-2)' }}>{t.activities}</h2>
         <FilterList lang={lang} label={t.searchActivities} placeholder={t.searchActivitiesHint} noun="activity" 
           items={acts.map((a) => ({
             key: a.id,
             search: `${a.name} ${a.name_zh} ${a.place} ${a.place_zh} ${a.instructor} ${a.instructor_zh}`,
             node: (
           <Link className="session" href={href({ a: a.id })} aria-current={a.id === cur?.id ? 'true' : undefined} style={{ padding: '13px 18px', borderRadius: 18 }}>
-            <span className={`serif${zhBold(localText(a.name, a.name_zh, lang))}`} style={{ fontSize: 16 }}>{nameRuns(localText(a.name, a.name_zh, lang))}</span>
+            <span className={`serif${zhBold(localText(a.name, a.name_zh, lang))}`} style={{ fontSize: 17.5 }}>{nameRuns(localText(a.name, a.name_zh, lang))}</span>
             <span className="meta">
               {t.actMeta(a.slots, a.spots, dayText(day, 'label', lang))}
               {!a.name_zh || !a.place_zh || (a.description && !a.description_zh) || (a.instructor && !a.instructor_zh) ? (
@@ -60,7 +60,7 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
           }))} />
         {acts.length === 0 && allActs.length > 0 ? <p className="muted" style={{ margin: 4 }}>{t.allActsFinished(dayText(day, 'label', lang))}</p> : null}
         {finished > 0 ? (
-          <Link href={href({ a: cur && !done(cur) ? cur.id : '', past: !showPast })} style={{ fontSize: 14, fontWeight: 600, color: 'var(--moss)', padding: '0 4px' }}>
+          <Link href={href({ a: cur && !done(cur) ? cur.id : '', past: !showPast })} style={{ fontSize: 15.5, fontWeight: 600, color: 'var(--moss)', padding: '0 4px' }}>
             {showPast ? t.hideFinishedActs : t.showFinishedActs(finished)}
           </Link>
         ) : null}
@@ -72,15 +72,15 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
       <main className="staffmain" style={{ gap: 18 }}>
         {isNew ? (
           <>
-            <h1 className="h1" style={{ fontSize: 34 }}>{t.newActivity}</h1>
+            <h1 className="h1" style={{ fontSize: 35.5 }}>{t.newActivity}</h1>
             <ActivityForm activity={null} lang={lang} />
           </>
         ) : cur ? (
           <>
             <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-end', gap: 14 }}>
               <div className="stack" style={{ gap: 4 }}>
-                <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--moss)' }}>{t.sessionsLength(localText(cur.place, cur.place_zh, lang), cur.duration_min)}{cur.instructor ? ` · ${t.ledBy(localText(cur.instructor, cur.instructor_zh, lang))}` : ''}</span>
-                <h1 className={`h1${zhBold(localText(cur.name, cur.name_zh, lang))}`} style={{ fontSize: 34 }}>{nameRuns(localText(cur.name, cur.name_zh, lang))}</h1>
+                <span style={{ fontSize: 15.5, fontWeight: 600, color: 'var(--moss)' }}>{t.sessionsLength(localText(cur.place, cur.place_zh, lang), cur.duration_min)}{cur.instructor ? ` · ${t.ledBy(localText(cur.instructor, cur.instructor_zh, lang))}` : ''}</span>
+                <h1 className={`h1${zhBold(localText(cur.name, cur.name_zh, lang))}`} style={{ fontSize: 35.5 }}>{nameRuns(localText(cur.name, cur.name_zh, lang))}</h1>
               </div>
               <nav className="segment" aria-label={t.dayNav} style={{ minWidth: 280 }}>
                 {EVENT.days.map((d) => (

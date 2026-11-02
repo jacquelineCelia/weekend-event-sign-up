@@ -88,15 +88,15 @@ export default function DetailsForm({ lang, smsFrom, eventName, holdId, secondsL
       </div>
 
       <section className="pad stack" style={{ gap: 14, padding: '8px 20px 20px' }}>
-        <h1 className="h1" style={{ fontSize: 30 }}>{known ? t.welcomeBack(known.first) : t.almostThere}</h1>
+        <h1 className="h1" style={{ fontSize: 31.5 }}>{known ? t.welcomeBack(known.first) : t.almostThere}</h1>
         <div className="summary">
           <div className="stack" style={{ gap: 4 }}>
-            <span className={`serif${zhBold(summary.activity)}`} style={{ fontSize: 19 }}>{nameRuns(summary.activity)}</span>
+            <span className={`serif${zhBold(summary.activity)}`} style={{ fontSize: 20.5 }}>{nameRuns(summary.activity)}</span>
             <span className="sub">{summary.when}</span>
-            <span style={{ fontSize: 13.5, fontWeight: 600, marginTop: 4 }}>{summary.spots}</span>
+            <span style={{ fontSize: 15, fontWeight: 600, marginTop: 4 }}>{summary.spots}</span>
           </div>
           <form action={changeTimeAction.bind(null, holdId)}>
-            <button className="change" type="submit" style={{ background: 'transparent', color: 'var(--on-dark)', fontSize: 14, fontWeight: 600, minHeight: 44, padding: '0 14px', border: '1px solid #5c7a63', borderRadius: 999, cursor: 'pointer' }}>{t.change}</button>
+            <button className="change" type="submit" style={{ background: 'transparent', color: 'var(--on-dark)', fontSize: 15.5, fontWeight: 600, minHeight: 44, padding: '0 14px', border: '1px solid #5c7a63', borderRadius: 999, cursor: 'pointer' }}>{t.change}</button>
           </form>
         </div>
       </section>
@@ -120,11 +120,11 @@ export default function DetailsForm({ lang, smsFrom, eventName, holdId, secondsL
                 <a href="/terms" target="_blank" rel="noopener">{t.terms}</a> · <a href="/privacy" target="_blank" rel="noopener">{t.privacy}</a>
               </p>
               <label className="check"><input type="checkbox" name="remindEmail" checked={mail} onChange={(e) => setMail(e.target.checked)} /> {t.byEmail}</label>
-              {!sms && !mail ? <span className="note" role="status" style={{ fontSize: 13, padding: '9px 12px', borderRadius: 12 }}>{t.noReminderWarn}</span> : null}
+              {!sms && !mail ? <span className="note" role="status" style={{ fontSize: 14.5, padding: '9px 12px', borderRadius: 12 }}>{t.noReminderWarn}</span> : null}
             </div>
           </fieldset>
 
-          <label className="check" style={{ alignItems: 'flex-start', fontSize: 14, color: 'var(--ink-2)' }}>
+          <label className="check" style={{ alignItems: 'flex-start', fontSize: 15.5, color: 'var(--ink-2)' }}>
             <input type="checkbox" name="remember" defaultChecked /> {t.rememberMe}
           </label>
 
@@ -158,15 +158,15 @@ function OverlapPanel({ lang, holdId, conflict, email, pending }: { lang: Lang; 
   );
   return (
     <div ref={ref} className="note stack" role="alert" style={{ gap: 12, padding: '16px 16px 18px' }}>
-      <strong style={{ fontSize: 15.5 }}>{t.overlapTitle}</strong>
+      <strong style={{ fontSize: 17 }}>{t.overlapTitle}</strong>
       {conflict.owned ? (
         <>
           <p style={{ margin: 0 }}>{t.overlapOwned}</p>
           <ul className="stack" style={{ listStyle: 'none', margin: 0, padding: 0, gap: 8 }}>
             {conflict.items.map((c) => (
               <li key={c.id} className="stack" style={{ gap: 2, background: 'var(--paper)', color: 'var(--ink)', borderRadius: 14, padding: '10px 14px' }}>
-                <span className={`serif${zhBold(c.activity)}`} style={{ fontSize: 17 }}>{nameRuns(c.activity)}</span>
-                <span style={{ fontSize: 13, color: 'var(--muted)' }}>{c.when} · {c.place} · {t.spots(c.partySize)}</span>
+                <span className={`serif${zhBold(c.activity)}`} style={{ fontSize: 18.5 }}>{nameRuns(c.activity)}</span>
+                <span style={{ fontSize: 14.5, color: 'var(--muted)' }}>{c.when} · {c.place} · {t.spots(c.partySize)}</span>
                 <input type="hidden" name="replace" value={c.id} />
               </li>
             ))}

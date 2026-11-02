@@ -114,8 +114,8 @@ export default async function ActivityPage({
         <LangToggle lang={lang} />
       </div>
       <section className="pad stack" style={{ gap: 12, padding: '8px 20px 22px' }}>
-        <h1 className={`h1${zhBold(a.name)}`} style={{ fontSize: 34 }}>{nameRuns(a.name)}</h1>
-        {a.instructor ? <p className="led-by" style={{ margin: 0, fontSize: 15 }}>{t.ledBy(a.instructor)}</p> : null}
+        <h1 className={`h1${zhBold(a.name)}`} style={{ fontSize: 35.5 }}>{nameRuns(a.name)}</h1>
+        {a.instructor ? <p className="led-by" style={{ margin: 0, fontSize: 16.5 }}>{t.ledBy(a.instructor)}</p> : null}
         {a.description ? <p className="lede">{a.description}</p> : null}
         <div className="pills"><span>{a.place}</span><span>{fmtDurationL(a.durationMin, lang)}</span></div>
       </section>

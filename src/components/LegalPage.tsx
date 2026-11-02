@@ -15,9 +15,9 @@ export default function LegalPage({ lang, doc }: { lang: Lang; doc: LegalDoc }) 
         <LangToggle lang={lang} />
       </div>
       <article className="legal">
-        <h1 className="h1" style={{ fontSize: 30, margin: '6px 0 4px' }}>{doc.title}</h1>
-        <p className="muted" style={{ fontSize: 13 }}>{doc.updated}</p>
-        {doc.note ? <p className="muted" style={{ fontSize: 13 }}>{doc.note}</p> : null}
+        <h1 className="h1" style={{ fontSize: 31.5, margin: '6px 0 4px' }}>{doc.title}</h1>
+        <p className="muted" style={{ fontSize: 14.5 }}>{doc.updated}</p>
+        {doc.note ? <p className="muted" style={{ fontSize: 14.5 }}>{doc.note}</p> : null}
         <p>{doc.intro}</p>
         {doc.sections.map((s) => (
           <section key={s.h}>

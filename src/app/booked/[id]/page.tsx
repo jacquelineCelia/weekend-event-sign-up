@@ -32,7 +32,7 @@ export default async function Booked({ params }: { params: Promise<{ id: string 
       <div className="pad stack" style={{ gap: 24, padding: '12px 20px 28px' }}>
         <div className="stack" style={{ gap: 14, alignItems: 'flex-start' }}>
           <span className="leafmark"><Sprout /></span>
-          <h1 className="h1" style={{ fontSize: 34 }}>{t.youreIn(first)}</h1>
+          <h1 className="h1" style={{ fontSize: 35.5 }}>{t.youreIn(first)}</h1>
           <p className="lede">
             {t.allSet}{b.personEmail ? t.confirmationTo(b.personEmail) : ''}
           </p>
@@ -40,21 +40,21 @@ export default async function Booked({ params }: { params: Promise<{ id: string 
 
         <article className="ticket">
           <div className="top">
-            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--moss)' }}>{day ? dayText(day, 'long', lang) : ''}</span>
-            <span className={`serif${zhBold(activity)}`} style={{ fontSize: 24 }}>{nameRuns(activity)}</span>
-            <span style={{ fontSize: 15, color: 'var(--ink-2)' }}>
+            <span style={{ fontSize: 14.5, fontWeight: 600, color: 'var(--moss)' }}>{day ? dayText(day, 'long', lang) : ''}</span>
+            <span className={`serif${zhBold(activity)}`} style={{ fontSize: 25.5 }}>{nameRuns(activity)}</span>
+            <span style={{ fontSize: 16.5, color: 'var(--ink-2)' }}>
               {fmtTimeL(b.startsAt, lang)} – {fmtTimeL(addMinutes(b.startsAt, b.durationMin), lang)} · {place}
             </span>
-            {instructor ? <span className="led-by" style={{ fontSize: 14 }}>{t.ledBy(instructor)}</span> : null}
+            {instructor ? <span className="led-by" style={{ fontSize: 15.5 }}>{t.ledBy(instructor)}</span> : null}
           </div>
           <div className="mid">
             <div className="stack" style={{ gap: 2 }}>
-              <span className="muted" style={{ fontSize: 12.5 }}>{t.party}</span>
-              <span style={{ fontSize: 17, fontWeight: 600 }}>{t.spots(b.partySize)}</span>
-              {b.seats.length ? <span style={{ fontSize: 13.5, color: 'var(--ink-2)' }}>{seatLine(b.seats, lang)}</span> : null}
+              <span className="muted" style={{ fontSize: 14 }}>{t.party}</span>
+              <span style={{ fontSize: 18.5, fontWeight: 600 }}>{t.spots(b.partySize)}</span>
+              {b.seats.length ? <span style={{ fontSize: 15, color: 'var(--ink-2)' }}>{seatLine(b.seats, lang)}</span> : null}
             </div>
             <div className="stack" style={{ gap: 2 }}>
-              <span className="muted" style={{ fontSize: 12.5 }}>{t.checkInCode}</span>
+              <span className="muted" style={{ fontSize: 14 }}>{t.checkInCode}</span>
               <span className="code">{b.code}</span>
             </div>
           </div>
@@ -74,7 +74,7 @@ export default async function Booked({ params }: { params: Promise<{ id: string 
           </div>
         </div>
 
-        <p className="muted" style={{ margin: 0, fontSize: 13.5, lineHeight: 1.55 }}>
+        <p className="muted" style={{ margin: 0, fontSize: 15, lineHeight: 1.55 }}>
           {t.doorNote}
         </p>
       </div>

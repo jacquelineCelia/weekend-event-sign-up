@@ -42,7 +42,7 @@ export default function ActivityForm({ activity, lang }: { activity: A; lang: La
       <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
         <button className="btn" type="submit" disabled={pending} style={{ minHeight: 48 }}>{pending ? t.saving : activity ? t.saveDetails : t.createActivity}</button>
         {state?.error ? <span className="error" role="alert">{state.error}</span> : null}
-        {state?.saved ? <span role="status" style={{ color: 'var(--moss-dark)', fontSize: 14 }}>{t.saved}</span> : null}
+        {state?.saved ? <span role="status" style={{ color: 'var(--moss-dark)', fontSize: 15.5 }}>{t.saved}</span> : null}
       </div>
     </form>
   );

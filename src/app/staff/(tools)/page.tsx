@@ -81,7 +81,7 @@ export default async function CheckIn({ searchParams }: { searchParams: Promise<
             <Link key={d.key} href={href({ day: d.key })} aria-current={d.key === day.key ? 'true' : undefined}>{dayText(d, 'label', lang)}</Link>
           ))}
         </nav>
-        <h2 className="h2" style={{ fontSize: 18, color: 'var(--ink-2)', margin: '8px 0 0' }}>{t.sessions}</h2>
+        <h2 className="h2" style={{ fontSize: 19.5, color: 'var(--ink-2)', margin: '8px 0 0' }}>{t.sessions}</h2>
         <FilterList lang={lang} label={t.searchSessions} placeholder={t.searchSessionsHint} noun="session" 
           items={sessions.map((s) => {
             const tg = tag(s);
@@ -94,7 +94,7 @@ export default async function CheckIn({ searchParams }: { searchParams: Promise<
                     <span style={{ fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{fmtTime(s.startsAt)}</span>
                     {tg ? <span className={`stag ${tg.now ? 'now' : ''}`}>{tg.text}</span> : null}
                   </span>
-                  <span className={`serif${zhBold(name(s))}`} style={{ fontSize: 17 }}>{nameRuns(name(s))}</span>
+                  <span className={`serif${zhBold(name(s))}`} style={{ fontSize: 18.5 }}>{nameRuns(name(s))}</span>
                   <span className="meta">{t.sessionMeta(place(s), s.booked, s.capacity, s.arrived)}</span>
                 </Link>
               ),
@@ -104,7 +104,7 @@ export default async function CheckIn({ searchParams }: { searchParams: Promise<
           : sessions.length === 0 ? <p className="muted">{t.allSessionsFinished(dayText(day, 'label', lang))}</p> : null}
         {finished > 0 ? (
           <Link href={href({ slot: sel && (showPast ? ends(sel) > now : true) ? sel.slotId : undefined, past: !showPast })}
-            style={{ fontSize: 14, fontWeight: 600, color: 'var(--moss)', padding: '4px' }}>
+            style={{ fontSize: 15.5, fontWeight: 600, color: 'var(--moss)', padding: '4px' }}>
             {showPast ? t.hideFinishedSessions : t.showFinishedSessions(finished)}
           </Link>
         ) : null}
@@ -114,11 +114,11 @@ export default async function CheckIn({ searchParams }: { searchParams: Promise<
         <main className="staffmain">
           <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-end', gap: 12 }}>
             <div className="stack" style={{ gap: 4 }}>
-              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--moss)' }}>{dayText(day, 'short', lang)} · {fmtTime(sel.startsAt)} · {place(sel)}</span>
-              <h1 className={`h1${zhBold(name(sel))}`} style={{ fontSize: 34 }}>{nameRuns(name(sel))}</h1>
-              {sel.instructor ? <span className="muted" style={{ fontSize: 14 }}>{t.ledBy(localText(sel.instructor, sel.instructorZh, lang))}</span> : null}
+              <span style={{ fontSize: 15.5, fontWeight: 600, color: 'var(--moss)' }}>{dayText(day, 'short', lang)} · {fmtTime(sel.startsAt)} · {place(sel)}</span>
+              <h1 className={`h1${zhBold(name(sel))}`} style={{ fontSize: 35.5 }}>{nameRuns(name(sel))}</h1>
+              {sel.instructor ? <span className="muted" style={{ fontSize: 15.5 }}>{t.ledBy(localText(sel.instructor, sel.instructorZh, lang))}</span> : null}
             </div>
-            <Link className="btn" style={{ minHeight: 50, background: 'var(--forest)', fontSize: 15 }} href={`/staff/walk-in?slot=${sel.slotId}`}>
+            <Link className="btn" style={{ minHeight: 50, background: 'var(--forest)', fontSize: 16.5 }} href={`/staff/walk-in?slot=${sel.slotId}`}>
               <Plus size={18} /> {t.addWalkIn}
             </Link>
           </div>
@@ -129,11 +129,11 @@ export default async function CheckIn({ searchParams }: { searchParams: Promise<
             <div className="stack"><span>{t.openSpots}</span><span style={{ color: 'var(--ochre)' }}>{Math.max(0, sel.capacity - sel.booked)}</span></div>
           </div>
           {seating.length ? (
-            <p style={{ margin: 0, fontSize: 14, color: 'var(--ink-2)' }}>
+            <p style={{ margin: 0, fontSize: 15.5, color: 'var(--ink-2)' }}>
               <b>{t.seatingBooked}</b>{lang === 'en' ? ' ' : ''}{seating.map((x) => `${x.name} ${x.booked}/${x.capacity}`).join(' · ')}
             </p>
           ) : null}
-          {note ? <div className="note" role="status" style={{ fontSize: 14 }}>{note}</div> : null}
+          {note ? <div className="note" role="status" style={{ fontSize: 15.5 }}>{note}</div> : null}
           <Roster key={sel.slotId} rows={people} lang={lang} />
         </main>
       ) : null}

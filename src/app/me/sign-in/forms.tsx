@@ -19,11 +19,11 @@ export function AskForm({ lang, codesByText }: { lang: Lang; codesByText: string
   return (
     <form action={action} className="pad stack" style={{ gap: 18, padding: '20px 20px 24px' }}>
       <span className="leafmark" style={{ width: 52, height: 52 }}><Leaf size={26} /></span>
-      <h1 className="h1" style={{ fontSize: 31 }}>{t.welcomeBackTitle}</h1>
+      <h1 className="h1" style={{ fontSize: 32.5 }}>{t.welcomeBackTitle}</h1>
       <p className="lede">{t.signinLede}</p>
       <div className="field">
         <label htmlFor="who">{t.phoneOrEmail}</label>
-        <input id="who" name="who" className="input" style={{ minHeight: 54, fontSize: 17 }} autoComplete="email tel"
+        <input id="who" name="who" className="input" style={{ minHeight: 54, fontSize: 18.5 }} autoComplete="email tel"
           defaultValue={state?.value ?? ''} aria-invalid={!!state?.error} aria-describedby={state?.error ? 'who-err' : undefined} required />
         {state?.error ? <span id="who-err" className="error">{errorText(lang, state.error)}</span> : null}
         {codesByText ? null : <span className="hint">{t.signinSmsNote} <a href="/terms">{t.terms}</a> · <a href="/privacy">{t.privacy}</a></span>}
@@ -44,23 +44,23 @@ export function CodeForm({ lang, ticket, to, many, via }: { lang: Lang; ticket: 
   return (
     <form action={action} className="pad stack" style={{ gap: 18, padding: '20px 20px 24px' }}>
       <span className="leafmark" style={{ width: 52, height: 52 }}><Bubble /></span>
-      <h1 className="h1" style={{ fontSize: 31 }}>{via === 'sms' ? t.checkTexts : t.checkEmail}</h1>
+      <h1 className="h1" style={{ fontSize: 32.5 }}>{via === 'sms' ? t.checkTexts : t.checkEmail}</h1>
       <p className="lede">
         {many ? t.sentMany(to) : t.sentIf(to)}
       </p>
       <div className="field">
         <label htmlFor="code">{t.codeLabel}</label>
         <input id="code" name="code" className="input" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9 ]*" maxLength={7}
-          style={{ minHeight: 60, fontFamily: 'var(--serif)', fontSize: 28, letterSpacing: '0.4em', textAlign: 'center' }}
+          style={{ minHeight: 60, fontFamily: 'var(--serif)', fontSize: 29.5, letterSpacing: '0.4em', textAlign: 'center' }}
           aria-invalid={!!state?.error} aria-describedby={state?.error ? 'code-err' : undefined} autoFocus required />
         {state?.error ? <span id="code-err" className="error" role="alert">{errorText(lang, state.error)}</span> : null}
       </div>
       <button className="btn" type="submit" disabled={pending}>{pending ? t.checking : t.showMine}</button>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <Link href="/me/sign-in" style={{ fontSize: 14, fontWeight: 600, minHeight: 44, display: 'inline-flex', alignItems: 'center' }}>
+        <Link href="/me/sign-in" style={{ fontSize: 15.5, fontWeight: 600, minHeight: 44, display: 'inline-flex', alignItems: 'center' }}>
           {t.differentWho}
         </Link>
-        <Link href="/me/sign-in" style={{ fontSize: 14, fontWeight: 600, minHeight: 44, display: 'inline-flex', alignItems: 'center' }}>
+        <Link href="/me/sign-in" style={{ fontSize: 15.5, fontWeight: 600, minHeight: 44, display: 'inline-flex', alignItems: 'center' }}>
           {t.resend}
         </Link>
       </div>

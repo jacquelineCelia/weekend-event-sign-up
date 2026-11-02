@@ -69,7 +69,7 @@ export default function WalkInForm({ options, initialKey, initialSlot, lang }: {
   return (
     <form key={formKey} action={action} style={{ display: 'contents' }}>
       <div className="sheet staffmain" style={{ gap: 22 }}>
-        <h1 className="h1" style={{ fontSize: 30 }}>{t.walkInTitle}</h1>
+        <h1 className="h1" style={{ fontSize: 31.5 }}>{t.walkInTitle}</h1>
 
         <div className="field">
           <label htmlFor="act">{t.activity}</label>
@@ -87,8 +87,8 @@ export default function WalkInForm({ options, initialKey, initialSlot, lang }: {
               return (
                 <label key={s.id} className="tbtn" data-full={full}>
                   <input type="radio" name="slotId" value={s.id} checked={slotId === s.id} onChange={() => { setSlotId(s.id); setApproved(false); }} />
-                  <span style={{ fontSize: 16, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{s.time}</span>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: full ? 'var(--muted-2)' : low ? 'var(--ochre)' : 'var(--moss-dark)' }}>
+                  <span style={{ fontSize: 17.5, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{s.time}</span>
+                  <span style={{ fontSize: 14.5, fontWeight: 600, color: full ? 'var(--muted-2)' : low ? 'var(--ochre)' : 'var(--moss-dark)' }}>
                     {full ? t.full : low ? t.onlyLeft(s.remaining) : t.left(s.remaining)}
                   </span>
                 </label>
@@ -102,7 +102,7 @@ export default function WalkInForm({ options, initialKey, initialSlot, lang }: {
         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 12, padding: '16px 20px', background: 'var(--ground)', borderRadius: 20 }}>
           <div className="stack" style={{ gap: 2 }}>
             <span style={{ fontWeight: 600 }} id="party-l">{t.partySize}</span>
-            <span className="muted" style={{ fontSize: 13 }}>{t.includingSigner}</span>
+            <span className="muted" style={{ fontSize: 14.5 }}>{t.includingSigner}</span>
           </div>
           <div className="stepper" role="group" aria-labelledby="party-l">
             <button type="button" className="round" aria-label={t.smallerParty} disabled={party <= 1} onClick={() => setParty(Math.max(1, party - 1))}>−</button>
@@ -122,7 +122,7 @@ export default function WalkInForm({ options, initialKey, initialSlot, lang }: {
                 <div key={x.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
                   <div className="stack" style={{ gap: 2 }}>
                     <span style={{ fontWeight: 600 }} id={`seat-${x.id}`}>{x.name}</span>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: !slot ? 'var(--muted)' : left === 0 ? 'var(--muted-2)' : 'var(--moss-dark)' }}>{!slot ? '' : left === 0 ? t.full : t.left(left)}</span>
+                    <span style={{ fontSize: 14.5, fontWeight: 600, color: !slot ? 'var(--muted)' : left === 0 ? 'var(--muted-2)' : 'var(--moss-dark)' }}>{!slot ? '' : left === 0 ? t.full : t.left(left)}</span>
                   </div>
                   <div className="stepper" role="group" aria-labelledby={`seat-${x.id}`}>
                     <button type="button" className="round" aria-label={t.oneFewerSeat(x.name)} disabled={n <= 0} onClick={() => { setSeatWanted({ ...seatCount, [x.id]: n - 1 }); setApproved(false); }}>−</button>
@@ -143,7 +143,7 @@ export default function WalkInForm({ options, initialKey, initialSlot, lang }: {
                 ? slot.remaining === 0 ? t.overFull(party) : t.overSome(slot.remaining, party - slot.remaining)
                 : t.notEnoughSeats((seatsOver || []).map((x) => ({ name: x.name, left: seatLeft(x.id) })))}
             </span>
-            <label className="check" style={{ fontSize: 14 }}>
+            <label className="check" style={{ fontSize: 15.5 }}>
               <input type="checkbox" name="allowOver" checked={approved} onChange={(e) => setApproved(e.target.checked)} style={{ accentColor: 'var(--ochre)' }} />
               {t.allowOver}
             </label>
@@ -158,36 +158,36 @@ export default function WalkInForm({ options, initialKey, initialSlot, lang }: {
 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px 24px' }}>
           <label className="check"><input type="checkbox" name="checkInNow" checked={checkNow} onChange={(e) => setCheckNow(e.target.checked)} /> {t.checkInNow}</label>
-          <span role="radiogroup" aria-label={t.messagesIn} style={{ display: 'flex', alignItems: 'center', gap: 14, fontSize: 15 }}>
+          <span role="radiogroup" aria-label={t.messagesIn} style={{ display: 'flex', alignItems: 'center', gap: 14, fontSize: 16.5 }}>
             <span className="muted">{t.messagesIn}</span>
             <label className="check"><input type="radio" name="lang" value="en" defaultChecked /> English</label>
             <label className="check" lang="zh-Hant-TW"><input type="radio" name="lang" value="zh" /> 繁體中文</label>
             <label className="check" lang="zh-Hans-CN"><input type="radio" name="lang" value="zhs" /> 简体中文</label>
           </span>
         </div>
-        <p className="muted" style={{ fontSize: 13, margin: '-12px 0 0', lineHeight: 1.5 }}>
+        <p className="muted" style={{ fontSize: 14.5, margin: '-12px 0 0', lineHeight: 1.5 }}>
           {t.notTexted}
         </p>
-        {slot?.soon ? <span className="muted" style={{ fontSize: 13, marginTop: -12 }}>{t.soonNoReminder}</span> : null}
+        {slot?.soon ? <span className="muted" style={{ fontSize: 14.5, marginTop: -12 }}>{t.soonNoReminder}</span> : null}
       </div>
 
       <aside className="staffside" aria-label={t.summary} style={{ maxWidth: 420 }}>
         <div className="summary" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 14, borderRadius: 24, padding: '22px 22px 24px' }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: '#cfdacb' }}>{t.summary}</span>
+          <span style={{ fontSize: 14.5, fontWeight: 600, color: '#cfdacb' }}>{t.summary}</span>
           <div className="stack" style={{ gap: 4 }}>
-            <span className={`serif${zhBold(act.name)}`} style={{ fontSize: 24 }}>{nameRuns(act.name)}</span>
+            <span className={`serif${zhBold(act.name)}`} style={{ fontSize: 25.5 }}>{nameRuns(act.name)}</span>
             <span className="sub">{act.dayShort}{slot ? ` · ${slot.time}` : ''}</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #4b6152', paddingTop: 12 }}>
             <span>{t.party}</span><span style={{ fontWeight: 600 }}>{spots(party)}</span>
           </div>
           {hasSeats && seated > 0 ? (
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, fontSize: 14, color: 'var(--on-dark-2)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, fontSize: 15.5, color: 'var(--on-dark-2)' }}>
               <span>{t.seating}</span><span style={{ fontWeight: 600, textAlign: 'right' }}>{act.seats.filter((x) => seatCount[x.id] > 0).map((x) => `${x.name} × ${seatCount[x.id]}`).join(lang === 'en' ? ', ' : '、')}</span>
             </div>
           ) : null}
           {slot ? (
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, color: 'var(--on-dark-2)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 15.5, color: 'var(--on-dark-2)' }}>
               <span>{t.spotsLeftAfter}</span><span style={{ fontWeight: 600 }}>{slot.remaining - party}{over ? t.overTag : ''}</span>
             </div>
           ) : null}
@@ -199,20 +199,20 @@ export default function WalkInForm({ options, initialKey, initialSlot, lang }: {
         </div>
         {/* Only for the time it was found at: picking another time hides it. */}
         {state?.conflict && state.conflict.slotId === slotId ? (
-          <div role="alert" style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 14.5, borderRadius: 20, padding: '16px 20px', border: '1.5px solid #b07a2a', background: 'var(--ochre-pale)', color: 'var(--ochre-dark)' }}>
+          <div role="alert" style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 16, borderRadius: 20, padding: '16px 20px', border: '1.5px solid #b07a2a', background: 'var(--ochre-pale)', color: 'var(--ochre-dark)' }}>
             <span style={{ fontWeight: 600 }}>{t.alreadySignedUp(state.conflict.name)}</span>
             <ul style={{ margin: 0, paddingLeft: 18, color: 'var(--ink-2)' }}>
               {state.conflict.items.map((x) => <li key={x.id}>{x.label}</li>)}
             </ul>
             <span style={{ color: 'var(--ink-2)' }}>{t.twoPlaces}</span>
             {state.conflict.items.map((x) => <input key={x.id} type="hidden" name="clashId" value={x.id} />)}
-            <button type="submit" name="replaceClash" value="1" className="btn" disabled={pending || blocked} style={{ minHeight: 48, fontSize: 15, background: 'var(--ochre)' }}>
+            <button type="submit" name="replaceClash" value="1" className="btn" disabled={pending || blocked} style={{ minHeight: 48, fontSize: 16.5, background: 'var(--ochre)' }}>
               {t.cancelThatSignUp(state.conflict.items.length)}
             </button>
           </div>
         ) : null}
         {state?.done ? (
-          <div className="note ok" role="status" style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 14.5, borderRadius: 20, padding: '16px 20px' }}>
+          <div className="note ok" role="status" style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 16, borderRadius: 20, padding: '16px 20px' }}>
             <span style={{ fontWeight: 600 }}>{t.signedUp(state.done.name, state.done.checkedIn)}</span>
             <span>{t.code} <b style={{ letterSpacing: '0.1em' }}>{state.done.code}</b>{state.done.to ? t.confirmationSentTo(state.done.to) : ''}</span>
           </div>

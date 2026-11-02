@@ -42,7 +42,7 @@ export default function SlotEditor({ activityId, day, dayName, durationMin, init
   };
   const totalCap = rows.reduce((n, r) => n + r.capacity, 0);
   const totalBooked = rows.reduce((n, r) => n + r.booked, 0);
-  const circle = { width: 40, height: 40, borderRadius: '50%', border: '1px solid var(--line-strong)', background: 'var(--paper)', fontSize: 20, cursor: 'pointer' } as const;
+  const circle = { width: 40, height: 40, borderRadius: '50%', border: '1px solid var(--line-strong)', background: 'var(--paper)', fontSize: 21.5, cursor: 'pointer' } as const;
 
   return (
     <form action={action} className="stack" style={{ gap: 14 }}>
@@ -50,11 +50,11 @@ export default function SlotEditor({ activityId, day, dayName, durationMin, init
       <section className="roster" aria-labelledby="slots-h">
         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: 12, padding: '18px 22px', borderBottom: '1px solid var(--line)' }}>
           <h2 id="slots-h" className="h2">{t.timeSlots}</h2>
-          <span className="muted" style={{ fontSize: 13.5 }}>{t.slotCount(rows.length, totalCap, totalBooked)}</span>
+          <span className="muted" style={{ fontSize: 15 }}>{t.slotCount(rows.length, totalCap, totalBooked)}</span>
         </div>
         <div style={{ overflowX: 'auto' }}>
           <div style={{ minWidth: 640 }}>
-            <div aria-hidden="true" style={{ display: 'grid', gridTemplateColumns: '150px 100px 190px minmax(0,1fr) 48px', gap: 16, padding: '10px 22px', fontSize: 12.5, fontWeight: 600, color: 'var(--muted)' }}>
+            <div aria-hidden="true" style={{ display: 'grid', gridTemplateColumns: '150px 100px 190px minmax(0,1fr) 48px', gap: 16, padding: '10px 22px', fontSize: 14, fontWeight: 600, color: 'var(--muted)' }}>
               <span>{t.starts}</span><span>{t.ends}</span><span>{t.capacity}</span><span>{t.booked}</span><span />
             </div>
             {rows.map((r, i) => {
@@ -74,18 +74,18 @@ export default function SlotEditor({ activityId, day, dayName, durationMin, init
                       aria-label={t.startTimeAria(i + 1)} onChange={(e) => e.target.value && set(r.key, { time: e.target.value })} />
                     <span style={{ color: 'var(--ink-2)' }}>{fmt(toMin(r.time) + durationMin)}</span>
                     {seatTotal !== null ? (
-                      <span style={{ fontSize: 14, color: 'var(--ink-2)' }} title={t.fromSeatingTitle}><b style={{ fontFamily: 'var(--serif)', fontSize: 20, fontWeight: 400 }}>{r.capacity}</b> · {t.fromSeating}</span>
+                      <span style={{ fontSize: 15.5, color: 'var(--ink-2)' }} title={t.fromSeatingTitle}><b style={{ fontFamily: 'var(--serif)', fontSize: 21.5, fontWeight: 400 }}>{r.capacity}</b> · {t.fromSeating}</span>
                     ) : (
                     <div className="stepper">
                       <button type="button" style={{ ...circle, opacity: r.capacity <= minCap ? 0.4 : 1 }} disabled={r.capacity <= minCap}
                         aria-label={t.lowerCap(fmt(toMin(r.time)))} onClick={() => set(r.key, { capacity: r.capacity - 1 })}>−</button>
                       <input type="number" className="input" min={minCap} max={1000} value={r.capacity} aria-label={t.capFor(fmt(toMin(r.time)))}
                         onChange={(e) => set(r.key, { capacity: Math.max(minCap, Math.min(1000, Number(e.target.value) || minCap)) })}
-                        style={{ width: 70, minHeight: 40, textAlign: 'center', padding: 0, fontFamily: 'var(--serif)', fontSize: 20 }} />
+                        style={{ width: 70, minHeight: 40, textAlign: 'center', padding: 0, fontFamily: 'var(--serif)', fontSize: 21.5 }} />
                       <button type="button" style={circle} aria-label={t.raiseCap(fmt(toMin(r.time)))} onClick={() => set(r.key, { capacity: r.capacity + 1 })}>+</button>
                     </div>
                     )}
-                    <span style={{ fontSize: 14, fontWeight: 600, color: r.booked === 0 ? 'var(--muted)' : r.booked >= r.capacity ? 'var(--ochre)' : 'var(--moss-dark)' }}>
+                    <span style={{ fontSize: 15.5, fontWeight: 600, color: r.booked === 0 ? 'var(--muted)' : r.booked >= r.capacity ? 'var(--ochre)' : 'var(--moss-dark)' }}>
                       {r.booked === 0 ? t.noBookings : t.bookedOpen(r.booked, r.booked >= r.capacity, r.capacity - r.booked)}
                     </span>
                     <button type="button" disabled={locked} title={locked ? t.hasBookingsTitle : t.deleteSlotTitle}
@@ -95,7 +95,7 @@ export default function SlotEditor({ activityId, day, dayName, durationMin, init
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" /></svg>
                     </button>
                   </div>
-                  {note ? <span style={{ fontSize: 13, color: c || moved ? 'var(--ochre-dark)' : r.id === null ? 'var(--moss-dark)' : 'var(--muted)' }}>{note}</span> : null}
+                  {note ? <span style={{ fontSize: 14.5, color: c || moved ? 'var(--ochre-dark)' : r.id === null ? 'var(--moss-dark)' : 'var(--muted)' }}>{note}</span> : null}
                 </div>
               );
             })}
@@ -107,7 +107,7 @@ export default function SlotEditor({ activityId, day, dayName, durationMin, init
             <Plus size={18} /> {t.addSlot}
           </button>
           {seatTotal === null ? (
-          <label style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 14, color: 'var(--ink-2)' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 15.5, color: 'var(--ink-2)' }}>
             {t.newSlotsStart}
             <input type="number" min={1} max={1000} value={defCap} onChange={(e) => setDefCap(Math.max(1, Number(e.target.value) || 1))} className="input" style={{ width: 80, minHeight: 40, textAlign: 'center', padding: 0 }} />
           </label>
@@ -115,14 +115,14 @@ export default function SlotEditor({ activityId, day, dayName, durationMin, init
         </div>
       </section>
 
-      <p className="muted" style={{ margin: 0, fontSize: 13.5 }}>
+      <p className="muted" style={{ margin: 0, fontSize: 15 }}>
         {seatTotal !== null ? t.slotsFootSeats : t.slotsFoot}
       </p>
 
       <div style={{ position: 'sticky', bottom: 0, background: 'var(--paper)', border: '1px solid var(--line)', borderRadius: 18, padding: '12px 18px', display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', alignItems: 'center', gap: 12 }}>
         {state?.error ? <span className="error" role="alert" style={{ marginRight: 'auto' }}>{state.error}</span>
-          : dirty ? <span style={{ marginRight: 'auto', color: 'var(--ochre-dark)', fontWeight: 600, fontSize: 14 }}>{t.unsaved}</span>
-          : <span role="status" style={{ marginRight: 'auto', color: 'var(--moss-dark)', fontSize: 14 }}>
+          : dirty ? <span style={{ marginRight: 'auto', color: 'var(--ochre-dark)', fontWeight: 600, fontSize: 15.5 }}>{t.unsaved}</span>
+          : <span role="status" style={{ marginRight: 'auto', color: 'var(--moss-dark)', fontSize: 15.5 }}>
               {justSaved !== null ? t.savedSlots(justSaved) : t.allSaved}
             </span>}
         {dirty ? <button type="button" className="btn ghost" style={{ minHeight: 46 }} onClick={() => setRows(start)}>{t.discard}</button> : null}

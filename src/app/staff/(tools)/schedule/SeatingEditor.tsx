@@ -23,7 +23,7 @@ export default function SeatingEditor({ activityId, dayKey, initial, justSaved, 
   const total = rows.reduce((n, r) => n + r.capacity, 0);
   const missing = rows.some((r) => !r.name.trim());
   const set = (key: string, patch: Partial<Row>) => setRows(rows.map((r) => (r.key === key ? { ...r, ...patch } : r)));
-  const circle = { width: 40, height: 40, borderRadius: '50%', border: '1px solid var(--line-strong)', background: 'var(--paper)', fontSize: 20, cursor: 'pointer' } as const;
+  const circle = { width: 40, height: 40, borderRadius: '50%', border: '1px solid var(--line-strong)', background: 'var(--paper)', fontSize: 21.5, cursor: 'pointer' } as const;
 
   return (
     <form action={action} className="roster" aria-labelledby="seat-h">
@@ -31,7 +31,7 @@ export default function SeatingEditor({ activityId, dayKey, initial, justSaved, 
       <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: 12, padding: '18px 22px', borderBottom: '1px solid var(--line)' }}>
         <div className="stack" style={{ gap: 4 }}>
           <h2 id="seat-h" className="h2">{t.seating}</h2>
-          <span className="muted" style={{ fontSize: 13.5 }}>
+          <span className="muted" style={{ fontSize: 15 }}>
             {rows.length ? t.seatingWith(total) : t.seatingNone}
           </span>
         </div>
@@ -39,7 +39,7 @@ export default function SeatingEditor({ activityId, dayKey, initial, justSaved, 
       {rows.length ? (
         <div style={{ overflowX: 'auto' }}>
           <div style={{ minWidth: 640 }}>
-            <div aria-hidden="true" style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr) 190px 48px', gap: 16, padding: '10px 22px', fontSize: 12.5, fontWeight: 600, color: 'var(--muted)' }}>
+            <div aria-hidden="true" style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr) 190px 48px', gap: 16, padding: '10px 22px', fontSize: 14, fontWeight: 600, color: 'var(--muted)' }}>
               <span>{t.seatType}</span><span lang="zh-Hant-TW">中文名稱 <span lang="en" style={{ fontWeight: 400 }}>(繁體)</span></span><span>{t.perSlot}</span><span />
             </div>
             {rows.map((r, i) => {
@@ -56,7 +56,7 @@ export default function SeatingEditor({ activityId, dayKey, initial, justSaved, 
                         aria-label={t.fewerSeats(r.name)} onClick={() => set(r.key, { capacity: r.capacity - 1 })}>−</button>
                       <input type="number" className="input" min={minCap} max={1000} value={r.capacity} aria-label={t.seatsPerSlot(r.name)}
                         onChange={(e) => set(r.key, { capacity: Math.max(minCap, Math.min(1000, Number(e.target.value) || minCap)) })}
-                        style={{ width: 70, minHeight: 40, textAlign: 'center', padding: 0, fontFamily: 'var(--serif)', fontSize: 20 }} />
+                        style={{ width: 70, minHeight: 40, textAlign: 'center', padding: 0, fontFamily: 'var(--serif)', fontSize: 21.5 }} />
                       <button type="button" style={circle} aria-label={t.moreSeats(r.name)} onClick={() => set(r.key, { capacity: r.capacity + 1 })}>+</button>
                     </div>
                     <button type="button" disabled={r.inUse} title={r.inUse ? t.seatInUseTitle : t.removeSeatTitle}
@@ -66,7 +66,7 @@ export default function SeatingEditor({ activityId, dayKey, initial, justSaved, 
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" /></svg>
                     </button>
                   </div>
-                  {minCap > 0 ? <span style={{ fontSize: 13, color: 'var(--muted)' }}>{t.seatMinNote(minCap)}</span> : null}
+                  {minCap > 0 ? <span style={{ fontSize: 14.5, color: 'var(--muted)' }}>{t.seatMinNote(minCap)}</span> : null}
                 </div>
               );
             })}
@@ -80,8 +80,8 @@ export default function SeatingEditor({ activityId, dayKey, initial, justSaved, 
         </button>
         <span style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
           {state?.error ? <span className="error" role="alert">{state.error}</span>
-            : dirty ? <span style={{ color: 'var(--ochre-dark)', fontWeight: 600, fontSize: 14 }}>{t.unsaved}</span>
-            : justSaved ? <span role="status" style={{ color: 'var(--moss-dark)', fontSize: 14 }}>{t.seatingSaved(total)}</span> : null}
+            : dirty ? <span style={{ color: 'var(--ochre-dark)', fontWeight: 600, fontSize: 15.5 }}>{t.unsaved}</span>
+            : justSaved ? <span role="status" style={{ color: 'var(--moss-dark)', fontSize: 15.5 }}>{t.seatingSaved(total)}</span> : null}
           {dirty ? <button type="button" className="btn ghost" style={{ minHeight: 46 }} onClick={() => setRows(start)}>{t.discard}</button> : null}
           <button type="submit" className="btn" style={{ minHeight: 46 }} disabled={!dirty || pending || missing}>
             {pending ? t.saving : missing ? t.nameEachSeat : t.saveSeating}

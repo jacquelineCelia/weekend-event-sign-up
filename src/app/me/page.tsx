@@ -99,14 +99,14 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
         <span style={{ display: 'flex', alignItems: 'center', gap: 4, minWidth: 0 }}>
         <LangToggle lang={lang} />
         <form action={signOutAction}>
-          <button type="submit" className="back" style={{ border: 0, background: 'transparent', cursor: 'pointer', fontWeight: 500, color: 'var(--muted)', fontSize: 13 }}>
+          <button type="submit" className="back" style={{ border: 0, background: 'transparent', cursor: 'pointer', fontWeight: 500, color: 'var(--muted)', fontSize: 14.5 }}>
             {who} · {t.signOut}
           </button>
         </form>
         </span>
       </div>
       <section className="pad stack" style={{ gap: 6, padding: '8px 20px 18px' }}>
-        <h1 className="h1" style={{ fontSize: 31 }}>{t.yourWeekend}</h1>
+        <h1 className="h1" style={{ fontSize: 32.5 }}>{t.yourWeekend}</h1>
         <p className="muted" style={{ margin: 0 }}>
           {t.nActivities(rows.length)}{household ? ` · ${names.join(isChinese(lang) ? '、' : ', ')}` : ''}
         </p>
@@ -121,18 +121,18 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
             <path d="M0 62 C 100 50, 220 60, 350 54 L350 70 L0 70 Z" fill="#4E6E57" />
           </svg>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative' }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: '#cfdacb' }}>{t.upNext} · {upNextLabel}</span>
-            <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: '0.14em', background: 'var(--paper)', color: 'var(--ink)', padding: '4px 10px', borderRadius: 999 }}>{next.code}</span>
+            <span style={{ fontSize: 14.5, fontWeight: 600, color: '#cfdacb' }}>{t.upNext} · {upNextLabel}</span>
+            <span style={{ fontSize: 16.5, fontWeight: 700, letterSpacing: '0.14em', background: 'var(--paper)', color: 'var(--ink)', padding: '4px 10px', borderRadius: 999 }}>{next.code}</span>
           </div>
           <div className="stack" style={{ gap: 4, position: 'relative' }}>
-            <span className={`serif${zhBold(next.activity_name)}`} style={{ fontSize: 24 }}>{nameRuns(next.activity_name)}</span>
+            <span className={`serif${zhBold(next.activity_name)}`} style={{ fontSize: 25.5 }}>{nameRuns(next.activity_name)}</span>
             <span className="sub">{fmtTimeL(next.starts_at, lang)} · {next.place} · {t.spots(next.party_size)}{household ? ` · ${next.person_name}` : ''}</span>
             {next.instructor ? <span className="sub">{t.ledBy(next.instructor)}</span> : null}
             {seatsOf(next.id) ? <span className="sub">{t.seatingIs(seatsOf(next.id))}</span> : null}
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, position: 'relative' }}>
             {next.remind_sms || next.remind_email ? (
-              <span style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 13.5, color: 'var(--on-dark-2)' }}>
+              <span style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 15, color: 'var(--on-dark-2)' }}>
                 <Bell size={16} /> {t.reminderAt(fmtTimeL(addMinutes(next.starts_at, -15), lang))}
               </span>
             ) : <span />}
@@ -146,7 +146,7 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
 
       {byDay.map(({ d, items }) => (
         <section key={d.key} className="pad stack" style={{ gap: 10, paddingBottom: 20 }}>
-          <h2 className="h2" style={{ fontSize: 18, color: 'var(--ink-2)' }}>{dayText(d, 'long', lang)}</h2>
+          <h2 className="h2" style={{ fontSize: 19.5, color: 'var(--ink-2)' }}>{dayText(d, 'long', lang)}</h2>
           {items.map((r) => {
             const started = r.starts_at.getTime() <= now;
             const done = addMinutes(r.starts_at, r.duration_min).getTime() <= now;
@@ -155,11 +155,11 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
                 <div style={{ display: 'flex', gap: 14 }}>
                   <div style={{ width: 88, flex: 'none', whiteSpace: 'nowrap', fontWeight: 700, color: 'var(--moss)', fontVariantNumeric: 'tabular-nums', paddingTop: 2 }}>{fmtTimeL(r.starts_at, lang)}</div>
                   <div className="stack" style={{ gap: 3, minWidth: 0 }}>
-                    <span className={`serif${zhBold(r.activity_name)}`} style={{ fontSize: 17, color: started ? 'var(--muted-2)' : undefined }}>{nameRuns(r.activity_name)}</span>
-                    {household ? <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--ochre)' }}>{r.person_name}</span> : null}
-                    <span className="muted" style={{ fontSize: 13.5 }}>{r.place} · {t.spots(r.party_size)} · {t.code(r.code)}</span>
-                    {seatsOf(r.id) ? <span style={{ fontSize: 13.5, color: started ? 'var(--muted-2)' : 'var(--ink-2)' }}>{t.seatingIs(seatsOf(r.id))}</span> : null}
-                    <span style={{ fontSize: 12.5, fontWeight: 600, marginTop: 4, color: started ? 'var(--muted-2)' : 'var(--moss-dark)' }}>
+                    <span className={`serif${zhBold(r.activity_name)}`} style={{ fontSize: 18.5, color: started ? 'var(--muted-2)' : undefined }}>{nameRuns(r.activity_name)}</span>
+                    {household ? <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--ochre)' }}>{r.person_name}</span> : null}
+                    <span className="muted" style={{ fontSize: 15 }}>{r.place} · {t.spots(r.party_size)} · {t.code(r.code)}</span>
+                    {seatsOf(r.id) ? <span style={{ fontSize: 15, color: started ? 'var(--muted-2)' : 'var(--ink-2)' }}>{t.seatingIs(seatsOf(r.id))}</span> : null}
+                    <span style={{ fontSize: 14, fontWeight: 600, marginTop: 4, color: started ? 'var(--muted-2)' : 'var(--moss-dark)' }}>
                       {done ? t.done : started ? t.happening
                         : r.id === next?.id ? upNextStatus(r)
                         : r.remind_sms || r.remind_email ? t.reminder15 : t.noReminderShort}
@@ -168,7 +168,7 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
                 </div>
                 {!started ? (
                   <div style={{ display: 'flex', gap: 8, paddingLeft: 102, flexWrap: 'wrap' }}>
-                    <Link className="btn ghost" style={{ minHeight: 42, fontSize: 14, padding: '0 14px' }} href={`/activity/${r.activity_id}?slot=${r.slot_id}&change=${r.id}`}>{t.changeTime}</Link>
+                    <Link className="btn ghost" style={{ minHeight: 42, fontSize: 15.5, padding: '0 14px' }} href={`/activity/${r.activity_id}?slot=${r.slot_id}&change=${r.id}`}>{t.changeTime}</Link>
                     {seatChoices.has(r.id) ? <SeatChanger lang={lang} bookingId={r.id} party={r.party_size} choices={seatChoices.get(r.id)!} /> : null}
                     <CancelButton lang={lang} bookingId={r.id} />
                   </div>

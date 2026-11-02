@@ -36,7 +36,7 @@ export default async function Browse({ searchParams }: { searchParams: Promise<{
     <div className="phone">
       <header className="hero">
         <div className="meta">
-          <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Leaf /> {dateRangeL(lang)}</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap' }}><Leaf /> {dateRangeL(lang)}</span>
           <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <LangToggle lang={lang} onDark />
             <Link href="/me"><Calendar /> {t.mySignups}</Link>
@@ -53,7 +53,7 @@ export default async function Browse({ searchParams }: { searchParams: Promise<{
             <span className="box" data-on={onlyOpen}>{onlyOpen ? <Check /> : null}</span>
             {t.hasOpen}
           </Link>
-          <span className="muted" aria-live="polite" style={{ fontSize: 13 }}>
+          <span className="muted" aria-live="polite" style={{ fontSize: 14.5 }}>
             {acts.length === total ? t.countAll(total) : t.countSome(acts.length, total)}
           </span>
         </div>

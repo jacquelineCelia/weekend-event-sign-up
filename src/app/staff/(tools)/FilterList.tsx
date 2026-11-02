@@ -34,13 +34,13 @@ export default function FilterList({ items, label, placeholder, noun, lang }: {
         {q ? <button type="button" aria-label={t.clearSearch} onClick={() => setQ('')}>×</button> : null}
       </div>
       {words.length ? (
-        <span className="muted" role="status" style={{ fontSize: 13, padding: '0 4px' }}>
+        <span className="muted" role="status" style={{ fontSize: 14.5, padding: '0 4px' }}>
           {t.shownOf(shown.length, items.length, noun)}
         </span>
       ) : null}
       {shown.map((it) => <div key={it.key} style={{ display: 'contents' }}>{it.node}</div>)}
       {words.length && shown.length === 0 ? (
-        <p className="muted" style={{ margin: '4px', fontSize: 14 }}>
+        <p className="muted" style={{ margin: '4px', fontSize: 15.5 }}>
           {t.nothingMatches(q.trim())} <button type="button" onClick={() => setQ('')} style={{ border: 0, background: 'none', color: 'var(--moss)', fontWeight: 600, cursor: 'pointer', padding: 0 }}>{t.clear}</button>
         </p>
       ) : null}
