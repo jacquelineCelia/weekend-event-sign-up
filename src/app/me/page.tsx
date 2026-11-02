@@ -87,7 +87,7 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
   // Several people signed in together: the shared phone or email, kept short so the top bar fits.
   const who = names.length < 2 ? names[0]
     : viewer.kind === 'phone' ? t.peopleOn(names.length, viewer.phone.slice(-4))
-    : people[0].email ? briefEmail(people[0].email) : names.join(', ');
+    : people[0].email ? briefEmail(people[0].email).replace('@', '\u200B@') : names.join(', '); // on a narrow phone, wrap before the @
   const nextDay = next ? dayOf(next.starts_at) : null;
   // Next activity's row: "Up next · Reminder at 12:45 PM" (or "· No reminder"; just "Up next" once the reminder time has passed).
   const upNextStatus = (r: Row) => {
