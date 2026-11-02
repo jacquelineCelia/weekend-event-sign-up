@@ -91,9 +91,8 @@ button, input, select { font: inherit; color: inherit; }
 .led-by { color: var(--moss); font-weight: 600; }
 .badge { flex: none; font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 999px; white-space: nowrap; background: var(--stone); color: var(--muted); }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
-/* One row of times per day on an activity card: the day on the left, its times beside it. */
-.dayrow { display: flex; align-items: center; gap: 10px; }
-.dayrow-label { flex: none; width: 76px; font-size: 13px; font-weight: 600; color: var(--moss-dark); }
+/* The date at the start of a time chip on an activity card ("11/14（六）"). */
+.chip-date { font-weight: 600; margin-right: -2px; }
 .chip { display: inline-flex; gap: 6px; align-items: center; padding: 9px 12px; border-radius: 999px; font-size: 13px; line-height: 1; text-decoration: none; min-height: 36px; }
 .chip b { font-weight: 700; font-variant-numeric: tabular-nums; }
 .chip.open { background: var(--sage); color: var(--moss-dark); }

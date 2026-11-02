@@ -77,29 +77,29 @@ export default async function Browse({ searchParams }: { searchParams: Promise<{
                   const times = a.upcoming.filter((s) => dayOf(s.startsAt)?.key === d.key);
                   if (!times.length) return null;
                   return (
-                    <div key={d.key} className="dayrow">
-                      <span className="dayrow-label">{dayText(d, 'short', lang)}</span>
-                      <div className="chips">
-                        {times.map((s) => {
-                          // Full times stay in the list, greyed out, so people can see when the activity runs.
-                          if (s.remaining === 0) {
-                            return (
-                              <span key={s.id} className="chip full" aria-label={t.chipFullAria(a.name, fmtDayTimeL(s.startsAt, lang))}>
-                                <b>{fmtTimeL(s.startsAt, lang)}</b>
-                                <span>{t.full}</span>
-                              </span>
-                            );
-                          }
-                          const low = isLow(s.remaining, s.capacity);
+                    // One row of chips per day; each chip carries its own date ("11/14（六） 下午 2:50").
+                    <div key={d.key} className="chips">
+                      {times.map((s) => {
+                        // Full times stay in the list, greyed out, so people can see when the activity runs.
+                        if (s.remaining === 0) {
                           return (
-                            <Link key={s.id} className={`chip ${low ? 'low' : 'open'}`} href={`/activity/${a.id}?slot=${s.id}`}
-                              aria-label={t.chipAria(a.name, fmtDayTimeL(s.startsAt, lang), s.remaining)}>
+                            <span key={s.id} className="chip full" aria-label={t.chipFullAria(a.name, fmtDayTimeL(s.startsAt, lang))}>
+                              <span className="chip-date">{dayText(d, 'short', lang)}</span>
                               <b>{fmtTimeL(s.startsAt, lang)}</b>
-                              <span>{low ? t.onlyLeft(s.remaining) : t.left(s.remaining)}</span>
-                            </Link>
+                              <span>{t.full}</span>
+                            </span>
                           );
-                        })}
-                      </div>
+                        }
+                        const low = isLow(s.remaining, s.capacity);
+                        return (
+                          <Link key={s.id} className={`chip ${low ? 'low' : 'open'}`} href={`/activity/${a.id}?slot=${s.id}`}
+                            aria-label={t.chipAria(a.name, fmtDayTimeL(s.startsAt, lang), s.remaining)}>
+                            <span className="chip-date">{dayText(d, 'short', lang)}</span>
+                            <b>{fmtTimeL(s.startsAt, lang)}</b>
+                            <span>{low ? t.onlyLeft(s.remaining) : t.left(s.remaining)}</span>
+                          </Link>
+                        );
+                      })}
                     </div>
                   );
                 })}
