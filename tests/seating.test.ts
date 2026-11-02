@@ -81,6 +81,23 @@ describe('seating', () => {
     await expect(changeSlot(g.bookingId, g.personId, slotB)).resolves.toBeUndefined();
   });
 
+  it('changes the number of guests together with the seating', async () => {
+    const r = await book(slotA, 1, 1);
+    await book(slotA, 1, 3); // every seat is now taken: chairs 2 of 2, ground 4 of 4
+    const size = async () => (await getBooking(r.bookingId))!.partySize;
+    await expect(changeSeats(r.bookingId, r.personId, [{ seatTypeId: chair, count: 1 }, { seatTypeId: ground, count: 2 }], 3)).rejects.toMatchObject({ code: 'not_enough_spots' });
+    await expect(changeSeats(r.bookingId, r.personId, [{ seatTypeId: chair, count: 1 }, { seatTypeId: ground, count: 1 }], 1)).rejects.toMatchObject({ code: 'seats_needed' });
+    await changeSeats(r.bookingId, r.personId, [{ seatTypeId: ground, count: 1 }], 1);
+    expect(await size()).toBe(1);
+    expect((await getBooking(r.bookingId))!.seats.map((s) => [s.seatTypeId, s.count])).toEqual([[ground, 1]]);
+    // The freed high chair can be taken again, by growing back.
+    await changeSeats(r.bookingId, r.personId, [{ seatTypeId: chair, count: 1 }, { seatTypeId: ground, count: 1 }], 2);
+    expect(await size()).toBe(2);
+    // Over the seat type's room, even when the slot itself has room.
+    const g = await book(slotB, 0, 4);
+    await expect(changeSeats(g.bookingId, g.personId, [{ seatTypeId: ground, count: 5 }], 5)).rejects.toMatchObject({ code: 'seats_taken' });
+  });
+
   it('changes a sign-up’s seating, counting its own seats as free', async () => {
     const r = await book(slotA, 2, 1); // both high chairs
     await book(slotA, 0, 3);           // ground: 4 of 4 taken

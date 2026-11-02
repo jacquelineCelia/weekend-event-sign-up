@@ -79,10 +79,13 @@ export async function changeTimeAction(bookingId: string, _prev: ChangeState, fo
   redirect('/me?moved=1');
 }
 
-/** "Change seating" on a sign-up card: same party, same time, different seats. */
+/** "Change guests" / "Change guests or seating" on a sign-up card: same time, new party size and seats. */
 export async function changeSeatsAction(bookingId: string, _prev: ChangeState, form: FormData): Promise<ChangeState> {
   const { ids } = await currentOwners();
   if (!ids.length) redirect('/me/sign-in');
+  const guests = z.coerce.number().int().min(0).max(49).safeParse(form.get('guests'));
+  const before = z.coerce.number().int().safeParse(form.get('partyBefore'));
+  if (!guests.success) return { error: { code: 'slot_not_found' } };
   let seats: { seatTypeId: string; count: number }[];
   try {
     seats = z.array(z.object({ seatTypeId: z.string().uuid(), count: z.number().int().min(0).max(50) })).max(20).parse(JSON.parse(String(form.get('seats') ?? '[]')));
@@ -90,11 +93,11 @@ export async function changeSeatsAction(bookingId: string, _prev: ChangeState, f
     return { error: { code: 'seats_needed' } };
   }
   try {
-    await changeSeats(bookingId, ids, seats);
+    await changeSeats(bookingId, ids, seats, guests.data + 1);
   } catch (err) {
     if (err instanceof BookingError) return { error: { code: err.code, remaining: err.remaining } };
     throw err;
   }
   revalidatePath('/me');
-  redirect('/me?seated=1');
+  redirect(before.success && before.data === guests.data + 1 ? '/me?seated=1' : '/me?party=1');
 }

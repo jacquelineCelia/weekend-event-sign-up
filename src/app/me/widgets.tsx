@@ -80,24 +80,56 @@ export function RatePicker({ lang, bookingId, name, score }: { lang: Lang; booki
 export type SeatChoice = { id: string; name: string; free: number; count: number };
 
 /**
- * "Change seating": a button that opens seat steppers for the same party at the same time.
- * Saves only when everyone has a seat and something changed.
+ * "Change guests" (or "Change guests or seating", for activities with seating choices): opens a guest
+ * stepper, plus seat steppers when there are seat types, for the same time. Lowering the guests takes
+ * seats away from the last type chosen; raising them asks for more seats before saving.
  */
-export function SeatChanger({ lang, bookingId, party, choices }: { lang: Lang; bookingId: string; party: number; choices: SeatChoice[] }) {
+export function PartyChanger({ lang, bookingId, party, maxParty, choices }: { lang: Lang; bookingId: string; party: number; maxParty: number; choices: SeatChoice[] }) {
   const t = dict(lang);
   const [open, setOpen] = useState(false);
   const start = Object.fromEntries(choices.map((x) => [x.id, x.count]));
   const [count, setCount] = useState<Record<string, number>>(start);
+  const [size, setSize] = useState(party);
   const [state, action, pending] = useActionState<ChangeState, FormData>(changeSeatsAction.bind(null, bookingId), null);
+  const label = choices.length ? t.changeGuestsSeating : t.changeGuests;
   if (!open) {
-    return <button type="button" className="btn ghost" style={small} onClick={() => { setCount(start); setOpen(true); }}>{t.changeSeating}</button>;
+    return <button type="button" className="btn ghost" style={small} onClick={() => { setCount(start); setSize(party); setOpen(true); }}>{label}</button>;
   }
-  const seated = choices.reduce((n, x) => n + (count[x.id] ?? 0), 0);
-  const changed = choices.some((x) => (count[x.id] ?? 0) !== x.count);
+  const seatedIn = (c: Record<string, number>) => choices.reduce((n, x) => n + (c[x.id] ?? 0), 0);
+  const seated = seatedIn(count);
+  const needSeats = choices.length > 0 && seated !== size;
+  const changed = size !== party || choices.some((x) => (count[x.id] ?? 0) !== x.count);
+  const lower = () => {
+    const next = size - 1;
+    setSize(next);
+    let extra = seatedIn(count) - next;
+    if (extra <= 0) return;
+    const trimmed = { ...count };
+    for (const x of [...choices].reverse()) {
+      const off = Math.min(extra, trimmed[x.id] ?? 0);
+      trimmed[x.id] = (trimmed[x.id] ?? 0) - off;
+      extra -= off;
+    }
+    setCount(trimmed);
+  };
   return (
-    <form action={action} className="stack" role="group" aria-labelledby={`seat-h-${bookingId}`}
+    <form action={action} className="stack" role="group" aria-labelledby={`party-h-${bookingId}`}
       style={{ flexBasis: 'calc(100% + 102px)', marginLeft: -102, order: 1, gap: 10, border: '1px solid var(--line)', borderRadius: 16, padding: '12px 14px', background: 'var(--ground)' }}>
-      <span id={`seat-h-${bookingId}`} style={{ fontSize: 15.5, fontWeight: 600 }}>{t.changeSeating} · <span style={{ fontWeight: 500, color: seated === party ? 'var(--moss-dark)' : 'var(--ochre-dark)' }}>{t.seatsChosen(seated, party)}</span></span>
+      <span id={`party-h-${bookingId}`} style={{ fontSize: 15.5, fontWeight: 600 }}>
+        {label}
+        {choices.length ? <> · <span style={{ fontWeight: 500, color: seated === size ? 'var(--moss-dark)' : 'var(--ochre-dark)' }}>{t.seatsChosen(seated, size)}</span></> : null}
+      </span>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+        <div className="stack" style={{ gap: 2, minWidth: 0 }}>
+          <span style={{ fontSize: 16, fontWeight: 600 }} id={`guests-${bookingId}`}>{t.guests}</span>
+          <span style={{ fontSize: 14, color: size >= maxParty ? 'var(--ochre-dark)' : 'var(--muted)' }}>{size >= maxParty ? t.noMoreSpots : t.notCountingYou}</span>
+        </div>
+        <div className="stepper" role="group" aria-labelledby={`guests-${bookingId}`}>
+          <button type="button" className="round" aria-label={t.removeGuest} disabled={size <= 1} onClick={lower}><Minus /></button>
+          <output aria-live="polite">{size - 1}</output>
+          <button type="button" className="round" aria-label={t.addGuest} disabled={size >= maxParty} onClick={() => setSize(size + 1)}><Plus /></button>
+        </div>
+      </div>
       {choices.map((x) => {
         const n = count[x.id] ?? 0;
         return (
@@ -109,16 +141,18 @@ export function SeatChanger({ lang, bookingId, party, choices }: { lang: Lang; b
             <div className="stepper" role="group" aria-labelledby={`seat-${bookingId}-${x.id}`}>
               <button type="button" className="round" aria-label={t.removeSeat(x.name)} disabled={n <= 0} onClick={() => setCount({ ...count, [x.id]: n - 1 })}><Minus /></button>
               <output aria-live="polite">{n}</output>
-              <button type="button" className="round" aria-label={t.addSeat(x.name)} disabled={n >= x.free || seated >= party} onClick={() => setCount({ ...count, [x.id]: n + 1 })}><Plus /></button>
+              <button type="button" className="round" aria-label={t.addSeat(x.name)} disabled={n >= x.free || seated >= size} onClick={() => setCount({ ...count, [x.id]: n + 1 })}><Plus /></button>
             </div>
           </div>
         );
       })}
+      <input type="hidden" name="guests" value={size - 1} />
+      <input type="hidden" name="partyBefore" value={party} />
       <input type="hidden" name="seats" value={JSON.stringify(choices.map((x) => ({ seatTypeId: x.id, count: count[x.id] ?? 0 })).filter((x) => x.count > 0))} />
       {state?.error ? <p className="error" role="alert" style={{ margin: 0 }}>{errorText(lang, state.error)}</p> : null}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        <button type="submit" className="btn" style={small} disabled={pending || seated !== party || !changed}>
-          {pending ? t.savingSeating : seated !== party ? t.moreSeats(party - seated) : t.saveSeating}
+        <button type="submit" className="btn" style={small} disabled={pending || needSeats || !changed}>
+          {pending ? t.updating : needSeats ? t.moreSeats(size - seated) : t.saveChanges}
         </button>
         <button type="button" className="btn ghost" style={small} onClick={() => setOpen(false)}>{t.keepIt}</button>
       </div>

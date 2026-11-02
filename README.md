@@ -19,8 +19,8 @@ Built with Next.js 16 and Postgres (runs on Supabase as is).
 - **Seating choices** (e.g. Tea Ceremony: "High chair" and "Ground seat"): staff add seat types,
   each with a capacity that applies to every time slot, under Schedule & capacity → Seating; the
   slot's capacity becomes their total. When attendees say how many are coming they choose a seat for
-  each person (a party can mix types). Attendees can change their seating later from My sign-ups (same party,
-  same time). Seating shows on the ticket, My sign-ups, the confirmation
+  each person (a party can mix types). Attendees can change their guests and seating later from My sign-ups (same
+  time). Seating shows on the ticket, My sign-ups, the confirmation
   and reminder emails, the staff roster, and the walk-in form.
 - **No overlapping sign-ups**: one person (one name on an email) can't sign up for two activities whose times
   overlap (back-to-back is fine). The details screen explains the clash and offers to cancel the
@@ -33,7 +33,8 @@ Built with Next.js 16 and Postgres (runs on Supabase as is).
   clash and can cancel it and sign the guest up for the new time).
 - **My sign-ups** (`/me`): remembered on the device; on a new device, sign in with a 6-digit code
   sent by email (to every email on a shared phone), or by text when a mobile number is entered and
-  `TWILIO_CODES_FROM` is set (see Deploy). Change time, cancel, and rate finished activities 1–10.
+  `TWILIO_CODES_FROM` is set (see Deploy). Change time, change the number of guests
+  (together with seating, for activities with seating choices; the code stays the same), cancel, and rate finished activities 1–10.
 - Confirmation message right away, reminder 15 minutes before each activity.
 - **Texting follows carrier (A2P 10DLC) rules**: the "By text message" box starts unticked, with the
   consent wording and Terms/Privacy links beside it; only people who tick it get texts (walk-ins

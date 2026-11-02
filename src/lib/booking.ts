@@ -394,10 +394,10 @@ export async function changeSlot(bookingId: string, personId: string | string[],
 }
 
 /**
- * Changes how a confirmed, not-yet-started sign-up is seated (same party size, same time).
- * The new seats need room, not counting the ones this sign-up already has.
+ * Changes a confirmed, not-yet-started sign-up's seating and, when `partySize` is given, its party
+ * size (same time). New spots and seats need room, not counting the ones this sign-up already has.
  */
-export async function changeSeats(bookingId: string, personId: string | string[], seats: SeatPick[]) {
+export async function changeSeats(bookingId: string, personId: string | string[], seats: SeatPick[], partySize?: number) {
   return withTx(async (c) => {
     const b = await c.query<{ slot_id: string; party_size: number; upcoming: boolean }>(
       `select b.slot_id, b.party_size, s.starts_at > now() as upcoming
@@ -407,8 +407,17 @@ export async function changeSeats(bookingId: string, personId: string | string[]
     );
     const row = b.rows[0];
     if (!row || !row.upcoming) throw new BookingError('booking_not_found', 'That booking could not be found.');
-    await lockSlot(c, row.slot_id);
-    const picks = await checkSeats(c, row.slot_id, row.party_size, seats, { exclude: bookingId });
+    const size = partySize ?? row.party_size;
+    if (!Number.isInteger(size) || size < 1 || size > 50) throw new RangeError('partySize must be between 1 and 50');
+    const { remaining } = await lockSlot(c, row.slot_id, bookingId);
+    // Growing needs room (the party's own spots count as free); shrinking is always fine.
+    if (size > row.party_size && remaining < size) {
+      throw new BookingError('not_enough_spots', `Only ${remaining} left at this time.`, remaining);
+    }
+    const picks = await checkSeats(c, row.slot_id, size, seats, { exclude: bookingId });
+    if (size !== row.party_size) {
+      await c.query('update bookings set party_size = $2, checked_in = least(checked_in, $2) where id = $1', [bookingId, size]);
+    }
     if (!picks.length) return; // this activity has no seating choices
     await c.query('delete from booking_seats where booking_id = $1', [bookingId]);
     await saveSeats(c, bookingId, picks);

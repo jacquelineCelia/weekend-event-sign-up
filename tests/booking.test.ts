@@ -1,6 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
+import { getBooking } from '@/lib/queries';
 import { getPool } from '@/lib/db';
-import { BookingError, cancelBooking, changeSlot, confirmBooking, holdSpots, releaseHold, walkInBooking } from '@/lib/booking';
+import { BookingError, cancelBooking, changeSeats, changeSlot, confirmBooking, holdSpots, releaseHold, walkInBooking } from '@/lib/booking';
 import { contactSchema, normalizePhone } from '@/lib/contact';
 
 const pool = getPool();
@@ -78,6 +79,20 @@ describe('holds and confirmation', () => {
     const { holdId } = await holdSpots(slotId, 1);
     await confirmBooking(holdId, { contact: jordan, remindSms: true, remindEmail: true });
     await expect(confirmBooking(holdId, { contact: jordan, remindSms: true, remindEmail: true })).rejects.toBeInstanceOf(BookingError);
+  });
+
+  it('changes the number of guests within what is free, keeping the code', async () => {
+    const act = (await pool.query<{ activity_id: string }>('select activity_id from slots where id = $1', [slotId])).rows[0].activity_id;
+    const small = (await pool.query<{ id: string }>(`insert into slots (activity_id, starts_at, capacity) values ($1, '2099-01-01 15:00:00+00', 4) returning id`, [act])).rows[0].id;
+    const r = await confirmBooking((await holdSpots(small, 2)).holdId, { contact: jordan, remindSms: false, remindEmail: true });
+    await changeSeats(r.bookingId, r.personId, [], 4);
+    const b = await getBooking(r.bookingId);
+    expect(b).toMatchObject({ partySize: 4, code: r.code });
+    await expect(changeSeats(r.bookingId, r.personId, [], 5)).rejects.toMatchObject({ code: 'not_enough_spots' });
+    await pool.query('update bookings set checked_in = 3 where id = $1', [r.bookingId]);
+    await changeSeats(r.bookingId, r.personId, [], 2);
+    expect((await pool.query('select party_size, checked_in from bookings where id = $1', [r.bookingId])).rows[0]).toEqual({ party_size: 2, checked_in: 2 });
+    await expect(changeSeats(r.bookingId, '00000000-0000-0000-0000-000000000000', [], 3)).rejects.toMatchObject({ code: 'booking_not_found' });
   });
 
   it('reuses the same person for a returning attendee', async () => {

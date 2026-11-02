@@ -14,7 +14,7 @@ import VenueMap, { type MapPlace } from '@/components/VenueMap';
 import { SHOW_VENUE_MAP } from '@/lib/venue-map';
 import { LegalFoot } from '@/components/LegalPage';
 import { signOutAction } from './actions';
-import { CancelButton, RatePicker, SeatChanger, type SeatChoice } from './widgets';
+import { CancelButton, PartyChanger, RatePicker, type SeatChoice } from './widgets';
 import { nameRuns } from '@/components/ActivityName';
 import FitNames from './FitNames';
 
@@ -25,7 +25,7 @@ type Row = {
   activity_name: string; place: string; place_en?: string; name_zh: string; place_zh: string; instructor: string; instructor_zh: string; activity_id: string; slot_id: string; score: number | null; person_name: string;
 };
 
-export default async function MySignups({ searchParams }: { searchParams: Promise<{ moved?: string; seated?: string }> }) {
+export default async function MySignups({ searchParams }: { searchParams: Promise<{ moved?: string; seated?: string; party?: string }> }) {
   const { viewer, ids } = await currentOwners();
   if (!viewer || !ids.length) redirect('/me/sign-in');
   const sp = await searchParams;
@@ -61,6 +61,16 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
       return { id: o.id, name: localText(o.name, o.nameZh, lang), free: (o.left[r.slot_id] ?? 0) + count, count };
     }));
   }
+  // The largest each upcoming party could grow to: what's free at that time, plus its own spots.
+  const upcoming = rows.filter((r) => r.starts_at.getTime() > requestTime());
+  const free = new Map((await getPool().query<{ slot_id: string; remaining: number }>(
+    'select slot_id, remaining from slot_availability where slot_id = any($1::uuid[])', [upcoming.map((r) => r.slot_id)],
+  )).rows.map((x) => [x.slot_id, x.remaining]));
+  const maxParty = (r: Row) => {
+    const bySlot = (free.get(r.slot_id) ?? 0) + r.party_size;
+    const seats = seatChoices.get(r.id);
+    return Math.min(50, seats ? Math.min(bySlot, seats.reduce((n, x) => n + x.free, 0)) : bySlot);
+  };
   for (const r of rows) {
     r.activity_name = localText(r.activity_name, r.name_zh, lang);
     r.place_en = r.place;
@@ -120,6 +130,7 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
         </p>
         {sp.moved ? <p className="note ok" role="status" style={{ margin: '8px 0 0' }}>{t.moved}</p> : null}
         {sp.seated ? <p className="note ok" role="status" style={{ margin: '8px 0 0' }}>{t.seatingChanged}</p> : null}
+        {sp.party ? <p className="note ok" role="status" style={{ margin: '8px 0 0' }}>{t.partyChanged}</p> : null}
       </section>
 
       {next ? (
@@ -177,7 +188,7 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
                 {!started ? (
                   <div style={{ display: 'flex', gap: 8, paddingLeft: 102, flexWrap: 'wrap' }}>
                     <Link className="btn ghost" style={{ minHeight: 42, fontSize: 15.5, padding: '0 14px' }} href={`/activity/${r.activity_id}?slot=${r.slot_id}&change=${r.id}`}>{t.changeTime}</Link>
-                    {seatChoices.has(r.id) ? <SeatChanger lang={lang} bookingId={r.id} party={r.party_size} choices={seatChoices.get(r.id)!} /> : null}
+                    <PartyChanger key={`${r.party_size}:${seatsOf(r.id)}`} lang={lang} bookingId={r.id} party={r.party_size} maxParty={maxParty(r)} choices={seatChoices.get(r.id) ?? []} />
                     <CancelButton lang={lang} bookingId={r.id} />
                   </div>
                 ) : done ? (
