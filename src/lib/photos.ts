@@ -18,7 +18,7 @@ export const MAX_PER_IP = 60;
 const IP_WINDOW_MIN = 10;
 
 export type PhotoError = 'name' | 'topic' | 'image' | 'busy' | 'full';
-export type PhotoTopic = { id: string; name: string };
+export type PhotoTopic = { id: string; name: string; hint: string };
 export type ShowPhoto = { id: string; name: string; topic: string };
 
 const uuid = z.string().uuid();
@@ -30,10 +30,10 @@ export function hashIp(ip: string) {
 }
 
 export async function photoTopics(lang: Lang): Promise<PhotoTopic[]> {
-  const { rows } = await getPool().query<{ id: string; name: string; name_zh: string }>(
-    'select id, name, name_zh from photo_topics order by sort_order, name',
+  const { rows } = await getPool().query<{ id: string; name: string; name_zh: string; hint: string; hint_zh: string }>(
+    'select id, name, name_zh, hint, hint_zh from photo_topics order by sort_order, name',
   );
-  return rows.map((r) => ({ id: r.id, name: localText(r.name, r.name_zh, lang) }));
+  return rows.map((r) => ({ id: r.id, name: localText(r.name, r.name_zh, lang), hint: localText(r.hint, r.hint_zh, lang) }));
 }
 
 export async function savePhoto(

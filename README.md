@@ -64,8 +64,8 @@ Built with Next.js 16 and Postgres (runs on Supabase as is).
 - **Photo sharing** (`/photos`): enter a name, choose one of nine topics and upload a photo; it goes on
   the big screen (see Photo show below). The browser resizes each photo to 1600px and strips its
   location data. Photos are stored in the database, with uploads stopping at 400 MB in total so a full
-  database can't affect sign-ups. To rename topics, update `photo_topics` by `sort_order` (Chinese typed
-  in Traditional).
+  database can't affect sign-ups. Each topic has a title and a prompt (`photo_topics`, Chinese typed in Traditional;
+  the big screen shows only the title).
 
 **Staff** (`/staff`, behind a shared passcode)
 - **Language**: an EN | 繁中 | 简中 switch in the staff bar (and on the sign-in page) shows every staff

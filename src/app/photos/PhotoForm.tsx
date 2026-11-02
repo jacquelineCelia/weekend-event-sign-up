@@ -32,7 +32,7 @@ async function prepare(file: File): Promise<Blob> {
 
 type Errors = { name?: string; topic?: string; photo?: string; form?: string };
 
-export default function PhotoForm({ lang, topics }: { lang: Lang; topics: { id: string; name: string }[] }) {
+export default function PhotoForm({ lang, topics }: { lang: Lang; topics: { id: string; name: string; hint: string }[] }) {
   const t = dict(lang).photos;
   const [name, setName] = useState('');
   const [topic, setTopic] = useState('');
@@ -136,7 +136,10 @@ export default function PhotoForm({ lang, topics }: { lang: Lang; topics: { id: 
           {topics.map((x) => (
             <label key={x.id} className="photo-topic" data-on={topic === x.id}>
               <input type="radio" name="topic" value={x.id} checked={topic === x.id} onChange={() => setTopic(x.id)} />
-              {x.name}
+              <span className="photo-topic-text">
+                <span className="photo-topic-name">{x.name}</span>
+                <span className="photo-topic-hint">{x.hint}</span>
+              </span>
             </label>
           ))}
           {errors.topic && <span id="photo-topic-err" className="error">{errors.topic}</span>}

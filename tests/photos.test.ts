@@ -19,14 +19,16 @@ const save = (over: Partial<Parameters<typeof savePhoto>[0]> = {}, limits = {}) 
 describe('photo uploads', () => {
   it('starts with nine topics, in Chinese too', async () => {
     expect(await photoTopics('en')).toHaveLength(9);
-    expect((await photoTopics('zh'))[0].name).toBe('主題 1');
-    expect((await photoTopics('zhs'))[0].name).toBe('主题 1');
+    expect((await photoTopics('en'))[0]).toMatchObject({ name: 'Around the Corner', hint: 'Find a corner of the estate you’ve never noticed.' });
+    expect((await photoTopics('zh'))[0]).toMatchObject({ name: '轉角發現', hint: '找到一處你從未留意的莊園角落。' });
+    expect((await photoTopics('zhs'))[0]).toMatchObject({ name: '转角发现', hint: '找到一处你从未留意的庄园角落。' });
+    for (const t of await photoTopics('en')) expect(t.hint).not.toBe('');
   });
 
   it('saves a photo and shows it in the feed with its topic and tidied name', async () => {
     const r = await save({ name: '  Anna \n  Park ' });
     expect(r).toHaveProperty('id');
-    expect((await photoFeed('en')).map((p) => [p.name, p.topic])).toEqual([['Anna Park', 'Topic 1']]);
+    expect((await photoFeed('en')).map((p) => [p.name, p.topic])).toEqual([['Anna Park', 'Around the Corner']]);
     expect((await photoImage((r as { id: string }).id))?.equals(jpeg())).toBe(true);
   });
 
