@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getPool } from '@/lib/db';
+import { briefEmail } from '@/lib/contact';
 import { currentOwners } from '@/lib/viewer';
 import { EVENT, addMinutes, dayOf, dayText, fmtTimeL, isChinese, requestTime } from '@/lib/event';
 import { localText, seatLine } from '@/lib/hans';
@@ -29,7 +30,8 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
   const sp = await searchParams;
   const lang = await getLang();
   const t = dict(lang);
-  const names = (await getPool().query<{ name: string }>('select name from people where id = any($1::uuid[]) order by created_at', [ids])).rows.map((r) => r.name);
+  const people = (await getPool().query<{ name: string; email: string | null }>('select name, email from people where id = any($1::uuid[]) order by created_at', [ids])).rows;
+  const names = people.map((p) => p.name);
 
   const { rows } = await getPool().query<Row>(
     `select b.id, b.code, b.party_size, s.starts_at, a.duration_min, b.remind_sms, b.remind_email,
@@ -82,7 +84,10 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
   const minsUntil = next ? Math.round((next.starts_at.getTime() - now) / 60000) : 0;
   // Signed in with a phone several people share: label each activity with whose it is.
   const household = new Set(rows.map((r) => r.person_name)).size > 1 || (viewer.kind !== 'person' && names.length > 1);
-  const who = names.length < 2 ? names[0] : viewer.kind === 'phone' ? t.peopleOn(names.length, viewer.phone.slice(-4)) : names.join(', ');
+  // Several people signed in together: the shared phone or email, kept short so the top bar fits.
+  const who = names.length < 2 ? names[0]
+    : viewer.kind === 'phone' ? t.peopleOn(names.length, viewer.phone.slice(-4))
+    : people[0].email ? briefEmail(people[0].email) : names.join(', ');
   const nextDay = next ? dayOf(next.starts_at) : null;
   // Next activity's row: "Up next · Reminder at 12:45 PM" (or "· No reminder"; just "Up next" once the reminder time has passed).
   const upNextStatus = (r: Row) => {
@@ -98,8 +103,8 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
         <Link className="back" href="/"><Back /> {t.allActivities}</Link>
         <span style={{ display: 'flex', alignItems: 'center', gap: 4, minWidth: 0 }}>
         <LangToggle lang={lang} />
-        <form action={signOutAction}>
-          <button type="submit" className="back" style={{ border: 0, background: 'transparent', cursor: 'pointer', fontWeight: 500, color: 'var(--muted)', fontSize: 14.5 }}>
+        <form action={signOutAction} style={{ minWidth: 0 }}>
+          <button type="submit" className="back" style={{ border: 0, background: 'transparent', cursor: 'pointer', fontWeight: 500, color: 'var(--muted)', fontSize: 14.5, overflowWrap: 'anywhere' }}>
             {who} · {t.signOut}
           </button>
         </form>

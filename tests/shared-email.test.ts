@@ -1,7 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getPool } from '@/lib/db';
 import { cancelBooking, confirmBooking, holdSpots, walkInBooking } from '@/lib/booking';
-import { contactSchema, walkInContactSchema } from '@/lib/contact';
+import { briefEmail, contactSchema, walkInContactSchema } from '@/lib/contact';
 import { startLogin, verifyLogin } from '@/lib/login';
 import { outbox } from '@/lib/messaging';
 import { decodeViewer, encodeSession } from '@/lib/session';
@@ -102,6 +102,12 @@ describe('people sharing an email', () => {
     const a = await book(yoga, anna);
     await book(tea, ben);
     expect(await viewerPersonIds({ kind: 'people', personIds: [a.personId] })).toEqual([a.personId]);
+  });
+
+  it('shortens an email for the top bar', () => {
+    expect(briefEmail('parks@gmail.com')).toBe('pa•••@gmail.com');
+    expect(briefEmail('parks@yellowflower.org')).toBe('pa•••@ye•••.org');
+    expect(briefEmail('a@example.com')).toBe('a•••@example.com');
   });
 
   it('says who a reminder or time-change email is for', async () => {

@@ -17,6 +17,18 @@ export function normalizeEmail(input: string): string | null {
   return z.string().email().safeParse(v).success ? v : null;
 }
 
+/**
+ * A short form of an email for tight spaces: "parks@gmail.com" becomes "pa•••@gmail.com". Longer
+ * domains are shortened too: "parks@yellowflower.org" becomes "pa•••@ye•••.org".
+ */
+export function briefEmail(email: string) {
+  const at = email.lastIndexOf('@');
+  const domain = email.slice(at + 1);
+  const dot = domain.lastIndexOf('.');
+  const shortDomain = domain.length <= 11 || dot < 2 ? domain : `${domain.slice(0, 2)}•••${domain.slice(dot)}`;
+  return `${email.slice(0, Math.min(2, at))}•••@${shortDomain}`;
+}
+
 const raw = z.object({
   name: z.string().trim().min(1, 'name_required').max(120),
   email: z.string().trim().max(200).default(''),
