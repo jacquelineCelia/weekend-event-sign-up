@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react';
+import { Sprout } from '@/components/icons';
 import { dict, type Lang } from '@/lib/i18n';
 
 // Sharp on a 1080p screen, and small enough to upload on event Wi-Fi and to keep many photos.
@@ -108,6 +109,7 @@ export default function PhotoForm({ lang, topics }: { lang: Lang; topics: { id: 
   if (done) {
     return (
       <main className="pad photo-form photo-done" aria-live="polite">
+        <span className="leafmark" style={{ alignSelf: 'center' }}><Sprout /></span>
         <h1 className="h1">{t.doneTitle(name.trim())}</h1>
         <p className="photo-lede">{t.doneBody}</p>
         <button type="button" className="btn" onClick={another}>{t.another}</button>
