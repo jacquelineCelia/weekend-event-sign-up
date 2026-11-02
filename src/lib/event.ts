@@ -73,6 +73,14 @@ export function fmtTimeL(d: Date, lang: Lang) {
   return `${period} ${h % 12 === 0 ? 12 : h % 12}:${m}`;
 }
 
+/** Day and time together: "Sat 14 Nov, 2:50 PM" / "11/14（六）下午 2:50". Empty day part outside the event. */
+export function fmtDayTimeL(d: Date, lang: Lang) {
+  const day = dayOf(d);
+  const time = fmtTimeL(d, lang);
+  if (!day) return time;
+  return isChinese(lang) ? `${dayText(day, 'short', lang)}${time}` : `${dayText(day, 'short', lang)}, ${time}`;
+}
+
 export function fmtDurationL(min: number, lang: Lang) {
   if (lang === 'en') return fmtDuration(min);
   const [mn, hr] = lang === 'zhs' ? ['分钟', '小时'] : ['分鐘', '小時'];

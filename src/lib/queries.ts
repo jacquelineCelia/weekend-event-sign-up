@@ -36,16 +36,25 @@ const SELECT = `
     from activities a
     left join slot_availability v
       on v.activity_id = a.id
-     and (v.starts_at at time zone $1)::date = $2::date`;
+     and (v.starts_at at time zone $1)::date = any($2::date[])`;
+
+const ALL_DAYS = EVENT.days.map((d) => d.date);
 
 /** Every activity with its slots on one event day (activities with no slots that day are included, empty). */
 export async function activitiesForDay(date: string, lang: Lang = 'en') {
-  const { rows } = await getPool().query<Row>(`${SELECT} order by a.sort_order, a.name, v.starts_at`, [EVENT.timeZone, date, lang]);
+  const { rows } = await getPool().query<Row>(`${SELECT} order by a.sort_order, a.name, v.starts_at`, [EVENT.timeZone, [date], lang]);
   return group(rows, lang);
 }
 
-export async function activityForDay(id: string, date: string, lang: Lang = 'en') {
-  const { rows } = await getPool().query<Row>(`${SELECT} where a.id = $4 order by v.starts_at`, [EVENT.timeZone, date, lang, id]);
+/** Every activity with its slots over the whole weekend, in time order. */
+export async function activitiesAllDays(lang: Lang = 'en') {
+  const { rows } = await getPool().query<Row>(`${SELECT} order by a.sort_order, a.name, v.starts_at`, [EVENT.timeZone, ALL_DAYS, lang]);
+  return group(rows, lang);
+}
+
+/** One activity with its slots over the whole weekend. */
+export async function activityAllDays(id: string, lang: Lang = 'en') {
+  const { rows } = await getPool().query<Row>(`${SELECT} where a.id = $4 order by v.starts_at`, [EVENT.timeZone, ALL_DAYS, lang, id]);
   return group(rows, lang)[0] ?? null;
 }
 

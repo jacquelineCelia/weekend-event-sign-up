@@ -50,7 +50,7 @@ const en = {
   chipFullAria: (name: string, time: string) => `${name} at ${time}, full`,
   onlyLeft: (n: number) => `Only ${n} left`,
   left: (n: number) => `${n} left`,
-  dayFull: 'Everything on this day is full. Try the other day.',
+  dayFull: 'Every activity is full right now.',
   spots: (n: number) => `${n} ${n === 1 ? 'spot' : 'spots'}`,
 
   allActivities: 'All activities',
@@ -280,7 +280,7 @@ const zh: Dict = {
   chipFullAria: (name, time) => `${name}，${time}，已額滿`,
   onlyLeft: (n) => `僅剩 ${n} 位`,
   left: (n) => `剩 ${n} 位`,
-  dayFull: '這天的活動都額滿了，看看另一天吧。',
+  dayFull: '目前所有活動都額滿了。',
   spots: (n) => `${n} 位`,
 
   allActivities: '所有活動',
@@ -497,7 +497,7 @@ const zhs: Dict = {
   chipFullAria: (name, time) => `${name}，${time}，已满员`,
   onlyLeft: (n) => `仅剩 ${n} 位`,
   left: (n) => `剩 ${n} 位`,
-  dayFull: '这天的活动都满员了，看看另一天吧。',
+  dayFull: '目前所有活动都满员了。',
   spots: (n) => `${n} 位`,
 
   allActivities: '所有活动',

@@ -91,6 +91,9 @@ button, input, select { font: inherit; color: inherit; }
 .led-by { color: var(--moss); font-weight: 600; }
 .badge { flex: none; font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 999px; white-space: nowrap; background: var(--stone); color: var(--muted); }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+/* One row of times per day on an activity card: the day on the left, its times beside it. */
+.dayrow { display: flex; align-items: center; gap: 10px; }
+.dayrow-label { flex: none; width: 76px; font-size: 13px; font-weight: 600; color: var(--moss-dark); }
 .chip { display: inline-flex; gap: 6px; align-items: center; padding: 9px 12px; border-radius: 999px; font-size: 13px; line-height: 1; text-decoration: none; min-height: 36px; }
 .chip b { font-weight: 700; font-variant-numeric: tabular-nums; }
 .chip.open { background: var(--sage); color: var(--moss-dark); }
@@ -110,6 +113,7 @@ a.chip:hover { filter: brightness(0.96); }
 .slot input { position: absolute; opacity: 0; pointer-events: none; }
 .slot .radio { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #8c9688; flex: none; }
 .slot .time { font-size: 16px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.slot .slot-date { font-size: 13px; font-weight: 600; color: var(--moss); }
 .slot:has(input:checked) { border: 2px solid var(--moss); background: var(--sage-pale); margin: 0; }
 .slot:has(input:checked) .radio { border: 7px solid var(--moss); background: var(--paper); }
 .slot:has(input:focus-visible) { outline: 3px solid var(--focus); outline-offset: 2px; }

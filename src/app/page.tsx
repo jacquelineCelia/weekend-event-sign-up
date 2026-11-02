@@ -1,8 +1,8 @@
 import Link from 'next/link';
-import { activitiesForDay } from '@/lib/queries';
+import { activitiesAllDays } from '@/lib/queries';
 import { eventName } from '@/lib/hans';
 import { LegalFoot } from '@/components/LegalPage';
-import { EVENT, dateRangeL, dayByKey, dayText, fmtTimeL, isLow, requestTime } from '@/lib/event';
+import { EVENT, dateRangeL, dayOf, dayText, fmtDayTimeL, fmtTimeL, isLow, requestTime } from '@/lib/event';
 import { getLang } from '@/lib/lang';
 import { dict, zhBold } from '@/lib/i18n';
 import LangToggle from '@/components/LangToggle';
@@ -11,13 +11,13 @@ import { nameRuns } from '@/components/ActivityName';
 
 export const dynamic = 'force-dynamic';
 
-export default async function Browse({ searchParams }: { searchParams: Promise<{ day?: string; open?: string }> }) {
+export default async function Browse({ searchParams }: { searchParams: Promise<{ open?: string }> }) {
   const sp = await searchParams;
-  const day = dayByKey(sp.day);
   const onlyOpen = sp.open === '1';
   const lang = await getLang();
   const t = dict(lang);
-  const all = await activitiesForDay(day.date, lang);
+  // Every activity has only a few times over the weekend, so both days show on one list.
+  const all = await activitiesAllDays(lang);
   const [title1, title2] = t.heroTitle(eventName(lang));
   const now = requestTime();
 
@@ -29,12 +29,7 @@ export default async function Browse({ searchParams }: { searchParams: Promise<{
     .filter((a) => a.hasSlots)
     .filter((a) => !onlyOpen || a.open.length > 0);
 
-  const href = (q: { day?: string; open?: boolean }) => {
-    const p = new URLSearchParams();
-    p.set('day', q.day ?? day.key);
-    if (q.open ?? onlyOpen) p.set('open', '1');
-    return `/?${p}`;
-  };
+  const href = (q: { open: boolean }) => (q.open ? '/?open=1' : '/');
   const total = all.filter((a) => a.slots.length > 0).length;
 
   return (
@@ -53,11 +48,6 @@ export default async function Browse({ searchParams }: { searchParams: Promise<{
       </header>
 
       <div className="filterbar">
-        <nav className="segment" aria-label={t.dayNav}>
-          {EVENT.days.map((d) => (
-            <Link key={d.key} href={href({ day: d.key })} aria-current={d.key === day.key ? 'true' : undefined}>{dayText(d, 'label', lang)}</Link>
-          ))}
-        </nav>
         <div className="filterrow">
           <Link className="toggle-link" href={href({ open: !onlyOpen })} role="switch" aria-checked={onlyOpen}>
             <span className="box" data-on={onlyOpen}>{onlyOpen ? <Check /> : null}</span>
@@ -74,30 +64,41 @@ export default async function Browse({ searchParams }: { searchParams: Promise<{
           <section key={a.id} className="card" aria-labelledby={`a-${a.id}`}>
             <div className="card-head">
               <div className="stack" style={{ gap: 4, minWidth: 0 }}>
-                <Link id={`a-${a.id}`} className={`card-title${zhBold(a.name)}`} href={`/activity/${a.id}?day=${day.key}`}>{nameRuns(a.name)}</Link>
+                <Link id={`a-${a.id}`} className={`card-title${zhBold(a.name)}`} href={`/activity/${a.id}`}>{nameRuns(a.name)}</Link>
                 <span className="card-sub">{a.place}{a.instructor ? <> · <span className="led-by">{t.ledBy(a.instructor)}</span></> : null}</span>
               </div>
               {a.open.length === 0 ? <span className="badge">{t.fullyBooked}</span> : null}
             </div>
             {a.upcoming.length > 0 ? (
-              <div className="chips">
-                {a.upcoming.map((s) => {
-                  // Full times stay in the list, greyed out, so people can see when the activity runs.
-                  if (s.remaining === 0) {
-                    return (
-                      <span key={s.id} className="chip full" aria-label={t.chipFullAria(a.name, fmtTimeL(s.startsAt, lang))}>
-                        <b>{fmtTimeL(s.startsAt, lang)}</b>
-                        <span>{t.full}</span>
-                      </span>
-                    );
-                  }
-                  const low = isLow(s.remaining, s.capacity);
+              <div className="stack" style={{ gap: 8 }}>
+                {EVENT.days.map((d) => {
+                  const times = a.upcoming.filter((s) => dayOf(s.startsAt)?.key === d.key);
+                  if (!times.length) return null;
                   return (
-                    <Link key={s.id} className={`chip ${low ? 'low' : 'open'}`} href={`/activity/${a.id}?day=${day.key}&slot=${s.id}`}
-                      aria-label={t.chipAria(a.name, fmtTimeL(s.startsAt, lang), s.remaining)}>
-                      <b>{fmtTimeL(s.startsAt, lang)}</b>
-                      <span>{low ? t.onlyLeft(s.remaining) : t.left(s.remaining)}</span>
-                    </Link>
+                    <div key={d.key} className="dayrow">
+                      <span className="dayrow-label">{dayText(d, 'short', lang)}</span>
+                      <div className="chips">
+                        {times.map((s) => {
+                          // Full times stay in the list, greyed out, so people can see when the activity runs.
+                          if (s.remaining === 0) {
+                            return (
+                              <span key={s.id} className="chip full" aria-label={t.chipFullAria(a.name, fmtDayTimeL(s.startsAt, lang))}>
+                                <b>{fmtTimeL(s.startsAt, lang)}</b>
+                                <span>{t.full}</span>
+                              </span>
+                            );
+                          }
+                          const low = isLow(s.remaining, s.capacity);
+                          return (
+                            <Link key={s.id} className={`chip ${low ? 'low' : 'open'}`} href={`/activity/${a.id}?slot=${s.id}`}
+                              aria-label={t.chipAria(a.name, fmtDayTimeL(s.startsAt, lang), s.remaining)}>
+                              <b>{fmtTimeL(s.startsAt, lang)}</b>
+                              <span>{low ? t.onlyLeft(s.remaining) : t.left(s.remaining)}</span>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </div>
                   );
                 })}
               </div>

@@ -9,7 +9,8 @@ Built with Next.js 16 and Postgres (runs on Supabase as is).
 ## What's in it
 
 **Attendees** (`/`)
-- Browse 13 activities by day, see spots left per time, pick a time and party size.
+- Browse every activity with all its times over the weekend (grouped by day on each card), see spots left
+  per time, pick a time (each option shows its date) and party size.
 - Each activity can show who leads it ("Led by Teacher Zhenru"), the same at every time: on the activity list,
   the details page, the ticket, My sign-ups, the calendar file and the confirmation and reminder emails
   (not in texts, whose wording is fixed by the carrier registration).
@@ -92,7 +93,7 @@ testing (sign-in codes included).
 Tests run against a real Postgres database (set `TEST_DATABASE_URL`; it is wiped on each run):
 
 ```bash
-npm test     # 97 tests: capacity, holds, overlaps, seating, instructors, login codes, reminders, schedule edits, shared phones, Chinese
+npm test     # 100 tests: capacity, holds, overlaps, seating, instructors, login codes, reminders, schedule edits, shared phones, Chinese
 ```
 
 ## Deploy (Vercel + Supabase)
