@@ -14,7 +14,7 @@ export default async function Photos() {
   return (
     <div className="phone">
       <div className="topbar">
-        <Link className="back" href="/"><Back /> {t.activities}</Link>
+        <Link className="back" href="/"><Back /> {t.allActivities}</Link>
         <LangToggle lang={lang} />
       </div>
       <PhotoForm lang={lang} topics={await photoTopics(lang)} />

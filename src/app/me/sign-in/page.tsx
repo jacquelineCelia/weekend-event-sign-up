@@ -16,7 +16,7 @@ export default async function SignIn({ searchParams }: { searchParams: Promise<{
   return (
     <div className="phone">
       <div className="topbar">
-        <Link className="back" href="/"><Back /> {dict(lang).activities}</Link>
+        <Link className="back" href="/"><Back /> {dict(lang).allActivities}</Link>
         <LangToggle lang={lang} />
       </div>
       {step === 'ask' ? <AskForm lang={lang} codesByText={showCodeTextDisclosure() ? smsSender() : null} /> : <CodeForm lang={lang} ticket={sp.t!} to={sp.to ?? ''} many={sp.m === '1'} via={sp.via === 'sms' ? 'sms' : 'email'} />}
