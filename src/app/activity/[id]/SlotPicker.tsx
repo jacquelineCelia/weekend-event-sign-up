@@ -25,10 +25,14 @@ export type PickerSlot = {
 export type PickerSeat = { id: string; name: string; left: Record<string, number> };
 type Change = { bookingId: string; partySize: number } | null;
 
-export default function SlotPicker({ lang, slots, seats, preselected, change }: { lang: Lang; slots: PickerSlot[]; seats: PickerSeat[]; preselected: string | null; change: Change }) {
+export default function SlotPicker({ lang, slots, seats, preselected, change, start }: {
+  lang: Lang; slots: PickerSlot[]; seats: PickerSeat[]; preselected: string | null; change: Change;
+  /** Party size (guests besides the person) and seating to start with, e.g. when coming back from the details form. */
+  start?: { guests: number; seats: Record<string, number> };
+}) {
   const t = dict(lang);
   const [selected, setSelected] = useState<string | null>(preselected);
-  const [guestsWanted, setGuests] = useState(0);
+  const [guestsWanted, setGuests] = useState(start?.guests ?? 0);
   const [state, action, pending] = useActionState<FormState, FormData>(
     change ? changeTimeAction.bind(null, change.bookingId) : holdAction,
     null,
@@ -43,7 +47,7 @@ export default function SlotPicker({ lang, slots, seats, preselected, change }: 
 
   // Seating: how many of the party sit in each type. Kept within what's left at the chosen time
   // and within the party size (dropping from the last types first when the party shrinks).
-  const [seatWanted, setSeatWanted] = useState<Record<string, number>>({});
+  const [seatWanted, setSeatWanted] = useState<Record<string, number>>(start?.seats ?? {});
   const seatLeft = (id: string) => (cur ? seats.find((x) => x.id === id)?.left[cur.id] ?? 0 : 0);
   const seatCount: Record<string, number> = {};
   let room = party;

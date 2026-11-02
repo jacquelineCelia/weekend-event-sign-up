@@ -19,7 +19,7 @@ export default async function ActivityPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ slot?: string; change?: string }>;
+  searchParams: Promise<{ slot?: string; skip?: string; change?: string; guests?: string; seats?: string }>;
 }) {
   const { id } = await params;
   const sp = await searchParams;
@@ -101,7 +101,16 @@ export default async function ActivityPage({
   const canPick = (s: PickerSlot) => s.remaining > 0 && !s.tooSmall && !s.seatsShort;
   // Start on a time that's free of clashes when there is one.
   const firstOpen = slots.find((s) => canPick(s) && !s.clash)?.id ?? null;
-  const preselected = change ? firstOpen : slots.find((s) => s.id === sp.slot && canPick(s))?.id ?? firstOpen;
+  // Coming back from the details form keeps the party size and seating that were chosen. After
+  // "keep my other sign-up", the clashing time (?skip=) isn't picked again.
+  const firstOther = slots.find((s) => canPick(s) && !s.clash && s.id !== sp.skip)?.id ?? null;
+  const preselected = change ? firstOpen : slots.find((s) => s.id === sp.slot && canPick(s))?.id ?? (sp.skip ? firstOther : firstOpen);
+  const startGuests = Math.min(49, Math.max(0, Number.parseInt(sp.guests ?? '', 10) || 0));
+  const startSeats: Record<string, number> = {};
+  for (const part of (sp.seats ?? '').split(',')) {
+    const [seatId, n] = part.split(':');
+    if (seats.some((x) => x.id === seatId) && Number(n) > 0) startSeats[seatId] = Math.min(50, Math.floor(Number(n)));
+  }
 
   return (
     <div className="phone">
@@ -119,7 +128,7 @@ export default async function ActivityPage({
         {a.description ? <p className="lede">{a.description}</p> : null}
         <div className="pills"><span>{a.place}</span><span>{fmtDurationL(a.durationMin, lang)}</span></div>
       </section>
-      <SlotPicker lang={lang} slots={slots} seats={seats} preselected={preselected} change={change ? { bookingId: change.bookingId, partySize: change.partySize } : null} />
+      <SlotPicker lang={lang} slots={slots} seats={seats} preselected={preselected} start={{ guests: startGuests, seats: startSeats }} change={change ? { bookingId: change.bookingId, partySize: change.partySize } : null} />
     </div>
   );
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useActionState, useEffect, useRef, useState } from 'react';
-import { changeTimeAction, confirmAction, type Conflict, type FormState } from '@/app/actions';
+import { changeTimeAction, confirmAction, keepOtherAction, type Conflict, type FormState } from '@/app/actions';
 import { Back, Clock } from '@/components/icons';
 import { dict, errorText, type Lang, zhBold } from '@/lib/i18n';
 import LangToggle from '@/components/LangToggle';
@@ -154,7 +154,7 @@ function OverlapPanel({ lang, holdId, conflict, email, pending }: { lang: Lang; 
     ref.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }, [conflict]);
   const keep = (
-    <button className="btn ghost" type="submit" formAction={changeTimeAction.bind(null, holdId)} disabled={pending}>{t.keepOld}</button>
+    <button className="btn ghost" type="submit" formAction={keepOtherAction.bind(null, holdId)} disabled={pending}>{t.keepOld}</button>
   );
   return (
     <div ref={ref} className="note stack" role="alert" style={{ gap: 12, padding: '16px 16px 18px' }}>

@@ -150,8 +150,25 @@ export async function confirmAction(holdId: string, prev: FormState, form: FormD
 }
 
 /** "Change" on the details screen: let the held spots go, then return to the time picker. */
-export async function changeTimeAction(holdId: string) {
+/**
+ * Back to the time picker from the details form. The picker starts with the same party size and
+ * seating, so nobody has to enter them again. `keep`: the person keeps an overlapping sign-up and
+ * picks another time, so the clashing time isn't picked for them again.
+ */
+async function backToPicker(holdId: string, keep: boolean) {
   const b = await getBooking(holdId);
   await releaseHold(holdId);
-  redirect(b ? `/activity/${b.activityId}?slot=${b.slotId}` : '/');
+  if (!b) redirect('/');
+  const q = new URLSearchParams({ [keep ? 'skip' : 'slot']: b.slotId, guests: String(Math.max(0, b.partySize - 1)) });
+  if (b.seats.length) q.set('seats', b.seats.map((x) => `${x.seatTypeId}:${x.count}`).join(','));
+  redirect(`/activity/${b.activityId}?${q}`);
+}
+
+export async function changeTimeAction(holdId: string) {
+  await backToPicker(holdId, false);
+}
+
+/** "Keep my other sign-up and pick another time" on the overlap notice. */
+export async function keepOtherAction(holdId: string) {
+  await backToPicker(holdId, true);
 }
