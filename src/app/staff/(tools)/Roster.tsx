@@ -39,6 +39,9 @@ export default function Roster({ rows, lang, seating, open }: { rows: RosterRow[
       <div className="roster" role="list">
         {shown.map((r) => {
           const done = r.checkedIn >= r.partySize;
+          const changeButton = editing === r.bookingId ? null : (
+            <button type="button" className="btn ghost" style={{ minHeight: 48, fontSize: 15.5 }} onClick={() => setEditing(r.bookingId)}>{t.changeParty}</button>
+          );
           return (
             <div key={r.bookingId} role="listitem" className="rrow" data-done={done}>
               <div className="stack" style={{ gap: 3, flex: '1 1 220px', minWidth: 0 }}>
@@ -54,12 +57,14 @@ export default function Roster({ rows, lang, seating, open }: { rows: RosterRow[
                   {r.partySize > 1 ? (
                     <button type="button" className="btn ghost" style={{ minHeight: 48, fontSize: 15.5 }} onClick={() => set(r.bookingId, 1)}>{t.someArrived}</button>
                   ) : null}
+                  {changeButton}
                   <button type="button" className="btn" style={{ minHeight: 48, minWidth: 150, fontSize: 16.5 }} onClick={() => set(r.bookingId, r.partySize)}>
                     {r.partySize === 1 ? t.checkIn : t.checkInAll(r.partySize)}
                   </button>
                 </div>
               ) : (
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                  {changeButton}
                   <span className="pill-status" data-done={done}><Check size={16} /> {t.nCheckedIn(r.checkedIn)}</span>
                   <button type="button" style={round} aria-label={t.oneFewerArrived(r.name)} onClick={() => set(r.bookingId, r.checkedIn - 1)}>−</button>
                   <button type="button" style={{ ...round, opacity: done ? 0.4 : 1, cursor: done ? 'not-allowed' : 'pointer' }} disabled={done}
@@ -68,9 +73,7 @@ export default function Roster({ rows, lang, seating, open }: { rows: RosterRow[
               )}
               {editing === r.bookingId ? (
                 <PartyEditor row={r} lang={lang} seating={seating} open={open} onClose={() => setEditing(null)} />
-              ) : (
-                <button type="button" className="btn ghost" style={{ minHeight: 48, fontSize: 15.5 }} onClick={() => setEditing(r.bookingId)}>{t.changeParty}</button>
-              )}
+              ) : null}
             </div>
           );
         })}
