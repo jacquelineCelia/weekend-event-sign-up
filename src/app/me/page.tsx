@@ -16,6 +16,7 @@ import { LegalFoot } from '@/components/LegalPage';
 import { signOutAction } from './actions';
 import { CancelButton, RatePicker, SeatChanger, type SeatChoice } from './widgets';
 import { nameRuns } from '@/components/ActivityName';
+import FitNames from './FitNames';
 
 export const dynamic = 'force-dynamic';
 
@@ -113,7 +114,9 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
       <section className="pad stack" style={{ gap: 6, padding: '8px 20px 18px' }}>
         <h1 className="h1" style={{ fontSize: 32.5 }}>{t.yourWeekend}</h1>
         <p className="muted" style={{ margin: 0 }}>
-          {t.nActivities(rows.length)}{household ? ` · ${names.join(isChinese(lang) ? '、' : ', ')}` : ''}
+          {household
+            ? <FitNames full={`${t.nActivities(rows.length)} · ${names.join(isChinese(lang) ? '、' : ', ')}`} short={`${t.nActivities(rows.length)} · ${t.andOthers(names[0])}`} />
+            : t.nActivities(rows.length)}
         </p>
         {sp.moved ? <p className="note ok" role="status" style={{ margin: '8px 0 0' }}>{t.moved}</p> : null}
         {sp.seated ? <p className="note ok" role="status" style={{ margin: '8px 0 0' }}>{t.seatingChanged}</p> : null}
