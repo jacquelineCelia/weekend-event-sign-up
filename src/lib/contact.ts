@@ -55,7 +55,7 @@ const raw = z.object({
   phone: z.string().trim().max(40).default(''),
 });
 
-function build({ emailRequired, phoneRequired }: { emailRequired: boolean; phoneRequired: boolean }) {
+function build(emailRequired: boolean) {
   // superRefine runs even when the name is missing, so every problem shows at once.
   // Messages are codes (see errors in i18n.ts), turned into words in the visitor's language.
   return raw
@@ -64,7 +64,7 @@ function build({ emailRequired, phoneRequired }: { emailRequired: boolean; phone
       if (!v.email && emailRequired) ctx.addIssue({ code: 'custom', path: ['email'], message: 'email_required' });
       const bad = v.phone ? phoneProblem(v.phone) : null;
       if (bad) ctx.addIssue({ code: 'custom', path: ['phone'], message: bad });
-      if (!v.phone && phoneRequired) ctx.addIssue({ code: 'custom', path: ['phone'], message: 'phone_required' });
+      if (!v.phone) ctx.addIssue({ code: 'custom', path: ['phone'], message: 'phone_required' });
     })
     .transform((v) => ({
       name: v.name,
@@ -74,8 +74,8 @@ function build({ emailRequired, phoneRequired }: { emailRequired: boolean; phone
 }
 
 /** Online sign-ups collect name, email and phone. */
-export const contactSchema = build({ emailRequired: true, phoneRequired: true });
-/** Staff walk-in sign-ups need only a name; phone and email are optional (user's request, 2026-11-03). */
-export const walkInContactSchema = build({ emailRequired: false, phoneRequired: false });
+export const contactSchema = build(true);
+/** Staff walk-in sign-ups need the same three. */
+export const walkInContactSchema = build(true);
 
 export type Contact = { name: string; email: string | null; phone: string | null };
