@@ -19,9 +19,9 @@ const save = (over: Partial<Parameters<typeof savePhoto>[0]> = {}, limits = {}) 
 describe('photo uploads', () => {
   it('starts with nine topics, in Chinese too', async () => {
     expect(await photoTopics('en')).toHaveLength(9);
-    expect((await photoTopics('en'))[0]).toMatchObject({ name: 'Around the Corner', hint: 'Find a corner of the estate you’ve never noticed.' });
-    expect((await photoTopics('zh'))[0]).toMatchObject({ name: '轉角發現', hint: '找到一處你從未留意的莊園角落。' });
-    expect((await photoTopics('zhs'))[0]).toMatchObject({ name: '转角发现', hint: '找到一处你从未留意的庄园角落。' });
+    expect((await photoTopics('en'))[0]).toMatchObject({ name: 'Around the Corner', hint: 'Find a beautiful corner of the estate you’ve never noticed.' });
+    expect((await photoTopics('zh'))[0]).toMatchObject({ name: '轉角發現', hint: '找到一處你從沒留意，美麗的莊園角落。' });
+    expect((await photoTopics('zhs'))[0]).toMatchObject({ name: '转角发现', hint: '找到一处你从没留意，美丽的庄园角落。' });
     for (const t of await photoTopics('en')) expect(t.hint).not.toBe('');
   });
 
