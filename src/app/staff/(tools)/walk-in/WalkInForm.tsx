@@ -159,7 +159,7 @@ export default function WalkInForm({ options, initialKey, initialSlot, lang }: {
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
           <Field id="name" label={t.name} error={err.name} autoComplete="off" defaultValue={state?.values?.name} />
-          <Field id="phone" label={t.mobile} type="tel" error={err.phone} autoComplete="off" defaultValue={state?.values?.phone} />
+          <Field id="phone" label={t.walkInMobile} type="tel" error={err.phone} autoComplete="off" defaultValue={state?.values?.phone} />
           <Field id="email" label={t.walkInEmail} type="email" error={err.email} autoComplete="off" defaultValue={state?.values?.email} />
         </div>
 

@@ -32,15 +32,26 @@ afterAll(() => pool.end());
 const book = async (slot: string, c: typeof anna) => confirmBooking((await holdSpots(slot, 1)).holdId, { contact: c, remindSms: false, remindEmail: true });
 
 describe('people sharing an email', () => {
-  it('walk-ins need a name, a mobile number and an email', () => {
+  it('walk-ins need only a name; mobile number and email are optional', () => {
     const issues = (v: { name: string; phone: string; email: string }) => {
       const r = walkInContactSchema.safeParse(v);
       return r.success ? [] : r.error.issues.map((x) => x.message);
     };
     expect(issues({ name: 'Ben', phone: '412 555 0101', email: 'ben@example.com' })).toEqual([]);
-    expect(issues({ name: 'Ben', phone: '412 555 0101', email: '' })).toEqual(['email_required']);
-    expect(issues({ name: 'Ben', phone: '', email: 'ben@example.com' })).toEqual(['phone_required']);
+    expect(issues({ name: 'Ben', phone: '412 555 0101', email: '' })).toEqual([]);
+    expect(issues({ name: 'Ben', phone: '', email: 'ben@example.com' })).toEqual([]);
+    expect(issues({ name: 'Ben', phone: '', email: '' })).toEqual([]);
+    expect(issues({ name: 'Ben', phone: '0912 345 678', email: 'nope' })).toEqual(['email_invalid', 'phone_country_code']);
     expect(issues({ name: '', phone: '412 555 0101', email: 'ben@example.com' })).toEqual(['name_required']);
+  });
+
+  it('signs up a walk-in with just a name (no reminder, nothing to match on)', async () => {
+    const one = await walkInBooking(tea, 2, walkInContactSchema.parse({ name: 'Grace Lin', phone: '', email: '' }), { checkInNow: true });
+    const b = (await getBooking(one.bookingId))!;
+    expect(b).toMatchObject({ personName: 'Grace Lin', personEmail: null, personPhone: null, remindEmail: false, remindSms: false, partySize: 2 });
+    // A second name-only walk-in with the same name is a separate person (there's nothing to match them by).
+    const two = await walkInBooking(tea, 1, walkInContactSchema.parse({ name: 'Grace Lin', phone: '', email: '' }));
+    expect((await getBooking(two.bookingId))!.personId).not.toBe(b.personId);
   });
 
   it('keeps two people on one email separate, with their own names and phones', async () => {
