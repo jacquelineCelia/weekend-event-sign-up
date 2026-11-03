@@ -44,10 +44,11 @@ describe('contact details', () => {
     const r = contactSchema.safeParse({ name: 'Mei', email: 'mei@example.com', phone: '0912 345 678' });
     expect(r.error!.issues.map((i) => i.message)).toEqual(['phone_country_code']);
   });
-  it('requires name, email and phone for online sign-ups', () => {
+  it('requires name and email for online sign-ups; the mobile number is optional', () => {
     const r = contactSchema.safeParse({ name: '', email: 'nope', phone: '' });
     expect(r.success).toBe(false);
-    expect(r.error!.issues.map((i) => i.path[0]).sort()).toEqual(['email', 'name', 'phone']);
+    expect(r.error!.issues.map((i) => i.path[0]).sort()).toEqual(['email', 'name']);
+    expect(contactSchema.parse({ name: 'Mei', email: 'mei@example.com', phone: '' })).toEqual({ name: 'Mei', email: 'mei@example.com', phone: null });
   });
 });
 
@@ -179,5 +180,16 @@ describe('changes after booking', () => {
     const friend = { name: 'Sam Ellis', email: null, phone: '+14125550194' };
     await expect(walkInBooking(otherSlotId, 2, friend)).rejects.toMatchObject({ code: 'not_enough_spots' });
     await expect(walkInBooking(otherSlotId, 2, friend, { allowOver: true })).resolves.toHaveProperty('code');
+  });
+});
+
+describe('sign-up without a mobile number', () => {
+  it('confirms by email, never texts, and stays separate from other people', async () => {
+    const slot = await makeSlot(10);
+    const contact = contactSchema.parse({ name: 'Grace Lin', email: 'grace@example.com', phone: '' });
+    const h = await holdSpots(slot, 1);
+    const r = await confirmBooking(h.holdId, { contact, remindSms: true, remindEmail: true });
+    const b = (await getBooking(r.bookingId))!;
+    expect(b).toMatchObject({ personPhone: null, remindSms: false, remindEmail: true });
   });
 });

@@ -32,14 +32,14 @@ afterAll(() => pool.end());
 const book = async (slot: string, c: typeof anna) => confirmBooking((await holdSpots(slot, 1)).holdId, { contact: c, remindSms: false, remindEmail: true });
 
 describe('people sharing an email', () => {
-  it('walk-ins need a name, a mobile number and an email', () => {
+  it('walk-ins need a name and an email; the mobile number is optional', () => {
     const issues = (v: { name: string; phone: string; email: string }) => {
       const r = walkInContactSchema.safeParse(v);
       return r.success ? [] : r.error.issues.map((x) => x.message);
     };
     expect(issues({ name: 'Ben', phone: '412 555 0101', email: 'ben@example.com' })).toEqual([]);
     expect(issues({ name: 'Ben', phone: '412 555 0101', email: '' })).toEqual(['email_required']);
-    expect(issues({ name: 'Ben', phone: '', email: 'ben@example.com' })).toEqual(['phone_required']);
+    expect(issues({ name: 'Ben', phone: '', email: 'ben@example.com' })).toEqual([]);
     expect(issues({ name: '', phone: '412 555 0101', email: 'ben@example.com' })).toEqual(['name_required']);
   });
 

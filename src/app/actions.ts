@@ -93,6 +93,8 @@ export async function confirmAction(holdId: string, prev: FormState, form: FormD
     for (const i of parsed.error.issues) fields[String(i.path[0])] ??= i.message;
     return { fields, values };
   }
+  // The mobile number is optional, but text reminders need one.
+  if (form.get('remindSms') === 'on' && !parsed.data.phone) return { fields: { phone: 'phone_for_sms' }, values };
   const lang = await getLang();
   const intent = String(form.get('intent') ?? 'confirm');
   const remember = form.get('remember') === 'on';

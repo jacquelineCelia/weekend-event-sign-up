@@ -46,6 +46,7 @@ export default function SignUpSample({ lang, smsFrom, eventName, summary, ticket
       setErrors(fields);
       return;
     }
+    if (sms && !parsed.data.phone) { setErrors({ phone: 'phone_for_sms' }); return; }
     setErrors({});
     setPending(true);
     setTimeout(() => {
@@ -87,7 +88,7 @@ export default function SignUpSample({ lang, smsFrom, eventName, summary, ticket
         <div className="pad stack" style={{ gap: 18, paddingBottom: 20 }}>
           <Field id="name" label={t.fullName} autoComplete="name" error={errors.name && errorText(lang, errors.name)} />
           <Field id="email" label={t.email} type="email" inputMode="email" autoComplete="email" error={errors.email && errorText(lang, errors.email)} hint={t.emailHint} />
-          <Field id="phone" label={t.phone} type="tel" inputMode="tel" autoComplete="tel" error={errors.phone && errorText(lang, errors.phone)} hint={t.phoneHint} />
+          <Field id="phone" label={t.phoneOptional} optional type="tel" inputMode="tel" autoComplete="tel" error={errors.phone && errorText(lang, errors.phone)} hint={t.phoneHint} />
 
           <fieldset style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
             <legend className="legend" style={{ padding: 0, marginBottom: 8 }}>{t.remindLegend}</legend>
@@ -188,15 +189,16 @@ function Success({ lang, done, summary, ticket, calendar }: { lang: Lang; done: 
 }
 
 function Field(props: {
+  optional?: boolean;
   id: string; label: string; error?: string; hint?: string;
   type?: string; inputMode?: 'email' | 'tel'; autoComplete: string;
 }) {
-  const { id, label, error, hint, ...rest } = props;
+  const { id, label, error, hint, optional, ...rest } = props;
   const described = [error ? `${id}-err` : null, hint ? `${id}-hint` : null].filter(Boolean).join(' ') || undefined;
   return (
     <div className="field">
       <label htmlFor={id}>{label}</label>
-      <input id={id} name={id} className="input" aria-invalid={!!error} aria-describedby={described} required {...rest} />
+      <input id={id} name={id} className="input" aria-invalid={!!error} aria-describedby={described} required={!optional} {...rest} />
       {error ? <span id={`${id}-err`} className="error">{error}</span> : null}
       {hint ? <span id={`${id}-hint`} className="hint">{hint}</span> : null}
     </div>

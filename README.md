@@ -107,7 +107,7 @@ testing (sign-in codes included).
 Tests run against a real Postgres database (set `TEST_DATABASE_URL`; it is wiped on each run):
 
 ```bash
-npm test     # 136 tests: capacity, holds, overlaps, seating, instructors, login codes, reminders, schedule edits, shared phones, Chinese, photos
+npm test     # 138 tests: capacity, holds, overlaps, seating, instructors, login codes, reminders, schedule edits, shared phones, Chinese, photos
 ```
 
 ## Deploy (Vercel + Supabase)

@@ -55,7 +55,7 @@ const raw = z.object({
   phone: z.string().trim().max(40).default(''),
 });
 
-function build(emailRequired: boolean) {
+function build({ emailRequired, phoneRequired }: { emailRequired: boolean; phoneRequired: boolean }) {
   // superRefine runs even when the name is missing, so every problem shows at once.
   // Messages are codes (see errors in i18n.ts), turned into words in the visitor's language.
   return raw
@@ -64,7 +64,7 @@ function build(emailRequired: boolean) {
       if (!v.email && emailRequired) ctx.addIssue({ code: 'custom', path: ['email'], message: 'email_required' });
       const bad = v.phone ? phoneProblem(v.phone) : null;
       if (bad) ctx.addIssue({ code: 'custom', path: ['phone'], message: bad });
-      if (!v.phone) ctx.addIssue({ code: 'custom', path: ['phone'], message: 'phone_required' });
+      if (!v.phone && phoneRequired) ctx.addIssue({ code: 'custom', path: ['phone'], message: 'phone_required' });
     })
     .transform((v) => ({
       name: v.name,
@@ -73,9 +73,12 @@ function build(emailRequired: boolean) {
     }));
 }
 
-/** Online sign-ups collect name, email and phone. */
-export const contactSchema = build(true);
-/** Staff walk-in sign-ups need the same three. */
-export const walkInContactSchema = build(true);
+/**
+ * Online and walk-in sign-ups need a name and an email; the mobile number is optional (some
+ * attendees don't have one; user's request, 2026-11-03). Without one: no texts, and staff find
+ * them at check-in by name or code.
+ */
+export const contactSchema = build({ emailRequired: true, phoneRequired: false });
+export const walkInContactSchema = build({ emailRequired: true, phoneRequired: false });
 
 export type Contact = { name: string; email: string | null; phone: string | null };
