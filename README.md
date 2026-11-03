@@ -84,8 +84,7 @@ Built with Next.js 16 and Postgres (runs on Supabase as is).
   slots are blocked, and guests in a moved slot are told the new time. Each activity also has
   Instructor (optional) and Chinese name, place, instructor and description fields, typed once in Traditional; Simplified readers get them
   converted automatically (OpenCC, character by character). Blank fields show the English, and the
-  list marks activities with "中 missing" until they're filled in. Staff screens can be switched to Chinese (see Language above); the
-  check-in list tags attendees 繁 or 简, and walk-ins can be given either Chinese for their messages.
+  list marks activities with "中 missing" until they're filled in. Staff screens can be switched to Chinese (see Language above); walk-ins can be given either Chinese for their messages.
 - **Photo show**: new uploads first, then every photo topic by topic, oldest first within a topic, 8 seconds each. Landscape photos fill the
   screen (edges may be cropped); portrait photos show whole on black. The topic and the person's name
   sit at the lower right, in the language of the staff switch. The show then starts again from the first topic. A new upload is noticed
