@@ -1,14 +1,34 @@
 import { z } from 'zod';
 
+/**
+ * Without a "+", a number is read as US/Canada. There the area code and the next three digits never
+ * start with 0 or 1, so "0912 345 678" (a Taiwan mobile typed the local way) is not one: it needs
+ * "+" and the country code. (An 11-digit number starting with 1, like a mainland mobile, can't be
+ * told apart from "1 + a US number", so it is still read as US.)
+ */
+function looksForeign(digits: string) {
+  const national = digits.length === 11 && digits.startsWith('1') ? digits.slice(1) : digits;
+  return national.length === 10 ? /^[01]/.test(national) || /^\d{3}[01]/.test(national) : digits.length !== 10;
+}
+
 /** Normalises a phone number to E.164, assuming US/Canada when no country code is given. */
 export function normalizePhone(input: string): string | null {
   const trimmed = input.trim();
   if (!trimmed) return null;
   const digits = trimmed.replace(/\D/g, '');
   if (trimmed.startsWith('+')) return digits.length >= 8 && digits.length <= 15 ? `+${digits}` : null;
+  if (looksForeign(digits)) return null;
   if (digits.length === 10) return `+1${digits}`;
   if (digits.length === 11 && digits.startsWith('1')) return `+${digits}`;
   return null;
+}
+
+/** Why a phone number can't be used: "phone_country_code" when it reads as a non-US number without "+". */
+export function phoneProblem(input: string): 'phone_country_code' | 'phone_invalid' | null {
+  if (normalizePhone(input)) return null;
+  const trimmed = input.trim();
+  const digits = trimmed.replace(/\D/g, '');
+  return !trimmed.startsWith('+') && digits.length >= 8 && digits.length <= 15 ? 'phone_country_code' : 'phone_invalid';
 }
 
 export function normalizeEmail(input: string): string | null {
@@ -42,7 +62,8 @@ function build(emailRequired: boolean) {
     .superRefine((v, ctx) => {
       if (v.email && !normalizeEmail(v.email)) ctx.addIssue({ code: 'custom', path: ['email'], message: 'email_invalid' });
       if (!v.email && emailRequired) ctx.addIssue({ code: 'custom', path: ['email'], message: 'email_required' });
-      if (v.phone && !normalizePhone(v.phone)) ctx.addIssue({ code: 'custom', path: ['phone'], message: 'phone_invalid' });
+      const bad = v.phone ? phoneProblem(v.phone) : null;
+      if (bad) ctx.addIssue({ code: 'custom', path: ['phone'], message: bad });
       if (!v.phone) ctx.addIssue({ code: 'custom', path: ['phone'], message: 'phone_required' });
     })
     .transform((v) => ({

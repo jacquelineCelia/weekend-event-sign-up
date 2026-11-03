@@ -2,7 +2,7 @@ import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { getBooking } from '@/lib/queries';
 import { getPool } from '@/lib/db';
 import { BookingError, cancelBooking, changeSeats, changeSlot, confirmBooking, holdSpots, releaseHold, staffChangeParty, walkInBooking } from '@/lib/booking';
-import { contactSchema, normalizePhone } from '@/lib/contact';
+import { contactSchema, normalizePhone, phoneProblem } from '@/lib/contact';
 
 const pool = getPool();
 let slotId: string;
@@ -30,6 +30,19 @@ describe('contact details', () => {
     expect(normalizePhone('+44 20 7946 0958')).toBe('+442079460958');
     expect(normalizePhone('555')).toBeNull();
     expect(jordan).toEqual({ name: 'Jordan Lee', email: 'jordan@example.com', phone: '+14125550148' });
+  });
+  it('asks for the country code when a foreign number is typed the local way', () => {
+    // US/Canadian area codes never start with 0 or 1, so these can't be US numbers.
+    expect(normalizePhone('0912 345 678')).toBeNull();      // Taiwan mobile, local form
+    expect(normalizePhone('412 155 0148')).toBeNull();      // a US exchange never starts with 0 or 1
+    expect(normalizePhone('1-012-555-0148')).toBeNull();
+    expect(normalizePhone('+886 912 345 678')).toBe('+886912345678');
+    expect(phoneProblem('0912 345 678')).toBe('phone_country_code');
+    expect(phoneProblem('02 2345 6789')).toBe('phone_country_code'); // Taipei landline, local form
+    expect(phoneProblem('555')).toBe('phone_invalid');
+    expect(phoneProblem('412 555 0148')).toBeNull();
+    const r = contactSchema.safeParse({ name: 'Mei', email: 'mei@example.com', phone: '0912 345 678' });
+    expect(r.error!.issues.map((i) => i.message)).toEqual(['phone_country_code']);
   });
   it('requires name, email and phone for online sign-ups', () => {
     const r = contactSchema.safeParse({ name: '', email: 'nope', phone: '' });
