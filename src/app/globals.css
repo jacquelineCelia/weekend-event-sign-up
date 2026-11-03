@@ -93,21 +93,31 @@ button, input, select { font: inherit; color: inherit; }
 .card-title { font-family: var(--serif); font-size: 20.5px; line-height: 1.25; color: var(--ink); text-decoration: none; }
 .card-title:hover { color: var(--moss-dark); }
 .card-sub { font-size: 14.5px; color: var(--muted); }
+/* Times on an activity card: one box, one full-width row per time (date + time left, spots right). */
+.times { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+.trow { display: flex; justify-content: space-between; align-items: center; gap: 10px; min-height: 52px; padding: 12px 14px; text-decoration: none; color: var(--ink); background: var(--sage-pale); }
+.trow + .trow { border-top: 1px solid var(--line); }
+.trow-when { font-size: 17px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.trow-when b { font-weight: 700; }
+.trow-date { color: var(--muted); }
+.trow-left { display: inline-flex; align-items: center; gap: 6px; font-size: 15.5px; color: var(--moss-dark); white-space: nowrap; }
+.trow-go { font-size: 22px; line-height: 1; color: var(--moss); margin-top: -2px; }
+.trow.low { background: var(--ochre-pale); }
+.trow.low .trow-left, .trow.low .trow-go { color: var(--ochre-dark); font-weight: 600; }
+.trow.full { background: var(--stone); color: var(--muted); }
+.trow.full .trow-when { text-decoration: line-through; text-decoration-thickness: 1px; }
+.trow.full .trow-date, .trow.full .trow-left { color: var(--muted); }
+a.trow:hover { background: var(--sage); }
+a.trow.low:hover { filter: brightness(0.97); }
+a.trow:focus-visible { outline: 3px solid var(--focus); outline-offset: -3px; }
+@media (max-width: 374px) {
+  .trow { padding: 12px 10px 12px 12px; gap: 6px; }
+  .trow-when { font-size: 16px; }
+  .trow-left { font-size: 14.5px; gap: 4px; }
+}
 /* Who leads the activity: moss green, a little bolder than the text around it. */
 .led-by { color: var(--moss); font-weight: 600; }
 .badge { flex: none; font-size: 14px; font-weight: 600; padding: 5px 10px; border-radius: 999px; white-space: nowrap; background: var(--stone); color: var(--muted); }
-.chips { display: flex; flex-wrap: wrap; gap: 6px; }
-/* The date at the start of a time chip on an activity card ("11/14（六）"). */
-.chip-date { font-weight: 600; margin-right: -2px; }
-.chip { display: inline-flex; gap: 6px; align-items: center; padding: 9px 12px; border-radius: 999px; font-size: 14.5px; line-height: 1; text-decoration: none; min-height: 36px; }
-.chip b { font-weight: 700; font-variant-numeric: tabular-nums; }
-.chip.open { background: var(--sage); color: var(--moss-dark); }
-.chip.low { background: var(--ochre-pale); color: var(--ochre); }
-.chip.full { background: var(--stone); color: var(--muted); }
-.chip.full b { font-weight: 600; }
-.chip.full .chip-when { text-decoration: line-through; text-decoration-thickness: 1px; }
-.chip.full .chip-date { margin-right: 0; }
-a.chip:hover { filter: brightness(0.96); }
 .list { padding: 6px 20px 32px; display: flex; flex-direction: column; gap: 12px; }
 .empty { padding: 28px 16px; text-align: center; color: var(--muted); font-size: 16.5px; }
 

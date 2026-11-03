@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { activitiesAllDays } from '@/lib/queries';
 import { eventName } from '@/lib/hans';
 import { LegalFoot } from '@/components/LegalPage';
-import { EVENT, dateRangeL, dayOf, dayText, fmtDayTimeL, fmtTimeL, isLow, requestTime } from '@/lib/event';
+import { dateRangeL, dayOf, dayText, fmtDayTimeL, fmtTimeL, isLow, requestTime } from '@/lib/event';
 import { getLang } from '@/lib/lang';
 import { dict, zhBold } from '@/lib/i18n';
 import LangToggle from '@/components/LangToggle';
@@ -72,35 +72,32 @@ export default async function Browse({ searchParams }: { searchParams: Promise<{
                 : a.open.length === 0 ? <span className="badge">{t.fullyBooked}</span> : null}
             </div>
             {a.upcoming.length > 0 ? (
-              <div className="stack" style={{ gap: 8 }}>
-                {EVENT.days.map((d) => {
-                  const times = a.upcoming.filter((s) => dayOf(s.startsAt)?.key === d.key);
-                  if (!times.length) return null;
+              // Every upcoming time as one full-width row in a single box: date and time on the left,
+              // spots left on the right, so the rows line up and are easy to tap.
+              <div className="times">
+                {a.upcoming.map((s) => {
+                  const d = dayOf(s.startsAt);
+                  const when = (
+                    <span className="trow-when">
+                      {d ? <span className="trow-date">{dayText(d, 'short', lang)}</span> : null} <b>{fmtTimeL(s.startsAt, lang)}</b>
+                    </span>
+                  );
+                  // Full times stay in the list, greyed out, so people can see when the activity runs.
+                  if (s.remaining === 0) {
+                    return (
+                      <div key={s.id} className="trow full" role="group" aria-label={t.chipFullAria(a.name, fmtDayTimeL(s.startsAt, lang))}>
+                        {when}
+                        <span className="trow-left">{t.full}</span>
+                      </div>
+                    );
+                  }
+                  const low = isLow(s.remaining, s.capacity);
                   return (
-                    // One row of chips per day; each chip carries its own date ("11/14（六） 下午 2:50").
-                    <div key={d.key} className="chips">
-                      {times.map((s) => {
-                        // Full times stay in the list, greyed out, so people can see when the activity runs.
-                        if (s.remaining === 0) {
-                          return (
-                            <span key={s.id} className="chip full" aria-label={t.chipFullAria(a.name, fmtDayTimeL(s.startsAt, lang))}>
-                              {/* One unbroken line through the date and time. */}
-                              <span className="chip-when"><span className="chip-date">{dayText(d, 'short', lang)}</span> <b>{fmtTimeL(s.startsAt, lang)}</b></span>
-                              <span>{t.full}</span>
-                            </span>
-                          );
-                        }
-                        const low = isLow(s.remaining, s.capacity);
-                        return (
-                          <Link key={s.id} className={`chip ${low ? 'low' : 'open'}`} href={`/activity/${a.id}?slot=${s.id}`}
-                            aria-label={t.chipAria(a.name, fmtDayTimeL(s.startsAt, lang), s.remaining)}>
-                            <span className="chip-date">{dayText(d, 'short', lang)}</span>
-                            <b>{fmtTimeL(s.startsAt, lang)}</b>
-                            <span>{low ? t.onlyLeft(s.remaining) : t.left(s.remaining)}</span>
-                          </Link>
-                        );
-                      })}
-                    </div>
+                    <Link key={s.id} className={`trow ${low ? 'low' : 'open'}`} href={`/activity/${a.id}?slot=${s.id}`}
+                      aria-label={t.chipAria(a.name, fmtDayTimeL(s.startsAt, lang), s.remaining)}>
+                      {when}
+                      <span className="trow-left">{low ? t.onlyLeft(s.remaining) : t.left(s.remaining)}<span className="trow-go" aria-hidden="true">›</span></span>
+                    </Link>
                   );
                 })}
               </div>
