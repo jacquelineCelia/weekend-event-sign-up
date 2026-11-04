@@ -311,8 +311,8 @@ const zh: Dict = {
   mySignups: '我的報名',
   photos: {
     title: '分享照片',
-    cardText: '你的發現，會是我們的風景',
-    lede: '請以下列其中一個主題拍照並上傳。你的發現，會是我們的風景。',
+    cardText: '你的發現，是我們的風景',
+    lede: '請以下列其中一個主題拍照並上傳。你的發現，是我們的風景。',
     name: '你的姓名',
     topic: '選擇主題',
     photo: '你的照片',
@@ -567,8 +567,8 @@ const zhs: Dict = {
   mySignups: '我的报名',
   photos: {
     title: '分享照片',
-    cardText: '你的发现，会是我们的风景',
-    lede: '请以下列其中一个主题拍照并上传。你的发现，会是我们的风景。',
+    cardText: '你的发现，是我们的风景',
+    lede: '请以下列其中一个主题拍照并上传。你的发现，是我们的风景。',
     name: '你的姓名',
     topic: '选择主题',
     photo: '你的照片',
