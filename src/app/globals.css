@@ -232,6 +232,15 @@ select.input { padding: 0 14px; }
 .tbtn input { position: absolute; opacity: 0; }
 .tbtn:has(input:focus-visible) { outline: 3px solid var(--focus); outline-offset: 2px; }
 .tbtn[data-full='true'] { background: var(--stone); }
+/* Registration page: larger text than the other staff screens. */
+.regpage .session { font-size: 19.5px; }
+.regpage .session .meta { font-size: 17px; }
+.regpage .stag { font-size: 16px; }
+.regstats { display: grid; grid-template-columns: repeat(4, minmax(64px, auto)); gap: 2px 14px; margin: 0; font-variant-numeric: tabular-nums; }
+@media (max-width: 480px) {
+  .regpage .rrow { padding-left: 12px; padding-right: 12px; }
+  .regstats { width: 100%; grid-template-columns: repeat(4, auto); justify-content: space-between; gap: 2px 6px; }
+}
 @media (max-width: 640px) { .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } .staffbody { padding: 20px 16px; } }
 
 /* ---------- Language switch ---------- */

@@ -63,19 +63,19 @@ export default async function Registration({ searchParams }: { searchParams: Pro
   };
 
   return (
-    <div className="staffbody">
+    <div className="staffbody regpage">
       <AutoRefresh seconds={20} />
       <aside className="staffside scrollside" aria-label={t.timeSlots}>
-        <h2 className="h2" style={{ fontSize: 19.5, color: 'var(--ink-2)' }}>{t.timeSlots}</h2>
+        <h2 className="h2" style={{ fontSize: 22, color: 'var(--ink-2)' }}>{t.timeSlots}</h2>
         {byDay.map(({ d, items }) => (
           <section key={d.key} className="stack" style={{ gap: 8 }} aria-label={dayText(d, 'long', lang)}>
-            <h3 style={{ margin: '6px 4px 0', fontSize: 15.5, fontWeight: 600, color: 'var(--muted)' }}>{dayText(d, 'long', lang)}</h3>
+            <h3 style={{ margin: '6px 4px 0', fontSize: 18, fontWeight: 600, color: 'var(--muted)' }}>{dayText(d, 'long', lang)}</h3>
             {items.map(timeLink)}
           </section>
         ))}
         {other.length ? (
           <section className="stack" style={{ gap: 8 }} aria-label={t.otherDays}>
-            <h3 style={{ margin: '6px 4px 0', fontSize: 15.5, fontWeight: 600, color: 'var(--muted)' }}>{t.otherDays}</h3>
+            <h3 style={{ margin: '6px 4px 0', fontSize: 18, fontWeight: 600, color: 'var(--muted)' }}>{t.otherDays}</h3>
             {other.map(timeLink)}
           </section>
         ) : null}
@@ -85,10 +85,10 @@ export default async function Registration({ searchParams }: { searchParams: Pro
       {chosen ? (
         <main className="staffmain">
           <div className="stack" style={{ gap: 4 }}>
-            <span style={{ fontSize: 15.5, fontWeight: 600, color: 'var(--moss)' }}>
+            <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--moss)' }}>
               {(() => { const d = dayOf(chosen.startsAt); return d ? dayText(d, 'long', lang) : chosen.startsAt.toDateString(); })()}
             </span>
-            <h1 className="h1" style={{ fontSize: 35.5 }}>
+            <h1 className="h1" style={{ fontSize: 38 }}>
               {fmtTime(chosen.startsAt)}{longest ? ` – ${fmtTime(addMinutes(chosen.startsAt, longest))}` : ''}
             </h1>
           </div>
@@ -102,9 +102,9 @@ export default async function Registration({ searchParams }: { searchParams: Pro
                   <div className="stack" style={{ gap: 6, flex: '1 1 260px', minWidth: 0 }}>
                     {(() => {
                       const name = localText(r.activityName, r.activityNameZh, lang);
-                      return <span className={`serif${name !== r.activityName ? ' zhname' : ''}`} lang={name !== r.activityName ? htmlLang : 'en'} style={{ fontSize: 19.5 }}>{nameRuns(name)}</span>;
+                      return <span className={`serif${name !== r.activityName ? ' zhname' : ''}`} lang={name !== r.activityName ? htmlLang : 'en'} style={{ fontSize: 23 }}>{nameRuns(name)}</span>;
                     })()}
-                    <span className="muted" style={{ fontSize: 15 }}>
+                    <span className="muted" style={{ fontSize: 17.5 }}>
                       <span lang={lang !== 'en' && r.placeZh ? htmlLang : 'en'}>{localText(r.place, r.placeZh, lang)}</span>
                       {r.instructor ? <> · <span lang={lang !== 'en' && r.instructorZh ? htmlLang : 'en'}>{t.ledBy(localText(r.instructor, r.instructorZh, lang))}</span></> : null}
                       {r.walkIns ? ` · ${t.walkIns(r.walkIns)}` : ''}
@@ -114,12 +114,12 @@ export default async function Registration({ searchParams }: { searchParams: Pro
                       <span style={{ width: `${pct(r.held, r.capacity)}%`, background: 'var(--sage)' }} />
                     </div>
                     {r.seats.length ? (
-                      <span style={{ fontSize: 15, color: 'var(--ink-2)' }}>
+                      <span style={{ fontSize: 17.5, color: 'var(--ink-2)' }}>
                         {t.seatingLine}{lang === 'en' ? ' ' : ''}{r.seats.map((x) => `${localText(x.name, x.nameZh, lang)} ${x.booked}/${x.capacity}`).join(' · ')}
                       </span>
                     ) : null}
                   </div>
-                  <dl style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 64px)', gap: '2px 18px', margin: 0, fontVariantNumeric: 'tabular-nums' }}>
+                  <dl className="regstats">
                     {[
                       [t.booked, `${r.booked}/${r.capacity}`, full ? 'var(--ochre)' : 'var(--ink)'],
                       [t.onHold, String(r.held), 'var(--muted)'],
@@ -127,19 +127,19 @@ export default async function Registration({ searchParams }: { searchParams: Pro
                       [t.here, String(r.arrived), 'var(--moss)'],
                     ].map(([k, v, c]) => (
                       <div key={k} className="stack" style={{ gap: 2 }}>
-                        <dt style={{ fontSize: 14, color: 'var(--muted)' }}>{k}</dt>
-                        <dd style={{ margin: 0, fontSize: 19.5, fontWeight: 600, color: c }}>{v}</dd>
+                        <dt style={{ fontSize: 17, whiteSpace: 'nowrap', color: 'var(--muted)' }}>{k}</dt>
+                        <dd style={{ margin: 0, fontSize: 25, fontWeight: 600, whiteSpace: 'nowrap', color: c }}>{v}</dd>
                       </div>
                     ))}
                   </dl>
-                  <Link href={rosterHref(r.slotId, r.durationMin)} className="btn ghost" style={{ minHeight: 40, fontSize: 15.5, padding: '0 14px', alignSelf: 'center' }}>
+                  <Link href={rosterHref(r.slotId, r.durationMin)} className="btn ghost" style={{ minHeight: 46, fontSize: 18, padding: '0 16px', alignSelf: 'center' }}>
                     {t.roster}
                   </Link>
                 </div>
               );
             })}
           </section>
-          <p className="muted" style={{ margin: 0, fontSize: 14.5 }}>
+          <p className="muted" style={{ margin: 0, fontSize: 16.5 }}>
             {t.regFootnote}
           </p>
         </main>
