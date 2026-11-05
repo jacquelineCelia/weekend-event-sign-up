@@ -128,7 +128,7 @@ export default async function Registration({ searchParams }: { searchParams: Pro
                     ].map(([k, v, c]) => (
                       <div key={k} className="stack" style={{ gap: 2 }}>
                         <dt style={{ fontSize: 17, whiteSpace: 'nowrap', color: 'var(--muted)' }}>{k}</dt>
-                        <dd style={{ margin: 0, fontSize: 25, fontWeight: 600, whiteSpace: 'nowrap', color: c }}>{v}</dd>
+                        <dd style={{ margin: 0, fontSize: 23, fontWeight: 600, whiteSpace: 'nowrap', color: c }}>{v}</dd>
                       </div>
                     ))}
                   </dl>
