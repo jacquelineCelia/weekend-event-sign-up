@@ -52,6 +52,12 @@ export async function activitiesAllDays(lang: Lang = 'en') {
   return group(rows, lang);
 }
 
+/** Each activity's number on the activity list (id → number), for showing the same number elsewhere. */
+export async function activityNumbers() {
+  const listed = (await activitiesAllDays()).filter((a) => a.slots.length > 0);
+  return new Map(listed.map((a, i) => [a.id, i + 1]));
+}
+
 /** One activity with its slots over the whole weekend. */
 export async function activityAllDays(id: string, lang: Lang = 'en') {
   const { rows } = await getPool().query<Row>(`${SELECT} where a.id = $4 order by v.starts_at`, [EVENT.timeZone, ALL_DAYS, lang, id]);

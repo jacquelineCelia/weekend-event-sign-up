@@ -5,7 +5,7 @@ import { briefEmail } from '@/lib/contact';
 import { currentOwners } from '@/lib/viewer';
 import { EVENT, addMinutes, dayOf, dayText, fmtTimeL, isChinese, requestTime } from '@/lib/event';
 import { localText, seatLine } from '@/lib/hans';
-import { seatOptions, seatsForBookings } from '@/lib/queries';
+import { activityNumbers, seatOptions, seatsForBookings } from '@/lib/queries';
 import { getLang } from '@/lib/lang';
 import { dict, zhBold } from '@/lib/i18n';
 import LangToggle from '@/components/LangToggle';
@@ -78,6 +78,7 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
     r.instructor = localText(r.instructor, r.instructor_zh, lang);
   }
   const now = requestTime();
+  const numbers = await activityNumbers();
   // Every place on the grounds with what happens there, for the map in the Up next card (when shown).
   const placeRows = SHOW_VENUE_MAP
     ? (await getPool().query<{ name: string; name_zh: string; place: string; place_zh: string }>(
@@ -174,7 +175,10 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
                 <div style={{ display: 'flex', gap: 14 }}>
                   <div style={{ width: 88, flex: 'none', whiteSpace: 'nowrap', fontWeight: 700, color: 'var(--moss)', fontVariantNumeric: 'tabular-nums', paddingTop: 2 }}>{fmtTimeL(r.starts_at, lang)}</div>
                   <div className="stack" style={{ gap: 3, minWidth: 0 }}>
-                    <span className={`serif${zhBold(r.activity_name)}`} style={{ fontSize: 18.5, color: started ? 'var(--muted-2)' : undefined }}>{nameRuns(r.activity_name)}</span>
+                    <div className="card-name">
+                      {numbers.has(r.activity_id) ? <span className="card-num" style={started ? { background: 'var(--muted-2)' } : undefined}>{numbers.get(r.activity_id)}</span> : null}
+                      <span className={`serif${zhBold(r.activity_name)}`} style={{ fontSize: 18.5, color: started ? 'var(--muted-2)' : undefined }}>{nameRuns(r.activity_name)}</span>
+                    </div>
                     {household ? <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--ochre)' }}>{r.person_name}</span> : null}
                     <span className="muted" style={{ fontSize: 15 }}>{r.place} · {t.spots(r.party_size)} · {t.code(r.code)}</span>
                     {seatsOf(r.id) ? <span style={{ fontSize: 15, color: started ? 'var(--muted-2)' : 'var(--ink-2)' }}>{t.seatingIs(seatsOf(r.id))}</span> : null}
