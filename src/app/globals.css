@@ -92,6 +92,9 @@ button, input, select { font: inherit; color: inherit; }
 .card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
 .card-title { font-family: var(--serif); font-size: 20.5px; line-height: 1.25; color: var(--ink); text-decoration: none; }
 .card-title:hover { color: var(--moss-dark); }
+/* The activity's number in a moss circle, before its name; a long name wraps beside it, not under it. */
+.card-name { display: flex; align-items: flex-start; gap: 8px; }
+.card-num { flex: none; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--moss); color: var(--on-dark); font-family: var(--sans); font-size: 15px; font-weight: 600; line-height: 1; font-variant-numeric: tabular-nums; }
 .card-sub { font-size: 14.5px; color: var(--muted); }
 /* Times on an activity card: one box, one full-width row per time (date + time left, spots right). */
 .times { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }

@@ -25,11 +25,12 @@ export default async function Browse({ searchParams }: { searchParams: Promise<{
   const now = requestTime();
 
   const acts = all
-    .map((a) => {
+    .filter((a) => a.slots.length > 0)
+    // Numbered before filtering, so an activity keeps its number when "has open spots" is on.
+    .map((a, i) => {
       const upcoming = a.slots.filter((s) => s.startsAt.getTime() > now);
-      return { ...a, upcoming, open: upcoming.filter((s) => s.remaining > 0), hasSlots: a.slots.length > 0 };
+      return { ...a, number: i + 1, upcoming, open: upcoming.filter((s) => s.remaining > 0) };
     })
-    .filter((a) => a.hasSlots)
     .filter((a) => !onlyOpen || a.open.length > 0);
 
   const href = (q: { open: boolean }) => (q.open ? '/?open=1' : '/');
@@ -67,7 +68,10 @@ export default async function Browse({ searchParams }: { searchParams: Promise<{
           <section key={a.id} className="card" aria-labelledby={`a-${a.id}`}>
             <div className="card-head">
               <div className="stack" style={{ gap: 4, minWidth: 0 }}>
-                <Link id={`a-${a.id}`} className={`card-title${zhBold(a.name)}`} href={`/activity/${a.id}`}>{nameRuns(a.name)}</Link>
+                <div className="card-name">
+                  <span className="card-num">{a.number}</span>
+                  <Link id={`a-${a.id}`} className={`card-title${zhBold(a.name)}`} href={`/activity/${a.id}`}>{nameRuns(a.name)}</Link>
+                </div>
                 <span className="card-sub">{a.place}{a.instructor ? <> · <span className="led-by">{t.ledBy(a.instructor)}</span></> : null}</span>
               </div>
               {/* Every time has started: the activity is over, not full. */}
