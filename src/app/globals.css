@@ -413,17 +413,21 @@ select.input { padding: 0 14px; }
 
 /* Weekend feedback (/feedback). Activity rows reuse .photo-topic; the 1–5 rows are large pills. */
 .fb-form { gap: 28px; }
+/* Each question on its own soft card, so one question is clearly apart from the next. */
+.fb-card { background: var(--sage-pale); border: 1px solid var(--line); border-radius: 20px; padding: 18px 16px 16px; }
+.fb-card[data-invalid='true'] { border: 2px solid var(--ochre); padding: 17px 15px 15px; }
+.fb-form .fb-card + .fb-card { margin-top: -10px; }
 .fb-note { font-weight: 400; color: var(--muted); font-size: 15px; }
 .fb-scale { border: 0; padding: 0; margin: 0; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
 .fb-scale .legend { padding: 0; margin-bottom: 7px; line-height: 1.45; font-size: 18px; }
 .fb-q { display: flex; align-items: flex-start; gap: 8px; }
-.fb-qnum { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; margin-top: 1px; border-radius: 50%; background: var(--sage); color: var(--moss-dark); font-size: 14px; font-weight: 700; }
+.fb-qnum { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; margin-top: 1px; border-radius: 50%; background: var(--moss); color: var(--on-dark); font-size: 14px; font-weight: 700; }
 .fb-pills { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
 .fb-pill { display: flex; align-items: center; justify-content: center; min-height: 52px; border: 1px solid var(--line-strong); border-radius: 999px; background: var(--paper); font-size: 18.5px; font-weight: 600; cursor: pointer; font-variant-numeric: tabular-nums; }
 .fb-pill[data-on='true'] { border: 2px solid var(--moss); background: var(--sage); color: var(--moss-dark); }
 .fb-pill:has(input:focus-visible) { outline: 3px solid var(--focus); outline-offset: 2px; }
 .fb-ends { display: flex; justify-content: space-between; gap: 12px; font-size: 14.5px; color: var(--muted); }
-.fb-scale[data-invalid='true'] .fb-pill, .photo-topics[data-invalid='true'] .photo-topic { border-color: var(--ochre); }
+.photo-topics[data-invalid='true'] .photo-topic { border-color: var(--ochre); }
 /* Every prompt on the page (name, email, activities, comment) is the same size as the 1–5 questions. */
 .fb-form .field > label, .fb-form .photo-topics > .legend { font-size: 18px; line-height: 1.45; }
 .fb-comment { min-height: 140px; padding: 14px 16px; line-height: 1.5; resize: vertical; font-family: inherit; }

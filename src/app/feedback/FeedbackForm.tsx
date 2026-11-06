@@ -123,7 +123,9 @@ export default function FeedbackForm({ lang, event, activities, prefill }: { lan
         {SCALES.map((s, i) => {
           const q = t.questions[s];
           return (
-            <fieldset key={s} className="fb-scale" data-invalid={has(s)}>
+            // Each question sits on its own card (a div, since a fieldset's border would run through its legend).
+            <div key={s} className="fb-card" data-invalid={has(s)}>
+            <fieldset className="fb-scale">
               <legend className="legend fb-q">
                 <span className="fb-qnum">{i + 1}</span>
                 {/* The text sits in its own box, so a wrapped line starts under the first character, not under the number. */}
@@ -141,10 +143,11 @@ export default function FeedbackForm({ lang, event, activities, prefill }: { lan
               <div className="fb-ends" aria-hidden="true"><span>1 · {q.low}</span><span>5 · {q.high}</span></div>
               {has(s) && <span className="error">{t.errScore}</span>}
             </fieldset>
+            </div>
           );
         })}
 
-        <div className="field">
+        <div className="field fb-card" data-invalid={has('comment')}>
           <label htmlFor="fb-comment" className="fb-comment-label">{t.comment} <span className="fb-note">{t.optional}</span></label>
           <textarea id="fb-comment" className="input fb-comment" rows={5} value={comment} maxLength={MAX_COMMENT}
             aria-invalid={has('comment')} onChange={(e) => { setComment(e.target.value); fix('comment'); }} />
