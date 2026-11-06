@@ -10,7 +10,7 @@ type Section = { h: string; p: (string | string[])[] };
 export type LegalDoc = { title: string; updated: string; intro: string; sections: Section[]; note?: string };
 
 const UPDATED = { en: 'Last updated October 22, 2026', zh: '最後更新：2026 年 10 月 22 日', zhs: '最后更新：2026 年 10 月 22 日' };
-const PRIVACY_UPDATED = { en: 'Last updated November 2, 2026', zh: '最後更新：2026 年 11 月 2 日', zhs: '最后更新：2026 年 11 月 2 日' };
+const PRIVACY_UPDATED = { en: 'Last updated November 6, 2026', zh: '最後更新：2026 年 11 月 6 日', zhs: '最后更新：2026 年 11 月 6 日' };
 const NOTE = { zh: '本頁為中文譯本，如與英文版本有出入，以英文版本為準。', zhs: '本页为中文译本，如与英文版本有出入，以英文版本为准。' };
 
 export function terms(lang: Lang, event: string): LegalDoc {
@@ -121,7 +121,7 @@ export function privacy(lang: Lang, event: string): LegalDoc {
     title: 'Privacy policy', updated: PRIVACY_UPDATED.en,
     intro: `${org} (“we”, “us”) runs the ${event} activity sign-up. This policy explains what we collect and how we use it.`,
     sections: [
-      { h: 'What we collect', p: ['Your name, email address and mobile number; the language you use the site in; the activities you sign up for, how many spots, and whether you checked in; ratings you give activities; and whether you chose text or email reminders.'] },
+      { h: 'What we collect', p: ['Your name, email address and mobile number; the language you use the site in; the activities you sign up for, how many spots, and whether you checked in; ratings and feedback you give on activities; and whether you chose text or email reminders.'] },
       { h: 'How we use it', p: ['Only to run the event: to hold your spots, send the confirmations, reminders, schedule changes and sign-in codes you ask for, and let staff find you at check-in.'] },
       { h: 'Text messages', p: [
         [
@@ -142,7 +142,7 @@ export function privacy(lang: Lang, event: string): LegalDoc {
     title: '隱私權政策', updated: PRIVACY_UPDATED.zh, note: NOTE.zh,
     intro: `${event}活動報名由 ${org}（以下稱「我們」）營運。本政策說明我們收集哪些資料，以及如何使用。`,
     sections: [
-      { h: '我們收集的資料', p: ['你的姓名、電子郵件與手機號碼；你使用網站的語言；你報名的活動、人數與報到狀態；你為活動給的評分；以及你選擇以簡訊或電子郵件接收提醒。'] },
+      { h: '我們收集的資料', p: ['你的姓名、電子郵件與手機號碼；你使用網站的語言；你報名的活動、人數與報到狀態；你為活動給的評分與回饋；以及你選擇以簡訊或電子郵件接收提醒。'] },
       { h: '使用方式', p: ['僅用於辦理活動：保留名額、傳送你申請的報名確認、提醒、時段異動與登入代碼，以及讓工作人員在報到時找到你。'] },
       { h: '簡訊', p: [
         [
@@ -163,7 +163,7 @@ export function privacy(lang: Lang, event: string): LegalDoc {
     title: '隐私政策', updated: PRIVACY_UPDATED.zhs, note: NOTE.zhs,
     intro: `${event}活动报名由 ${org}（以下称“我们”）运营。本政策说明我们收集哪些信息，以及如何使用。`,
     sections: [
-      { h: '我们收集的信息', p: ['你的姓名、邮箱和手机号码；你使用网站的语言；你报名的活动、人数和签到状态；你为活动打的分；以及你选择通过短信还是邮件接收提醒。'] },
+      { h: '我们收集的信息', p: ['你的姓名、邮箱和手机号码；你使用网站的语言；你报名的活动、人数和签到状态；你为活动打的分和反馈；以及你选择通过短信还是邮件接收提醒。'] },
       { h: '使用方式', p: ['仅用于举办活动：保留名额、发送你申请的报名确认、提醒、时段变更和登录验证码，以及让工作人员在签到时找到你。'] },
       { h: '短信', p: [
         [

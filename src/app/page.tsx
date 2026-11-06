@@ -6,7 +6,7 @@ import { dateRangeL, dayOf, dayText, fmtDayTimeL, fmtTimeL, isLow, requestTime }
 import { getLang } from '@/lib/lang';
 import { dict, zhBold } from '@/lib/i18n';
 import LangToggle from '@/components/LangToggle';
-import { Calendar, Camera, Hills, Leaf, Check } from '@/components/icons';
+import { Calendar, Camera, Hills, Leaf, Check, Sprout } from '@/components/icons';
 import { nameRuns } from '@/components/ActivityName';
 
 export const dynamic = 'force-dynamic';
@@ -23,6 +23,8 @@ export default async function Browse({ searchParams }: { searchParams: Promise<{
   const all = await activitiesAllDays(lang);
   const [title1, title2] = t.heroTitle(eventName(lang));
   const now = requestTime();
+  // The weekend feedback card shows once the first activity has started (the page itself always works at /feedback).
+  const feedbackOpen = all.some((a) => a.slots.some((s) => s.startsAt.getTime() <= now));
 
   const acts = all
     .filter((a) => a.slots.length > 0)
@@ -112,6 +114,15 @@ export default async function Browse({ searchParams }: { searchParams: Promise<{
           </section>
         ))}
         {acts.length === 0 ? <p className="empty">{t.dayFull}</p> : null}
+        {feedbackOpen ? (
+          <Link className="card photo-card" href="/feedback">
+            <span className="photo-card-icon"><Sprout size={26} /></span>
+            <span className="stack" style={{ gap: 4, minWidth: 0 }}>
+              <span className={`card-title${zhBold(t.feedback.title)}`}>{t.feedback.title}</span>
+              <span className="photo-card-text">{t.feedback.cardText}</span>
+            </span>
+          </Link>
+        ) : null}
         {SHOW_PHOTO_CARD ? (
           <Link className="card photo-card" href="/photos">
             <span className="photo-card-icon"><Camera /></span>

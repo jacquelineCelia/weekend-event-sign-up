@@ -9,7 +9,7 @@ import { activityNumbers, seatOptions, seatsForBookings } from '@/lib/queries';
 import { getLang } from '@/lib/lang';
 import { dict, zhBold } from '@/lib/i18n';
 import LangToggle from '@/components/LangToggle';
-import { Back, Bell, Plus } from '@/components/icons';
+import { Back, Bell, Plus, Sprout } from '@/components/icons';
 import VenueMap, { type MapPlace } from '@/components/VenueMap';
 import { SHOW_VENUE_MAP } from '@/lib/venue-map';
 import { LegalFoot } from '@/components/LegalPage';
@@ -205,6 +205,15 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
       ))}
 
       {rows.length === 0 ? <p className="empty">{t.noSignups}</p> : null}
+
+      {rows.some((r) => addMinutes(r.starts_at, r.duration_min).getTime() <= now) ? (
+        <div className="pad">
+          <Link className="card photo-card" href="/feedback" style={{ marginTop: 0 }}>
+            <span className="photo-card-icon"><Sprout size={26} /></span>
+            <span className="card-title" style={{ fontSize: 17.5 }}>{t.feedback.meLink}</span>
+          </Link>
+        </div>
+      ) : null}
 
       <div className="pad" style={{ paddingBottom: 30 }}>
         <Link className="btn ghost" href="/" style={{ width: '100%', border: '1.5px dashed #8c9688', color: 'var(--moss-dark)' }}>
