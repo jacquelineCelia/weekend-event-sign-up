@@ -420,8 +420,9 @@ select.input { padding: 0 14px; }
 .fb-note { font-weight: 400; color: var(--muted); font-size: 15px; }
 .fb-scale { border: 0; padding: 0; margin: 0; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
 .fb-scale .legend { padding: 0; margin-bottom: 7px; line-height: 1.45; font-size: 18px; }
-.fb-q { display: flex; align-items: flex-start; gap: 8px; }
-.fb-qnum { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; margin-top: 1px; border-radius: 50%; background: var(--moss); color: var(--on-dark); font-size: 14px; font-weight: 700; }
+.fb-q { display: flex; align-items: flex-start; gap: 12px; }
+/* Question numbers: a serif numeral with a thin rule after it, unlike the round green activity numbers. */
+.fb-qnum { flex: none; width: 22px; box-sizing: content-box; padding-right: 10px; border-right: 1.5px solid var(--ochre); font-family: var(--serif); font-size: 24px; font-weight: 400; line-height: 26px; color: var(--ochre); text-align: center; font-variant-numeric: lining-nums; }
 .fb-pills { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
 .fb-pill { display: flex; align-items: center; justify-content: center; min-height: 52px; border: 1px solid var(--line-strong); border-radius: 999px; background: var(--paper); font-size: 18.5px; font-weight: 600; cursor: pointer; font-variant-numeric: tabular-nums; }
 .fb-pill[data-on='true'] { border: 2px solid var(--moss); background: var(--sage); color: var(--moss-dark); }
