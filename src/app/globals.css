@@ -424,5 +424,6 @@ select.input { padding: 0 14px; }
 .fb-pill:has(input:focus-visible) { outline: 3px solid var(--focus); outline-offset: 2px; }
 .fb-ends { display: flex; justify-content: space-between; gap: 12px; font-size: 14.5px; color: var(--muted); }
 .fb-scale[data-invalid='true'] .fb-pill, .photo-topics[data-invalid='true'] .photo-topic { border-color: var(--ochre); }
+.field .fb-comment-label { font-size: 18px; line-height: 1.45; } /* same size as the 1–5 questions */
 .fb-comment { min-height: 140px; padding: 14px 16px; line-height: 1.5; resize: vertical; font-family: inherit; }
 .photo-topic .card-num { margin-left: -2px; }

@@ -145,7 +145,7 @@ export default function FeedbackForm({ lang, event, activities, prefill }: { lan
         })}
 
         <div className="field">
-          <label htmlFor="fb-comment">{t.comment} <span className="fb-note">{t.optional}</span></label>
+          <label htmlFor="fb-comment" className="fb-comment-label">{t.comment} <span className="fb-note">{t.optional}</span></label>
           <textarea id="fb-comment" className="input fb-comment" rows={5} value={comment} maxLength={MAX_COMMENT}
             aria-invalid={has('comment')} onChange={(e) => { setComment(e.target.value); fix('comment'); }} />
           {has('comment') && <span className="error">{t.errComment}</span>}
