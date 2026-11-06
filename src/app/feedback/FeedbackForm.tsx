@@ -124,9 +124,10 @@ export default function FeedbackForm({ lang, event, activities, prefill }: { lan
           const q = t.questions[s];
           return (
             <fieldset key={s} className="fb-scale" data-invalid={has(s)}>
-              <legend className="legend">
-                <span className="fb-qnum">{i + 1}</span>{q.q}
-                {OPTIONAL.includes(s) ? <span className="fb-note"> {t.transitionHint}</span> : null}
+              <legend className="legend fb-q">
+                <span className="fb-qnum">{i + 1}</span>
+                {/* The text sits in its own box, so a wrapped line starts under the first character, not under the number. */}
+                <span>{q.q}{OPTIONAL.includes(s) ? <span className="fb-note"> {t.transitionHint}</span> : null}</span>
               </legend>
               <div className="fb-pills">
                 {[1, 2, 3, 4, 5].map((n) => (
