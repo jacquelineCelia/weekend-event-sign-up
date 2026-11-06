@@ -22,7 +22,7 @@ export const dynamic = 'force-dynamic';
 
 type Row = {
   id: string; code: string; party_size: number; starts_at: Date; duration_min: number; remind_sms: boolean; remind_email: boolean;
-  activity_name: string; place: string; place_en?: string; name_zh: string; place_zh: string; instructor: string; instructor_zh: string; activity_id: string; slot_id: string; score: number | null; person_name: string;
+  activity_name: string; place: string; place_en?: string; name_zh: string; place_zh: string; instructor: string; instructor_zh: string; activity_id: string; slot_id: string; calm: number | null; again: boolean | null; person_name: string;
 };
 
 export default async function MySignups({ searchParams }: { searchParams: Promise<{ moved?: string; seated?: string; party?: string }> }) {
@@ -37,7 +37,7 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
   const { rows } = await getPool().query<Row>(
     `select b.id, b.code, b.party_size, s.starts_at, a.duration_min, b.remind_sms, b.remind_email,
             a.name as activity_name, a.name_zh,
-            a.place, a.place_zh, a.instructor, a.instructor_zh, a.id as activity_id, s.id as slot_id, r.score, p.name as person_name
+            a.place, a.place_zh, a.instructor, a.instructor_zh, a.id as activity_id, s.id as slot_id, r.calm, r.again, p.name as person_name
        from bookings b join slots s on s.id = b.slot_id join activities a on a.id = s.activity_id
        join people p on p.id = b.person_id
        left join ratings r on r.booking_id = b.id
@@ -196,7 +196,7 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
                     <CancelButton lang={lang} bookingId={r.id} />
                   </div>
                 ) : done ? (
-                  <RatePicker lang={lang} bookingId={r.id} name={r.activity_name} score={r.score} />
+                  <RatePicker lang={lang} bookingId={r.id} calm={r.calm} again={r.again} />
                 ) : null}
               </article>
             );

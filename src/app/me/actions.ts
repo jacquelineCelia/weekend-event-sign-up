@@ -9,6 +9,7 @@ import { currentOwners } from '@/lib/viewer';
 import { BookingError, cancelBooking, changeSeats, changeSlot } from '@/lib/booking';
 import { getPool } from '@/lib/db';
 import { getLang } from '@/lib/lang';
+import { requestTime } from '@/lib/event';
 
 export type LoginState = { error?: { code: string; left?: number }; value?: string } | null;
 
@@ -48,15 +49,24 @@ export async function cancelAction(form: FormData) {
 export async function rateAction(form: FormData) {
   const { ids } = await currentOwners();
   const id = uuid.safeParse(form.get('bookingId'));
-  const score = z.coerce.number().int().min(1).max(10).safeParse(form.get('score'));
-  if (!ids.length || !id.success || !score.success) return;
-  // Only the attendee's own, already-started bookings can be rated.
+  if (!ids.length || !id.success) return;
+  // One answer per tap: "calm" (1–5) or "again" (yes / no). The other answer is left as it was.
+  let column: 'calm' | 'again';
+  let value: number | boolean;
+  if (form.has('calm')) {
+    const calm = z.coerce.number().int().min(1).max(5).safeParse(form.get('calm'));
+    if (!calm.success) return;
+    column = 'calm'; value = calm.data;
+  } else if (form.get('again') === 'yes' || form.get('again') === 'no') {
+    column = 'again'; value = form.get('again') === 'yes';
+  } else return;
+  // Only the attendee's own, already-started bookings can be rated (the same clock as the page uses).
   await getPool().query(
-    `insert into ratings (booking_id, score)
+    `insert into ratings (booking_id, ${column})
      select b.id, $3 from bookings b join slots s on s.id = b.slot_id
-      where b.id = $1 and b.person_id = any($2::uuid[]) and b.status = 'confirmed' and s.starts_at < now()
-     on conflict (booking_id) do update set score = excluded.score, updated_at = now()`,
-    [id.data, ids, score.data],
+      where b.id = $1 and b.person_id = any($2::uuid[]) and b.status = 'confirmed' and s.starts_at < $4
+     on conflict (booking_id) do update set ${column} = excluded.${column}, updated_at = now()`,
+    [id.data, ids, value, new Date(requestTime())],
   );
   revalidatePath('/me');
 }
