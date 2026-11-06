@@ -377,7 +377,7 @@ const zh: Dict = {
   feedback: {
     title: '活動回饋',
     cardText: '告訴我們你這個週末的感受，大約兩分鐘。',
-    lede: (event: string) => `謝謝你來參加${event}。想邀請你花兩分鐘，和我們聊聊這個週末的感受，讓下一次的相聚更美好。`,
+    lede: (event: string) => `謝謝你來參加${event}。想邀請你花兩分鐘，和我們分享這個週末的感受，讓下一次的相聚更美好。`,
     name: '姓名',
     email: '電子郵件',
     activities: '你參加了哪些活動？',
@@ -672,7 +672,7 @@ const zhs: Dict = {
   feedback: {
     title: '活动反馈',
     cardText: '告诉我们你这个周末的感受，大约两分钟。',
-    lede: (event: string) => `谢谢你来参加${event}。想邀请你花两分钟，和我们聊聊这个周末的感受，让下一次的相聚更美好。`,
+    lede: (event: string) => `谢谢你来参加${event}。想邀请你花两分钟，和我们分享这个周末的感受，让下一次的相聚更美好。`,
     name: '姓名',
     email: '邮箱',
     activities: '你参加了哪些活动？',
