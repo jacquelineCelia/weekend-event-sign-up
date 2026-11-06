@@ -93,22 +93,13 @@ export default async function Registration({ searchParams }: { searchParams: Pro
             </h1>
           </div>
 
-          <section className="roster regroster" aria-label={t.activitiesAtTime}>
-            {rows.length ? (
-              <div className="rrow reghead" aria-hidden="true">
-                <span className="reghead-spacer" />
-                <div className="regstats">
-                  {[t.booked, t.onHold, t.open, t.here].map((k) => <span key={k}>{k}</span>)}
-                </div>
-                <span className="regroster-spacer" />
-              </div>
-            ) : null}
+          <section className="roster" aria-label={t.activitiesAtTime}>
             {rows.map((r) => {
               const open = Math.max(0, r.capacity - r.booked - r.held);
               const full = r.booked + r.held >= r.capacity;
               return (
-                <div key={r.slotId} className="rrow regrow">
-                  <div className="stack" style={{ gap: 8, flex: '1 1 260px', minWidth: 0 }}>
+                <div key={r.slotId} className="rrow" style={{ alignItems: 'flex-start' }}>
+                  <div className="stack" style={{ gap: 6, flex: '1 1 260px', minWidth: 0 }}>
                     {(() => {
                       const name = localText(r.activityName, r.activityNameZh, lang);
                       return <span className={`serif${name !== r.activityName ? ' zhname' : ''}`} lang={name !== r.activityName ? htmlLang : 'en'} style={{ fontSize: 23 }}>{nameRuns(name)}</span>;
@@ -118,7 +109,7 @@ export default async function Registration({ searchParams }: { searchParams: Pro
                       {r.instructor ? <> · <span lang={lang !== 'en' && r.instructorZh ? htmlLang : 'en'}>{t.ledBy(localText(r.instructor, r.instructorZh, lang))}</span></> : null}
                       {r.walkIns ? ` · ${t.walkIns(r.walkIns)}` : ''}
                     </span>
-                    <div aria-hidden="true" style={{ height: 6, marginTop: 2, borderRadius: 999, background: 'var(--ground-2)', overflow: 'hidden', display: 'flex' }}>
+                    <div aria-hidden="true" style={{ height: 8, borderRadius: 999, background: 'var(--ground-2)', overflow: 'hidden', display: 'flex' }}>
                       <span style={{ width: `${pct(r.booked, r.capacity)}%`, background: full ? 'var(--ochre)' : 'var(--moss)' }} />
                       <span style={{ width: `${pct(r.held, r.capacity)}%`, background: 'var(--sage)' }} />
                     </div>
@@ -131,9 +122,9 @@ export default async function Registration({ searchParams }: { searchParams: Pro
                   <dl className="regstats">
                     {[
                       [t.booked, `${r.booked}/${r.capacity}`, full ? 'var(--ochre)' : 'var(--ink)'],
-                      [t.onHold, String(r.held), r.held ? 'var(--muted)' : 'var(--muted-2)'],
+                      [t.onHold, String(r.held), 'var(--muted)'],
                       [t.open, full ? t.full : String(open), full ? 'var(--ochre)' : 'var(--moss-dark)'],
-                      [t.here, String(r.arrived), r.arrived ? 'var(--moss)' : 'var(--muted-2)'],
+                      [t.here, String(r.arrived), 'var(--moss)'],
                     ].map(([k, v, c]) => (
                       <div key={k} className="stack" style={{ gap: 2, textAlign: 'center' }}>
                         <dt style={{ fontSize: 17, whiteSpace: 'nowrap', color: 'var(--muted)' }}>{k}</dt>
@@ -141,7 +132,7 @@ export default async function Registration({ searchParams }: { searchParams: Pro
                       </div>
                     ))}
                   </dl>
-                  <Link href={rosterHref(r.slotId, r.durationMin)} className="btn ghost regroster-btn" style={{ minHeight: 46, fontSize: 18, padding: '0 16px', alignSelf: 'center' }}>
+                  <Link href={rosterHref(r.slotId, r.durationMin)} className="btn ghost" style={{ minHeight: 46, fontSize: 18, padding: '0 16px', alignSelf: 'center' }}>
                     {t.roster}
                   </Link>
                 </div>
