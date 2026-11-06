@@ -113,7 +113,7 @@ export default function FeedbackForm({ lang, event, activities, prefill }: { lan
                 <input type="checkbox" checked={on}
                   onChange={() => { setPicked((x) => (on ? x.filter((y) => y !== a.id) : [...x, a.id])); fix('activities'); }} />
                 <span className="card-num" aria-hidden="true">{a.number}</span>
-                <span className={`photo-topic-name${zhBold(a.name)}`}>{nameRuns(a.name)}</span>
+                <span className={`card-title${zhBold(a.name)}`}>{nameRuns(a.name)}</span>
               </label>
             );
           })}
