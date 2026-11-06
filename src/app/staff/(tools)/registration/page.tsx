@@ -126,7 +126,7 @@ export default async function Registration({ searchParams }: { searchParams: Pro
                       [t.open, full ? t.full : String(open), full ? 'var(--ochre)' : 'var(--moss-dark)'],
                       [t.here, String(r.arrived), 'var(--moss)'],
                     ].map(([k, v, c]) => (
-                      <div key={k} className="stack" style={{ gap: 2 }}>
+                      <div key={k} className="stack" style={{ gap: 2, textAlign: 'center' }}>
                         <dt style={{ fontSize: 17, whiteSpace: 'nowrap', color: 'var(--muted)' }}>{k}</dt>
                         <dd style={{ margin: 0, fontSize: 23, fontWeight: 600, whiteSpace: 'nowrap', color: c }}>{v}</dd>
                       </div>
