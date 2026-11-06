@@ -13,6 +13,11 @@ export const dynamic = 'force-dynamic';
 
 /** The link to photo sharing is hidden for now; the page itself still works at /photos. */
 const SHOW_PHOTO_CARD = false;
+/**
+ * The weekend feedback card is hidden for now (the organizers will email the link after the weekend);
+ * the page itself still works at /feedback. Set to true to show the card at the bottom of the list.
+ */
+const SHOW_FEEDBACK_CARD = false;
 
 export default async function Browse({ searchParams }: { searchParams: Promise<{ open?: string }> }) {
   const sp = await searchParams;
@@ -23,8 +28,6 @@ export default async function Browse({ searchParams }: { searchParams: Promise<{
   const all = await activitiesAllDays(lang);
   const [title1, title2] = t.heroTitle(eventName(lang));
   const now = requestTime();
-  // The weekend feedback card shows once the first activity has started (the page itself always works at /feedback).
-  const feedbackOpen = all.some((a) => a.slots.some((s) => s.startsAt.getTime() <= now));
 
   const acts = all
     .filter((a) => a.slots.length > 0)
@@ -114,7 +117,7 @@ export default async function Browse({ searchParams }: { searchParams: Promise<{
           </section>
         ))}
         {acts.length === 0 ? <p className="empty">{t.dayFull}</p> : null}
-        {feedbackOpen ? (
+        {SHOW_FEEDBACK_CARD ? (
           <Link className="card photo-card" href="/feedback">
             <span className="photo-card-icon"><Sprout size={26} /></span>
             <span className="stack" style={{ gap: 4, minWidth: 0 }}>
