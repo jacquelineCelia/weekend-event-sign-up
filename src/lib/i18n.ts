@@ -76,7 +76,7 @@ const en = {
     questions: {
       relax: { q: 'Over these two days, did the activities help you relax, rest in the present moment, and see yourself a little more clearly?', low: 'Not really', high: 'Very much' },
       venue: { q: 'Did the spaces and how they were set up help your mind settle and grow quiet?', low: 'Not really', high: 'Very much' },
-      guidance: { q: 'Was it easy to follow the instructors’ guidance as you took part in the activities?', low: 'Very hard', high: 'Very easy' },
+      guidance: { q: 'Was it easy to follow the instructors’ guidance and settle into the experience?', low: 'Very hard', high: 'Very easy' },
       transition: { q: 'Between activities, did you have time to walk to the next one without rushing?', low: 'A bit rushed', high: 'Plenty of time' },
       again: { q: 'If you had the chance, would you like to come back to these activities again?', low: 'Not really', high: 'I’d love to' },
     },
@@ -385,7 +385,7 @@ const zh: Dict = {
     questions: {
       relax: { q: '這兩天的療癒活動，有沒有陪你放鬆下來、安住在當下，也更看見自己一些？', low: '不太有', high: '很有幫助' },
       venue: { q: '活動的場地與佈置，有沒有讓你的心更容易安靜下來？', low: '不太有', high: '很有幫助' },
-      guidance: { q: '你能輕鬆地跟著引導者的講解來體驗活動嗎？', low: '很困難', high: '非常輕鬆' },
+      guidance: { q: '你能輕鬆地跟著引導者的講解來投入體驗嗎？', low: '很困難', high: '非常輕鬆' },
       transition: { q: '活動與活動之間，你有足夠的時間，從容地走到下一個場地嗎？', low: '有點匆忙', high: '很從容' },
       again: { q: '如果還有機會，你會想再來體驗這次參加的活動嗎？', low: '不太想', high: '很想' },
     },
@@ -680,7 +680,7 @@ const zhs: Dict = {
     questions: {
       relax: { q: '这两天的疗愈活动，有没有陪你放松下来、安住在当下，也更看见自己一些？', low: '不太有', high: '很有帮助' },
       venue: { q: '活动的场地与布置，有没有让你的心更容易安静下来？', low: '不太有', high: '很有帮助' },
-      guidance: { q: '你能轻松地跟着引导者的讲解来体验活动吗？', low: '很困难', high: '非常轻松' },
+      guidance: { q: '你能轻松地跟着引导者的讲解来投入体验吗？', low: '很困难', high: '非常轻松' },
       transition: { q: '活动与活动之间，你有足够的时间，从容地走到下一个场地吗？', low: '有点匆忙', high: '很从容' },
       again: { q: '如果还有机会，你会想再来体验这次参加的活动吗？', low: '不太想', high: '很想' },
     },
