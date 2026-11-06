@@ -7,6 +7,7 @@ import { EVENT, addMinutes, dayOf, dayText, fmtTimeL, isChinese, requestTime } f
 import { localText, seatLine } from '@/lib/hans';
 import { activityNumbers, seatOptions, seatsForBookings } from '@/lib/queries';
 import { getLang } from '@/lib/lang';
+import { SHOW_FEEDBACK_LINKS } from '@/lib/feedback';
 import { dict, zhBold } from '@/lib/i18n';
 import LangToggle from '@/components/LangToggle';
 import { Back, Bell, Plus, Sprout } from '@/components/icons';
@@ -206,7 +207,7 @@ export default async function MySignups({ searchParams }: { searchParams: Promis
 
       {rows.length === 0 ? <p className="empty">{t.noSignups}</p> : null}
 
-      {rows.some((r) => addMinutes(r.starts_at, r.duration_min).getTime() <= now) ? (
+      {SHOW_FEEDBACK_LINKS && rows.some((r) => addMinutes(r.starts_at, r.duration_min).getTime() <= now) ? (
         <div className="pad">
           <Link className="card photo-card" href="/feedback" style={{ marginTop: 0 }}>
             <span className="photo-card-icon"><Sprout size={26} /></span>

@@ -2,6 +2,12 @@ import { z } from 'zod';
 import { getPool } from './db';
 import { normalizeEmail } from './contact';
 
+/**
+ * Links to the weekend feedback page (/feedback): the card on the activity list and the link on My sign-ups.
+ * Hidden until the organizers say to show them (after the weekend); the page itself always works.
+ */
+export const SHOW_FEEDBACK_LINKS = false;
+
 /** The five 1–5 questions, in the order they are asked. "transition" may be left blank. */
 export const SCALES = ['relax', 'venue', 'guidance', 'transition', 'again'] as const;
 export type Scale = (typeof SCALES)[number];

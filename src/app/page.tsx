@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { activitiesAllDays } from '@/lib/queries';
+import { SHOW_FEEDBACK_LINKS } from '@/lib/feedback';
 import { eventName } from '@/lib/hans';
 import { LegalFoot } from '@/components/LegalPage';
 import { dateRangeL, dayOf, dayText, fmtDayTimeL, fmtTimeL, isLow, requestTime } from '@/lib/event';
@@ -13,11 +14,6 @@ export const dynamic = 'force-dynamic';
 
 /** The link to photo sharing is hidden for now; the page itself still works at /photos. */
 const SHOW_PHOTO_CARD = false;
-/**
- * The weekend feedback card is hidden for now (the organizers will email the link after the weekend);
- * the page itself still works at /feedback. Set to true to show the card at the bottom of the list.
- */
-const SHOW_FEEDBACK_CARD = false;
 
 export default async function Browse({ searchParams }: { searchParams: Promise<{ open?: string }> }) {
   const sp = await searchParams;
@@ -117,7 +113,7 @@ export default async function Browse({ searchParams }: { searchParams: Promise<{
           </section>
         ))}
         {acts.length === 0 ? <p className="empty">{t.dayFull}</p> : null}
-        {SHOW_FEEDBACK_CARD ? (
+        {SHOW_FEEDBACK_LINKS ? (
           <Link className="card photo-card" href="/feedback">
             <span className="photo-card-icon"><Sprout size={26} /></span>
             <span className="stack" style={{ gap: 4, minWidth: 0 }}>
