@@ -1,5 +1,5 @@
 import { timingSafeEqual } from 'node:crypto';
-import { runReminders } from '@/lib/reminders';
+import { runRatingEmails, runReminders } from '@/lib/reminders';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,7 +13,12 @@ async function handle(req: Request) {
     return new Response('Unauthorized', { status: 401 });
   }
   const results = await runReminders();
-  return Response.json({ sent: results.filter((r) => !r.error).length, failed: results.filter((r) => r.error).length, results });
+  // "How was it?" emails ride on the same once-a-minute job.
+  const ratings = await runRatingEmails();
+  return Response.json({
+    sent: results.filter((r) => !r.error).length, failed: results.filter((r) => r.error).length, results,
+    ratingEmails: { sent: ratings.filter((r) => !r.error).length, failed: ratings.filter((r) => r.error).length },
+  });
 }
 
 export const GET = handle;

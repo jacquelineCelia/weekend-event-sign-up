@@ -65,6 +65,14 @@ const en = {
     errFull: 'The photo show is full, so we can’t take more photos. Thank you for sharing!',
     errFailed: 'The upload didn’t go through. Please check your connection and try again.',
   },
+  ratePage: {
+    lede: 'Just two quick questions, one tap each. Your answers are saved right away.',
+    thanks: 'Thank you for sharing!',
+    thanksBody: 'You can come back to this page to change your answers any time.',
+    badTitle: 'This link has expired',
+    badBody: 'Sign in on My sign-ups to rate the activities you joined.',
+    notStarted: 'You can share how it went once this activity has started.',
+  },
   feedback: {
     title: 'Share your feedback',
     cardText: 'Tell us how the weekend felt for you. It takes about two minutes.',
@@ -315,6 +323,9 @@ const en = {
       `${from}: ${first}, ${act} starts in 15 min (${time}, ${place}). ${n} ${n === 1 ? 'spot' : 'spots'}, code ${code}. Can't make it? Cancel in My sign-ups.`,
     /** First line of reminder and time-change emails: several people may share the inbox. */
     forPerson: (name: string) => `For ${name}`,
+    rateSubject: (act: string) => `How was ${act}?`,
+    rateLines: (act: string, when: string) => [`Thank you for joining ${act} (${when}).`, 'We’d love to know how it felt for you. There are just two quick questions, one tap each.'],
+    rateCta: 'Share how it went',
     reminderSubject: (act: string, time: string) => `In 15 minutes: ${act}, ${time}`,
     reminderTitle: (act: string) => `In 15 minutes: ${act}`,
     reminderLines: (act: string, time: string, place: string, n: number) => [
@@ -373,6 +384,14 @@ const zh: Dict = {
     errBusy: '這個網路剛剛上傳了很多照片，請過幾分鐘再試一次。',
     errFull: '照片展示已滿，無法再接收照片。謝謝你的分享！',
     errFailed: '上傳沒有成功，請檢查網路連線後再試一次。',
+  },
+  ratePage: {
+    lede: '只有兩個問題，點一下就完成，答案會立刻儲存。',
+    thanks: '謝謝你的分享！',
+    thanksBody: '想改答案的話，隨時可以回到這一頁。',
+    badTitle: '這個連結已失效',
+    badBody: '請到「我的報名」登入後，再為參加過的活動填寫回饋。',
+    notStarted: '活動開始後，就可以在這裡分享你的感受。',
   },
   feedback: {
     title: '活動回饋',
@@ -617,6 +636,9 @@ const zh: Dict = {
     confirmSms: (from, first, act, when, place, n, code, reminder) => `${from}：${first}已報名${act}，${when}，${place}。${n}位，代碼 ${code}。${reminder}簡訊頻率不一。可能產生簡訊及數據傳輸費用。回覆 HELP 取得協助，回覆 STOP 取消簡訊。`,
     reminderSms: (from, first, act, time, place, n, code) => `${from}：${first}，${act} 15 分鐘後開始（${time}，${place}）。${n}位，代碼 ${code}。無法參加？請到「我的報名」取消。`,
     forPerson: (name) => `報名人：${name}`,
+    rateSubject: (act) => `「${act}」感覺如何？`,
+    rateLines: (act, when) => [`謝謝您參加「${act}」（${when}）。`, '想聽聽您的感受，只有兩個問題，點一下就完成。'],
+    rateCta: '分享您的感受',
     reminderSubject: (act, time) => `15 分鐘後開始：${act}，${time}`,
     reminderTitle: (act) => `15 分鐘後開始：${act}`,
     reminderLines: (act, time, place, n) => [
@@ -668,6 +690,14 @@ const zhs: Dict = {
     errBusy: '这个网络刚刚上传了很多照片，请过几分钟再试一次。',
     errFull: '照片展示已满，无法再接收照片。谢谢你的分享！',
     errFailed: '上传没有成功，请检查网络连接后再试一次。',
+  },
+  ratePage: {
+    lede: '只有两个问题，点一下就完成，答案会立刻保存。',
+    thanks: '谢谢你的分享！',
+    thanksBody: '想改答案的话，随时可以回到这一页。',
+    badTitle: '这个链接已失效',
+    badBody: '请到“我的报名”登录后，再为参加过的活动填写反馈。',
+    notStarted: '活动开始后，就可以在这里分享你的感受。',
   },
   feedback: {
     title: '活动反馈',
@@ -912,6 +942,9 @@ const zhs: Dict = {
     confirmSms: (from, first, act, when, place, n, code, reminder) => `${from}：${first}已报名${act}，${when}，${place}。${n}位，签到码 ${code}。${reminder}短信频率不一。可能产生短信和数据流量费用。回复 HELP 获取帮助，回复 STOP 退订短信。`,
     reminderSms: (from, first, act, time, place, n, code) => `${from}：${first}，${act} 15 分钟后开始（${time}，${place}）。${n}位，签到码 ${code}。无法参加？请到“我的报名”取消。`,
     forPerson: (name) => `报名人：${name}`,
+    rateSubject: (act) => `“${act}”感觉如何？`,
+    rateLines: (act, when) => [`谢谢您参加“${act}”（${when}）。`, '想听听您的感受，只有两个问题，点一下就完成。'],
+    rateCta: '分享您的感受',
     reminderSubject: (act, time) => `15 分钟后开始：${act}，${time}`,
     reminderTitle: (act) => `15 分钟后开始：${act}`,
     reminderLines: (act, time, place, n) => [
