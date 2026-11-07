@@ -34,7 +34,7 @@ describe('"How was it?" emails', () => {
     outbox.length = 0; // the booking confirmation
     expect((await runRatingEmails()).map((r) => r.id)).toEqual([id]);
     expect(outbox).toHaveLength(1);
-    expect(outbox[0].subject).toBe('「靜心茶席」體驗回饋');
+    expect(outbox[0].subject).toBe('體驗回饋：「靜心茶席」');
     const link = outbox[0].text.match(/\/zh\/rate\/(\S+)/);
     expect(link).not.toBeNull();
     expect(readRateToken(link![1])).toBe(id);
