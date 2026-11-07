@@ -387,11 +387,11 @@ const zh: Dict = {
   },
   ratePage: {
     lede: '邀請您回答以下兩個問題：',
-    thanks: '謝謝你的分享！',
+    thanks: '謝謝您的分享！',
     thanksBody: '想改答案的話，隨時可以回到這一頁。',
     badTitle: '這個連結已失效',
     badBody: '請到「我的報名」登入後，再為參加過的活動填寫回饋。',
-    notStarted: '活動開始後，就可以在這裡分享你的感受。',
+    notStarted: '活動開始後，就可以在這裡分享您的感受。',
   },
   feedback: {
     title: '活動回饋',
@@ -693,11 +693,11 @@ const zhs: Dict = {
   },
   ratePage: {
     lede: '邀请您回答以下两个问题：',
-    thanks: '谢谢你的分享！',
+    thanks: '谢谢您的分享！',
     thanksBody: '想改答案的话，随时可以回到这一页。',
     badTitle: '这个链接已失效',
     badBody: '请到“我的报名”登录后，再为参加过的活动填写反馈。',
-    notStarted: '活动开始后，就可以在这里分享你的感受。',
+    notStarted: '活动开始后，就可以在这里分享您的感受。',
   },
   feedback: {
     title: '活动反馈',
