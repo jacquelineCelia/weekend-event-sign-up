@@ -66,7 +66,7 @@ const en = {
     errFailed: 'The upload didn’t go through. Please check your connection and try again.',
   },
   ratePage: {
-    lede: 'We invite you to answer the two questions below:',
+    lede: 'We invite you to answer the two questions below and share how it felt for you:',
     thanks: 'Thank you for sharing!',
     thanksBody: 'You can come back to this page to change your answers any time.',
     badTitle: 'This link has expired',
@@ -386,7 +386,7 @@ const zh: Dict = {
     errFailed: '上傳沒有成功，請檢查網路連線後再試一次。',
   },
   ratePage: {
-    lede: '邀請您回答以下兩個問題：',
+    lede: '邀請您回答以下兩個問題，與我們分享您的感受：',
     thanks: '謝謝您的分享！',
     thanksBody: '想改答案的話，隨時可以回到這一頁。',
     badTitle: '這個連結已失效',
@@ -692,7 +692,7 @@ const zhs: Dict = {
     errFailed: '上传没有成功，请检查网络连接后再试一次。',
   },
   ratePage: {
-    lede: '邀请您回答以下两个问题：',
+    lede: '邀请您回答以下两个问题，与我们分享您的感受：',
     thanks: '谢谢您的分享！',
     thanksBody: '想改答案的话，随时可以回到这一页。',
     badTitle: '这个链接已失效',
