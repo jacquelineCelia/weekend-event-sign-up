@@ -1,9 +1,3 @@
-// The feedback page's Chinese text is set in 思源宋體 (Noto Serif), chosen by the organizers for a calmer
-// feel; imported here only, so other pages don't download it.
-import '@fontsource/noto-serif-tc/400.css';
-import '@fontsource/noto-serif-tc/600.css';
-import '@fontsource/noto-serif-sc/400.css';
-import '@fontsource/noto-serif-sc/600.css';
 import Link from 'next/link';
 import { Back } from '@/components/icons';
 import LangToggle from '@/components/LangToggle';
@@ -46,9 +40,7 @@ export default async function Feedback() {
         <Link className="back" href="/"><Back /> {t.allActivities}</Link>
         <LangToggle lang={lang} />
       </div>
-      <div className="fb-font">
-        <FeedbackForm lang={lang} event={eventName(lang)} activities={activities} prefill={prefill} />
-      </div>
+      <FeedbackForm lang={lang} event={eventName(lang)} activities={activities} prefill={prefill} />
     </div>
   );
 }

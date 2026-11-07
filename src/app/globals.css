@@ -411,9 +411,6 @@ select.input { padding: 0 14px; }
 /* Thank-you screen: the extra space below sets it slightly above the true middle, where it looks centered. */
 .photo-form.photo-done { flex: 1; justify-content: center; text-align: center; overflow-wrap: anywhere; padding-top: 0; padding-bottom: 14dvh; }
 
-/* Feedback page in Chinese: 思源宋體 (Noto Serif) for everything, the organizers' choice. English keeps the site fonts. */
-:lang(zh-Hant-TW) .fb-font { font-family: 'Noto Serif TC', 'Songti TC', serif; --serif: 'Young Serif', 'Noto Serif TC', serif; font-synthesis-weight: none; }
-:lang(zh-Hans-CN) .fb-font { font-family: 'Noto Serif SC', 'Songti SC', serif; --serif: 'Young Serif', 'Noto Serif SC', serif; font-synthesis-weight: none; }
 /* Weekend feedback (/feedback). Activity rows reuse .photo-topic; the 1–5 rows are large pills. */
 .fb-form { gap: 28px; }
 /* Each question on its own soft card, so one question is clearly apart from the next. */
