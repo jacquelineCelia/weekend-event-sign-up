@@ -5,7 +5,6 @@ import { localText, seatLine } from './hans';
 import { dict, firstName } from './i18n';
 import { SmsOptedOut, sendEmail, sendSms, smsEnabled } from './messaging';
 import { getPool } from './db';
-import { rateToken } from './rate-link';
 
 /**
  * Texts go only to people who ticked "By text message" (or, for walk-ins, said yes to staff).
@@ -126,34 +125,6 @@ export async function sendReminder(b: BookingView) {
     sent.push('email');
   }
   return sent;
-}
-
-/** Where a rating link opens, with the language prefix so the page is in the attendee's language. */
-export function rateUrl(bookingId: string, lang: Lang) {
-  const prefix = lang === 'zh' ? 'zh' : lang === 'zhs' ? 'cn' : 'en';
-  return `${appUrl()}/${prefix}/rate/${rateToken(bookingId)}`;
-}
-
-/** "How was it?": sent by email once an activity the person checked in to has ended. Never by text. */
-export async function sendRatingRequest(b: BookingView) {
-  if (!b.personEmail) return [];
-  const lang = b.personLang;
-  const m = dict(lang).msg;
-  const { activity } = bookingText(b, lang);
-  const day = dayOf(b.startsAt);
-  const daySh = day ? dayText(day, 'short', lang) : '';
-  const time = fmtTimeL(b.startsAt, lang);
-  const when = isChinese(lang) ? `${daySh}${time}` : `${daySh}, ${time}`;
-  const lines = m.rateLines(activity, when);
-  if (b.personName) lines.unshift(m.forPerson(b.personName));
-  const url = rateUrl(b.id, lang);
-  await sendEmail(
-    b.personEmail,
-    m.rateSubject(activity),
-    lines.join('\n\n') + `\n\n${m.rateCta}: ${url}`,
-    emailHtml(lang, m.rateSubject(activity), lines, null, { href: url, label: m.rateCta }),
-  );
-  return ['email'];
 }
 
 /**

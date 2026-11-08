@@ -8,7 +8,6 @@ import { clearPersonSession, setViewerSession } from '@/lib/session';
 import { currentOwners } from '@/lib/viewer';
 import { BookingError, cancelBooking, changeSeats, changeSlot } from '@/lib/booking';
 import { getLang } from '@/lib/lang';
-import { ratingFromForm, saveRating } from '@/lib/ratings';
 
 export type LoginState = { error?: { code: string; left?: number }; value?: string } | null;
 
@@ -42,16 +41,6 @@ export async function cancelAction(form: FormData) {
   const { ids } = await currentOwners();
   const id = uuid.safeParse(form.get('bookingId'));
   if (ids.length && id.success) await cancelBooking(id.data, ids).catch(() => {});
-  revalidatePath('/me');
-}
-
-export async function rateAction(form: FormData) {
-  const { ids } = await currentOwners();
-  const id = uuid.safeParse(form.get('bookingId'));
-  const answer = ratingFromForm(form);
-  if (!ids.length || !id.success || !answer) return;
-  // Only the attendee's own, already-started bookings can be rated.
-  await saveRating(id.data, answer, ids);
   revalidatePath('/me');
 }
 

@@ -433,6 +433,3 @@ select.input { padding: 0 14px; }
 .fb-form .field > label, .fb-form .photo-topics > .legend { font-size: 18px; line-height: 1.45; }
 .fb-comment { min-height: 140px; padding: 14px 16px; line-height: 1.5; resize: vertical; font-family: inherit; }
 .photo-topic .card-num { margin-left: -2px; }
-/* Rating page opened from a "How was it?" email (/rate/…). */
-.rate-thanks { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 20px; background: var(--sage); color: var(--moss-dark); }
-.rate-thanks .leafmark { flex: none; margin: 0; width: 48px; height: 48px; background: var(--paper); }

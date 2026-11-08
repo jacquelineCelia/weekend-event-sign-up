@@ -2,8 +2,8 @@
 
 import { useActionState, useState } from 'react';
 import { useFormStatus } from 'react-dom';
-import { cancelAction, changeSeatsAction, rateAction, type ChangeState } from './actions';
-import { Leaf, Minus, Plus } from '@/components/icons';
+import { cancelAction, changeSeatsAction, type ChangeState } from './actions';
+import { Minus, Plus } from '@/components/icons';
 import { dict, errorText, type Lang } from '@/lib/i18n';
 
 const small = { minHeight: 42, fontSize: 15.5, padding: '0 14px' } as const;
@@ -28,65 +28,6 @@ export function CancelButton({ lang, bookingId }: { lang: Lang; bookingId: strin
       <span style={{ fontSize: 15, color: 'var(--ink-2)' }}>{t.releaseQ}</span>
       <Pending type="submit" className="btn" style={{ ...small, background: 'var(--ochre)' }}>{t.yesCancel}</Pending>
       <button type="button" className="btn ghost" style={small} onClick={() => setAsking(false)}>{t.keepIt}</button>
-    </form>
-  );
-}
-
-/**
- * Two feedback questions once an activity has finished: "slowed down and present?" (1–5) and
- * "would you do it again?" (yes / no). Each tap saves that answer; the panel closes once both are in.
- */
-export function RatePicker({ lang, bookingId, calm, again }: { lang: Lang; bookingId: string; calm: number | null; again: boolean | null }) {
-  const t = dict(lang);
-  const [open, setOpen] = useState(false);
-  const answered = calm !== null && again !== null;
-  if (answered && !open) {
-    return (
-      <div role="status" style={{ paddingLeft: 102, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', fontSize: 15, color: 'var(--moss-dark)' }}>
-        <span style={{ background: 'var(--sage)', padding: '6px 12px', borderRadius: 999, fontWeight: 600 }}>{t.feedbackSummary(calm, again)}</span>
-        <span>{t.thanks}</span>
-        <button type="button" onClick={() => setOpen(true)} style={{ border: 0, background: 'transparent', color: 'var(--moss)', fontWeight: 700, cursor: 'pointer', minHeight: 36 }}>{t.change}</button>
-      </div>
-    );
-  }
-  if (!open) {
-    return (
-      <div style={{ paddingLeft: 102 }}>
-        <button type="button" className="btn ghost" style={{ ...small, minHeight: 40, color: 'var(--moss-dark)' }} onClick={() => setOpen(true)}>
-          <Leaf /> {t.rateThis}
-        </button>
-      </div>
-    );
-  }
-  const save = async (f: FormData) => {
-    await rateAction(f);
-    // Close once both questions have an answer.
-    if ((f.has('calm') || calm !== null) && (f.has('again') || again !== null)) setOpen(false);
-  };
-  const pill = (on: boolean) => ({ minHeight: 48, borderRadius: 999, border: `1px solid ${on ? 'var(--moss)' : 'var(--line-strong)'}`, background: on ? 'var(--sage)' : 'var(--paper)', fontWeight: 600, fontSize: 17, cursor: 'pointer' });
-  const legend = { fontSize: 16, fontWeight: 600, color: 'var(--ink-2)', padding: 0, marginBottom: 10, lineHeight: 1.45 } as const;
-  return (
-    <form action={save} style={{ borderTop: '1px solid var(--line)', paddingTop: 12, display: 'grid', gap: 18 }}>
-      <input type="hidden" name="bookingId" value={bookingId} />
-      <fieldset style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
-        <legend style={legend}>{t.calmQ}</legend>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: 6 }}>
-          {[1, 2, 3, 4, 5].map((n) => (
-            <Pending key={n} type="submit" name="calm" value={n} aria-label={t.calmAria(n)} aria-pressed={n === calm} style={pill(n === calm)}>{n}</Pending>
-          ))}
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, color: 'var(--muted)', marginTop: 8 }}>
-          <span>{t.calmLow}</span><span>{t.calmHigh}</span>
-        </div>
-      </fieldset>
-      <fieldset style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
-        <legend style={legend}>{t.againQ}</legend>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
-          <Pending type="submit" name="again" value="yes" aria-pressed={again === true} style={pill(again === true)}>{t.againYes}</Pending>
-          <Pending type="submit" name="again" value="no" aria-pressed={again === false} style={pill(again === false)}>{t.againNo}</Pending>
-        </div>
-      </fieldset>
-      <button type="button" onClick={() => setOpen(false)} style={{ justifySelf: 'start', border: 0, background: 'transparent', color: 'var(--muted)', fontWeight: 600, fontSize: 14.5, minHeight: 36, padding: 0, cursor: 'pointer' }}>{t.later}</button>
     </form>
   );
 }
