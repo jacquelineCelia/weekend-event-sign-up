@@ -32,11 +32,11 @@ export async function sessionsForDay(date: string): Promise<StaffSession[]> {
   }));
 }
 
-export type RosterRow = { bookingId: string; name: string; email: string; phone: string; phoneLast4: string; code: string; partySize: number; checkedIn: number; walkIn: boolean; lang: 'en' | 'zh' | 'zhs'; seats: string; seatPicks: { seatTypeId: string; count: number }[] };
+export type RosterRow = { bookingId: string; name: string; phoneLast4: string; code: string; partySize: number; checkedIn: number; walkIn: boolean; lang: 'en' | 'zh' | 'zhs'; seats: string; seatPicks: { seatTypeId: string; count: number }[] };
 
 export async function roster(slotId: string, lang: Lang = 'en'): Promise<RosterRow[]> {
   const { rows } = await getPool().query(
-    `select b.id, p.name, coalesce(p.email, '') as email, coalesce(p.phone, '') as phone, coalesce(right(p.phone, 4), '') as last4, b.code, b.party_size, b.checked_in, b.source, p.lang,
+    `select b.id, p.name, coalesce(right(p.phone, 4), '') as last4, b.code, b.party_size, b.checked_in, b.source, p.lang,
             coalesce((select json_agg(json_build_object('id', st.id, 'name', st.name, 'nameZh', st.name_zh, 'count', bs.count) order by st.sort_order, st.name)
                         from booking_seats bs join seat_types st on st.id = bs.seat_type_id where bs.booking_id = b.id), '[]') as seats
        from bookings b join people p on p.id = b.person_id
@@ -45,56 +45,10 @@ export async function roster(slotId: string, lang: Lang = 'en'): Promise<RosterR
     [slotId],
   );
   return rows.map((r) => ({
-    bookingId: r.id, name: r.name, email: r.email, phone: r.phone, phoneLast4: r.last4, code: r.code, partySize: r.party_size, checkedIn: r.checked_in, walkIn: r.source === 'walk_in', lang: r.lang,
+    bookingId: r.id, name: r.name, phoneLast4: r.last4, code: r.code, partySize: r.party_size, checkedIn: r.checked_in, walkIn: r.source === 'walk_in', lang: r.lang,
     seats: (r.seats as { name: string; nameZh: string; count: number }[]).map((x) => `${localText(x.name, x.nameZh, lang)} × ${x.count}`).join(lang === 'en' ? ', ' : '、'),
     seatPicks: (r.seats as { id: string; count: number }[]).map((x) => ({ seatTypeId: x.id, count: x.count })),
   }));
-}
-
-/**
- * Check-in: fix someone's name, email or phone (e.g. a mistyped email). The details belong to the
- * person, so every one of their sign-ups follows. A new phone number turns their text reminders into
- * email reminders: texting needs their own consent for that number.
- * Returns null when another record already has this name and email (the two would need merging).
- */
-export async function staffUpdateContact(bookingId: string, contact: { name: string; email: string | null; phone: string | null }) {
-  return withTx(async (c) => {
-    const p = await c.query<{ id: string; email: string | null; phone: string | null }>(
-      `select p.id, p.email, p.phone from bookings b join people p on p.id = b.person_id where b.id = $1 for update of p`,
-      [bookingId],
-    );
-    const person = p.rows[0];
-    if (!person) throw new Error('booking_not_found');
-    if (contact.email) {
-      const dup = await c.query(
-        `select 1 from people where id <> $1 and lower(email) = lower($2) and person_name_key(name) = person_name_key($3)`,
-        [person.id, contact.email, contact.name],
-      );
-      if (dup.rowCount) return null;
-    }
-    await c.query('update people set name = $2, email = $3, phone = $4 where id = $1', [person.id, contact.name, contact.email, contact.phone]);
-    const phoneChanged = (person.phone ?? null) !== (contact.phone ?? null);
-    let smsOff = 0;
-    if (phoneChanged) {
-      const r = await c.query(
-        `update bookings set remind_sms = false, remind_email = (remind_email or $2::boolean)
-          where person_id = $1 and remind_sms`,
-        [person.id, !!contact.email],
-      );
-      smsOff = r.rowCount ?? 0;
-    }
-    return { personId: person.id, emailChanged: (person.email ?? '').toLowerCase() !== (contact.email ?? '').toLowerCase(), phoneChanged, smsOff };
-  });
-}
-
-/** The person's confirmed sign-ups that haven't started yet (for re-sending confirmations). */
-export async function upcomingBookingIds(personId: string) {
-  const { rows } = await getPool().query<{ id: string }>(
-    `select b.id from bookings b join slots s on s.id = b.slot_id
-      where b.person_id = $1 and b.status = 'confirmed' and s.starts_at > now() order by s.starts_at`,
-    [personId],
-  );
-  return rows.map((r) => r.id);
 }
 
 /** For the check-in screen: each seat type's capacity and how many are booked in this slot. */

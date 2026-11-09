@@ -66,7 +66,7 @@ ${cta ? `<a href="${esc(cta.href)}" style="display:inline-block;margin-top:6px;b
 }
 
 /** Sent right after booking, in the attendee's language: by email when we have one, and by text when they opted in to texts. */
-export async function sendConfirmation(b: BookingView, opts: { text?: boolean } = {}) {
+export async function sendConfirmation(b: BookingView) {
   const lang = b.personLang;
   const m = dict(lang).msg;
   const { activity, place, instructor } = bookingText(b, lang);
@@ -92,7 +92,7 @@ export async function sendConfirmation(b: BookingView, opts: { text?: boolean } 
     );
   }
   // The first text anyone gets names the sender and gives frequency, rates, HELP and STOP (carrier rules).
-  if (opts.text !== false && b.remindSms && b.personPhone && smsEnabled()) {
+  if (b.remindSms && b.personPhone && smsEnabled()) {
     await trySms(b.personPhone, m.confirmSms(smsSender(), firstName(b.personName), activity, when, place, b.partySize, b.code ?? '', reminder));
   }
 }
