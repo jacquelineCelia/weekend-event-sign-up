@@ -5,10 +5,10 @@ import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { LAST_SLOT_COOKIE, clearStaffSession, isStaff, setStaffSession, staffPasscodeMatches } from '@/lib/session';
-import { BookingError, staffChangeParty, walkInBooking } from '@/lib/booking';
+import { BookingError, staffCancelBooking, staffChangeParty, walkInBooking } from '@/lib/booking';
 import { walkInContactSchema } from '@/lib/contact';
 import { getBooking } from '@/lib/queries';
-import { sendConfirmation } from '@/lib/notify';
+import { sendCancellation, sendConfirmation } from '@/lib/notify';
 import { setCheckedIn, saveSchedule, saveActivity, saveSeating, staffUpdateContact, upcomingBookingIds, type SlotEdit } from '@/lib/staff';
 import { markPhotoShown, removePhoto } from '@/lib/photos';
 import { EVENT, addMinutes, dayOf, dayText, fmtTimeL } from '@/lib/event';
@@ -90,6 +90,24 @@ export async function changePartyAction(input: z.infer<typeof partySchema>): Pro
   }
   revalidatePath('/staff', 'layout');
   return {};
+}
+
+/** Check-in: cancel a sign-up (frees its spots); optionally email the person that it was cancelled. */
+export async function staffCancelAction(input: { bookingId: string; notify: boolean }): Promise<{ done?: string; error?: string }> {
+  await requireStaff();
+  const t = sdict(await staffLang());
+  const id = z.string().uuid().safeParse(input.bookingId);
+  if (!id.success) return { error: t.cancelFailed };
+  const b = await getBooking(id.data);
+  if (!b || !(await staffCancelBooking(id.data))) return { error: t.cancelFailed };
+  revalidatePath('/staff', 'layout');
+  const name = b.personName ?? '';
+  if (input.notify && b.startsAt.getTime() > Date.now() && b.personEmail) {
+    // The cancellation stands even if the email can't be sent.
+    const sent = await sendCancellation(b).catch(() => false);
+    if (sent) return { done: t.cancelDoneSent(name, b.personEmail) };
+  }
+  return { done: t.cancelDone(name) };
 }
 
 export type ContactState = { fields?: Record<string, string>; error?: string; saved?: string };

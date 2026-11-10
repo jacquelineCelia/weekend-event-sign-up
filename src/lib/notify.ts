@@ -1,5 +1,5 @@
 import { bookingText, type BookingView } from './queries';
-import { addMinutes, dayOf, dayText, fmtTimeL, isChinese, type Lang } from './event';
+import { EVENT, addMinutes, dayOf, dayText, fmtTimeL, isChinese, type Lang } from './event';
 import { eventName as eventNameFor, smsSender } from './hans';
 import { localText, seatLine } from './hans';
 import { dict, firstName } from './i18n';
@@ -143,6 +143,22 @@ export async function sendLoginCode(to: { email: string } | { phone: string }, c
 }
 
 /** Staff moved a booked time slot: tell the guest, in their language. */
+/** Staff cancelled a sign-up: tell the person by email (never by text). */
+export async function sendCancellation(b: BookingView) {
+  if (!b.personEmail) return false;
+  const lang = b.personLang;
+  const m = dict(lang).msg;
+  const { activity } = bookingText(b, lang);
+  const day = dayOf(b.startsAt);
+  const daySh = day ? dayText(day, 'short', lang) : '';
+  const time = fmtTimeL(b.startsAt, lang);
+  const when = isChinese(lang) ? `${daySh}${time}` : `${daySh}, ${time}`;
+  const lines = m.cancelledLines(activity, when, EVENT.supportEmail);
+  if (b.personName) lines.unshift(m.forPerson(b.personName));
+  await sendEmail(b.personEmail, m.cancelledSubject(activity), lines.join('\n\n'), emailHtml(lang, m.cancelledSubject(activity), lines, null));
+  return true;
+}
+
 export async function sendTimeChange(
   p: { name: string; email: string | null; phone: string | null; code: string; lang: Lang; sms: boolean },
   act: { name: string; nameZh: string },

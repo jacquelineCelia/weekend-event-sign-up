@@ -6,10 +6,11 @@ import { checkInAction } from '../actions';
 import { Check } from '@/components/icons';
 import PartyEditor, { type SeatType } from './PartyEditor';
 import ContactEditor from './ContactEditor';
+import CancelPanel from './CancelPanel';
 import { sdict } from '@/lib/staff-i18n';
 import type { Lang } from '@/lib/event';
 
-export default function Roster({ rows, lang, seating, open: openSpots }: { rows: RosterRow[]; lang: Lang; seating: SeatType[]; open: number }) {
+export default function Roster({ rows, lang, seating, open: openSpots, started }: { rows: RosterRow[]; lang: Lang; seating: SeatType[]; open: number; started: boolean }) {
   const t = sdict(lang);
   const [q, setQ] = useState('');
   const [optimistic, setOptimistic] = useOptimistic(rows, (cur, u: { id: string; n: number }) =>
@@ -17,7 +18,9 @@ export default function Roster({ rows, lang, seating, open: openSpots }: { rows:
   );
   const [, start] = useTransition();
   // One panel open at a time: the party-size editor or the contact editor, for one row.
-  const [editing, setEditing] = useState<{ id: string; kind: 'party' | 'contact' } | null>(null);
+  const [editing, setEditing] = useState<{ id: string; kind: 'party' | 'contact' | 'cancel' } | null>(null);
+  // A cancelled sign-up leaves the list, so its confirmation shows above the list.
+  const [cancelNote, setCancelNote] = useState<string | null>(null);
   const [notes, setNotes] = useState<Record<string, string>>({});
   const set = (id: string, n: number) =>
     start(async () => {
@@ -39,6 +42,7 @@ export default function Roster({ rows, lang, seating, open: openSpots }: { rows:
         <input id="q" type="search" className="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t.searchRosterHint} autoComplete="off" />
       </div>
 
+      {cancelNote ? <div className="note" role="status" style={{ fontSize: 15.5, marginTop: 12 }}>{cancelNote}</div> : null}
       <div className="roster" role="list">
         {shown.map((r) => {
           const done = r.checkedIn >= r.partySize;
@@ -47,6 +51,7 @@ export default function Roster({ rows, lang, seating, open: openSpots }: { rows:
             <>
               <button type="button" className="btn ghost" style={{ minHeight: 48, fontSize: 15.5 }} onClick={() => setEditing({ id: r.bookingId, kind: 'contact' })}>{t.editContact}</button>
               <button type="button" className="btn ghost" style={{ minHeight: 48, fontSize: 15.5 }} onClick={() => setEditing({ id: r.bookingId, kind: 'party' })}>{t.changeParty}</button>
+              <button type="button" className="btn ghost" style={{ minHeight: 48, fontSize: 15.5, color: 'var(--ochre-dark)' }} onClick={() => setEditing({ id: r.bookingId, kind: 'cancel' })}>{t.cancelSignup}</button>
             </>
           );
           return (
@@ -80,6 +85,8 @@ export default function Roster({ rows, lang, seating, open: openSpots }: { rows:
               ) : null}
               {open === 'party' ? (
                 <PartyEditor row={r} lang={lang} seating={seating} open={openSpots} onClose={() => setEditing(null)} />
+              ) : open === 'cancel' ? (
+                <CancelPanel row={r} lang={lang} started={started} onClose={() => setEditing(null)} onDone={(msg) => { setEditing(null); setCancelNote(msg); }} />
               ) : open === 'contact' ? (
                 <ContactEditor row={r} lang={lang} onClose={() => setEditing(null)} onSaved={(msg) => setNotes((x) => ({ ...x, [r.bookingId]: msg }))} />
               ) : null}

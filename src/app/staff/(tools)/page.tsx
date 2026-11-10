@@ -134,7 +134,7 @@ export default async function CheckIn({ searchParams }: { searchParams: Promise<
             </p>
           ) : null}
           {note ? <div className="note" role="status" style={{ fontSize: 15.5 }}>{note}</div> : null}
-          <Roster key={sel.slotId} rows={people} lang={lang} seating={seating} open={Math.max(0, sel.capacity - sel.booked)} />
+          <Roster key={sel.slotId} rows={people} lang={lang} seating={seating} open={Math.max(0, sel.capacity - sel.booked)} started={sel.startsAt.getTime() <= now} />
         </main>
       ) : null}
     </div>

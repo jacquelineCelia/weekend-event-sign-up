@@ -326,6 +326,8 @@ const en = {
     timeChange: (sender: string, act: string, to: string, from: string, code: string) =>
       `${sender}: time change. ${act} now starts at ${to} (was ${from}). Your spots and code ${code} stay the same.`,
     timeChangeSubject: (act: string, to: string) => `Time change: ${act} now at ${to}`,
+    cancelledSubject: (act: string) => `Sign-up cancelled: ${act}`,
+    cancelledLines: (act: string, when: string, support: string) => [`Your sign-up for ${act} (${when}) has been cancelled by our staff, and the spots have been released.`, `If you have any questions, please contact us at ${support}.`],
   },
 };
 
@@ -612,6 +614,8 @@ const zh: Dict = {
     ledByLine: (name) => `${zhGuidedBy(name, '引導')}。`,
     timeChange: (sender, act, to, from, code) => `${sender}：時段異動。${act}改為${to} 開始（原為${from}）。名額與代碼 ${code} 不變。`,
     timeChangeSubject: (act, to) => `時段異動：${act}改為${to}`,
+    cancelledSubject: (act) => `報名已取消：「${act}」`,
+    cancelledLines: (act, when, support) => [`您在「${act}」（${when}）的報名已由工作人員取消，名額已釋放。`, `如有任何疑問，請來信 ${support} 與我們聯絡。`],
   },
 };
 
@@ -896,6 +900,8 @@ const zhs: Dict = {
     ledByLine: (name) => `${zhGuidedBy(name, '引导')}。`,
     timeChange: (sender, act, to, from, code) => `${sender}：时段变更。${act}改为${to} 开始（原为${from}）。名额与签到码 ${code} 不变。`,
     timeChangeSubject: (act, to) => `时段变更：${act}改为${to}`,
+    cancelledSubject: (act) => `报名已取消：“${act}”`,
+    cancelledLines: (act, when, support) => [`您在“${act}”（${when}）的报名已由工作人员取消，名额已释放。`, `如有任何疑问，请发邮件至 ${support} 与我们联系。`],
   },
 };
 

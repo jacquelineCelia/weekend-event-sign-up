@@ -1,7 +1,7 @@
 import type { Lang } from './event';
 import type { PoolClient } from 'pg';
 import { randomInt } from 'node:crypto';
-import { withTx } from './db';
+import { getPool, withTx } from './db';
 import type { Contact } from './contact';
 
 export const HOLD_MINUTES = 10;
@@ -359,6 +359,15 @@ export async function cancelBooking(bookingId: string, personId: string | string
     ),
   );
   if (!res.rowCount) throw new BookingError('booking_not_found', 'That booking could not be found.');
+}
+
+/** Staff (Check-in): cancels any confirmed booking, freeing its spots. False when it was already cancelled. */
+export async function staffCancelBooking(bookingId: string) {
+  const res = await getPool().query(
+    `update bookings set status = 'cancelled', cancelled_at = now() where id = $1 and status = 'confirmed'`,
+    [bookingId],
+  );
+  return (res.rowCount ?? 0) > 0;
 }
 
 /** Moves a confirmed booking to another slot of the same size, atomically (cancelling `replace`, its owner's clashing sign-ups, first). */
