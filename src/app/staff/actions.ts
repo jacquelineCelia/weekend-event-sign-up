@@ -9,7 +9,7 @@ import { BookingError, staffChangeParty, walkInBooking } from '@/lib/booking';
 import { walkInContactSchema } from '@/lib/contact';
 import { getBooking } from '@/lib/queries';
 import { sendConfirmation } from '@/lib/notify';
-import { setCheckedIn, saveSchedule, saveActivity, saveSeating, type SlotEdit } from '@/lib/staff';
+import { setCheckedIn, saveSchedule, saveActivity, saveSeating, staffUpdateContact, upcomingBookingIds, type SlotEdit } from '@/lib/staff';
 import { markPhotoShown, removePhoto } from '@/lib/photos';
 import { EVENT, addMinutes, dayOf, dayText, fmtTimeL } from '@/lib/event';
 import { localText } from '@/lib/hans';
@@ -90,6 +90,34 @@ export async function changePartyAction(input: z.infer<typeof partySchema>): Pro
   }
   revalidatePath('/staff', 'layout');
   return {};
+}
+
+export type ContactState = { fields?: Record<string, string>; error?: string; saved?: string };
+
+/** Check-in: correct a guest's name, email or phone; optionally re-send their confirmations to the new email. */
+export async function updateContactAction(input: { bookingId: string; name: string; email: string; phone: string; resend: boolean }): Promise<ContactState> {
+  await requireStaff();
+  const ui = await staffLang();
+  const t = sdict(ui);
+  const v = walkInContactSchema.safeParse({ name: input.name, email: input.email, phone: input.phone });
+  if (!v.success) {
+    const fields: Record<string, string> = {};
+    for (const i of v.error.issues) fields[String(i.path[0])] ??= errorText(ui, i.message);
+    return { fields };
+  }
+  const id = z.string().uuid().safeParse(input.bookingId);
+  if (!id.success) return { error: t.contactFailed };
+  const r = await staffUpdateContact(id.data, v.data);
+  if (!r) return { error: t.contactDuplicate };
+  let sent = 0;
+  if (input.resend && r.emailChanged && v.data.email) {
+    for (const bid of await upcomingBookingIds(r.personId)) {
+      const b = await getBooking(bid);
+      if (b) { await sendConfirmation(b, { text: false }); sent++; }
+    }
+  }
+  revalidatePath('/staff', 'layout');
+  return { saved: sent ? t.contactSavedSent(sent, v.data.email!) : r.smsOff ? t.contactSavedSms : t.contactSaved };
 }
 
 export type WalkInState = {
