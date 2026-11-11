@@ -41,6 +41,12 @@ export function normalizeEmail(input: string): string | null {
  * A short form of an email for tight spaces: "parks@gmail.com" becomes "pa•••@gmail.com". Longer
  * domains are shortened too: "parks@yellowflower.org" becomes "pa•••@ye•••.org".
  */
+/** A stored number for people to read: US/Canada as (412) 555-0199, anything else as stored (+886…). */
+export function displayPhone(phone: string) {
+  const m = /^\+1(\d{3})(\d{3})(\d{4})$/.exec(phone);
+  return m ? `(${m[1]}) ${m[2]}-${m[3]}` : phone;
+}
+
 export function briefEmail(email: string) {
   const at = email.lastIndexOf('@');
   const domain = email.slice(at + 1);

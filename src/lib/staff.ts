@@ -97,6 +97,46 @@ export async function upcomingBookingIds(personId: string) {
   return rows.map((r) => r.id);
 }
 
+// ---------- Attendees ----------
+
+export type AttendeeSignup = {
+  bookingId: string; slotId: string; startsAt: Date; durationMin: number; activityName: string; activityNameZh: string;
+  place: string; placeZh: string; partySize: number; checkedIn: number; code: string; walkIn: boolean;
+  seats: { name: string; nameZh: string; count: number }[];
+};
+export type Attendee = { personId: string; name: string; email: string; phone: string; signups: AttendeeSignup[] };
+
+/** Everyone with at least one current (confirmed) sign-up, by name, each with their sign-ups in time order. */
+export async function attendees(): Promise<Attendee[]> {
+  const { rows } = await getPool().query(
+    `select p.id as person_id, p.name, coalesce(p.email, '') as email, coalesce(p.phone, '') as phone,
+            b.id as booking_id, s.id as slot_id, s.starts_at, a.duration_min, a.name as act, a.name_zh as act_zh,
+            a.place, a.place_zh, b.party_size, b.checked_in, b.code, b.source,
+            coalesce((select json_agg(json_build_object('name', st.name, 'nameZh', st.name_zh, 'count', bs.count) order by st.sort_order, st.name)
+                        from booking_seats bs join seat_types st on st.id = bs.seat_type_id where bs.booking_id = b.id), '[]') as seats
+       from bookings b
+       join people p on p.id = b.person_id
+       join slots s on s.id = b.slot_id
+       join activities a on a.id = s.activity_id
+      where b.status = 'confirmed'
+      order by lower(p.name), p.id, s.starts_at`,
+  );
+  const out: Attendee[] = [];
+  for (const r of rows) {
+    let who = out[out.length - 1];
+    if (!who || who.personId !== r.person_id) {
+      who = { personId: r.person_id, name: r.name, email: r.email, phone: r.phone, signups: [] };
+      out.push(who);
+    }
+    who.signups.push({
+      bookingId: r.booking_id, slotId: r.slot_id, startsAt: r.starts_at, durationMin: r.duration_min,
+      activityName: r.act, activityNameZh: r.act_zh, place: r.place, placeZh: r.place_zh,
+      partySize: r.party_size, checkedIn: r.checked_in, code: r.code, walkIn: r.source === 'walk_in', seats: r.seats,
+    });
+  }
+  return out;
+}
+
 /** For the check-in screen: each seat type's capacity and how many are booked in this slot. */
 export async function seatCounts(slotId: string, lang: Lang = 'en') {
   const { rows } = await getPool().query<{ id: string; name: string; name_zh: string; capacity: number; booked: number }>(
