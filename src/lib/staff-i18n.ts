@@ -40,6 +40,7 @@ const en = {
   tabPeople: 'Attendees',
   people: {
     title: 'Attendees',
+    summary: (people: number, signups: number, spots: number) => `${people} ${people === 1 ? 'person' : 'people'} · ${signups} sign-ups · ${spots} spots`,
     search: 'Search name, email, phone, code or activity',
     none: 'No one has signed up yet.',
     noMatch: 'No one matches that search.',
@@ -335,6 +336,7 @@ const zh: StaffDict = {
   tabPeople: '參加者',
   people: {
     title: '參加者名單',
+    summary: (people: number, signups: number, spots: number) => `${people} 位報名人 · ${signups} 筆報名 · 共 ${spots} 個名額`,
     search: '搜尋姓名、電子郵件、手機、代碼或活動',
     none: '還沒有人報名。',
     noMatch: '找不到符合的人。',
@@ -613,6 +615,7 @@ const zhs: StaffDict = {
   tabPeople: '参加者',
   people: {
     title: '参加者名单',
+    summary: (people: number, signups: number, spots: number) => `${people} 位报名人 · ${signups} 条报名 · 共 ${spots} 个名额`,
     search: '搜索姓名、邮箱、手机、签到码或活动',
     none: '还没有人报名。',
     noMatch: '找不到符合的人。',

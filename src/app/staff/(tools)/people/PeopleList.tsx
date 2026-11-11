@@ -13,7 +13,7 @@ export type PersonView = {
 };
 
 /** The attendee list with a search box, a filter by number of activities, and a CSV of what's shown. */
-export default function PeopleList({ people, lang, htmlLang, title }: { people: PersonView[]; lang: Lang; htmlLang: string; title: string }) {
+export default function PeopleList({ people, lang, htmlLang, title, summary }: { people: PersonView[]; lang: Lang; htmlLang: string; title: string; summary: string }) {
   const t = sdict(lang);
   const [q, setQ] = useState('');
   // Filter by how many activities a person signed up for (null = everyone).
@@ -32,7 +32,11 @@ export default function PeopleList({ people, lang, htmlLang, title }: { people: 
   return (
     <>
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-        <h1 className="h1" style={{ fontSize: 34 }}>{title}</h1>
+        <div className="stack" style={{ gap: 4 }}>
+          <h1 className="h1" style={{ fontSize: 34 }}>{title}</h1>
+          {/* Totals for everyone signed up (not the search): people, sign-ups, spots including guests. */}
+          <span className="muted" style={{ fontSize: 16.5 }}>{summary}</span>
+        </div>
         {shown.length ? <a className="btn ghost" href={csvHref} style={{ minHeight: 48, fontSize: 16 }}>{t.people.download}</a> : null}
       </div>
       <div style={{ position: 'relative', marginTop: 18 }}>

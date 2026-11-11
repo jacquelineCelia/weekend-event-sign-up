@@ -40,7 +40,8 @@ export default async function People() {
     <div className="staffbody" style={{ display: 'block' }}>
       <AutoRefresh seconds={30} />
       <main className="staffmain" style={{ maxWidth: 980, margin: '0 auto' }}>
-        <PeopleList people={people} lang={lang} htmlLang={staffHtmlLang(lang)} title={t.people.title} />
+        <PeopleList people={people} lang={lang} htmlLang={staffHtmlLang(lang)} title={t.people.title}
+          summary={t.people.summary(list.length, list.reduce((n, p) => n + p.signups.length, 0), list.reduce((n, p) => n + p.signups.reduce((m, s) => m + s.partySize, 0), 0))} />
       </main>
     </div>
   );
