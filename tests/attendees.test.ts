@@ -51,3 +51,13 @@ describe('Attendees search and filter (shared by the list and the CSV)', () => {
     expect(matchSignups(mei, '散步', 1)).toBeNull(); // Mei has 2 activities
   });
 });
+
+describe('displayPhone', () => {
+  it('shows US/Canada numbers as (412) 555-0199, and 886… as Taiwan', async () => {
+    const { displayPhone } = await import('@/lib/contact');
+    expect(displayPhone('+14125550199')).toBe('(412) 555-0199');
+    expect(displayPhone('+18622230567')).toBe('(862) 223-0567'); // a real New Jersey area code
+    expect(displayPhone('+18862230567')).toBe('+886 2230567');
+    expect(displayPhone('+886912345678')).toBe('+886912345678');
+  });
+});

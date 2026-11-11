@@ -41,8 +41,13 @@ export function normalizeEmail(input: string): string | null {
  * A short form of an email for tight spaces: "parks@gmail.com" becomes "pa•••@gmail.com". Longer
  * domains are shortened too: "parks@yellowflower.org" becomes "pa•••@ye•••.org".
  */
-/** A stored number for people to read: US/Canada as (412) 555-0199, anything else as stored (+886…). */
+/**
+ * A stored number for people to read: US/Canada as (412) 555-0199, anything else as stored (+886…).
+ * 886 is Taiwan's country code and not a US/Canada area code, so a number stored as +1 886… (typed as
+ * 886… without the + before the country-code check of 2026-11-03) is shown as +886 instead (user's request).
+ */
 export function displayPhone(phone: string) {
+  if (phone.startsWith('+1886')) return `+886 ${phone.slice(5)}`;
   const m = /^\+1(\d{3})(\d{3})(\d{4})$/.exec(phone);
   return m ? `(${m[1]}) ${m[2]}-${m[3]}` : phone;
 }
