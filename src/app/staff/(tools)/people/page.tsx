@@ -24,6 +24,8 @@ export default async function People() {
         id: s.bookingId,
         when: `${d ? dayText(d, 'short', lang) : ''}${lang === 'en' ? ' · ' : ' '}${fmtTimeL(s.startsAt, lang)}`,
         activity: localText(s.activityName, s.activityNameZh, lang),
+        // Searchable in every language the staff might type (English, Traditional, Simplified).
+        find: [s.activityName, s.activityNameZh, localText(s.activityName, s.activityNameZh, 'zhs')].join(' ').toLowerCase(),
         zh: lang !== 'en' && !!s.activityNameZh,
         place: localText(s.place, s.placeZh, lang),
         party: s.partySize, checkedIn: s.checkedIn, code: s.code, walkIn: s.walkIn,

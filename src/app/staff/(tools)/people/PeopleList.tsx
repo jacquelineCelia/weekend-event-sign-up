@@ -8,7 +8,7 @@ import { sdict } from '@/lib/staff-i18n';
 
 export type PersonView = {
   id: string; name: string; email: string; phone: string;
-  signups: { id: string; when: string; activity: string; zh: boolean; place: string; party: number; checkedIn: number; code: string; walkIn: boolean; seats: string; roster: string }[];
+  signups: { id: string; when: string; activity: string; find: string; zh: boolean; place: string; party: number; checkedIn: number; code: string; walkIn: boolean; seats: string; roster: string }[];
 };
 
 /** The attendee list with a search box (name, email, phone digits or sign-up code). */
@@ -20,8 +20,10 @@ export default function PeopleList({ people, lang, htmlLang }: { people: PersonV
   const shown = people.filter((p) =>
     !ql || p.name.toLowerCase().includes(ql) || p.email.toLowerCase().includes(ql)
     || (digits.length >= 3 && p.phone.replace(/\D/g, '').includes(digits))
-    || p.signups.some((s) => s.code.toLowerCase() === ql),
+    || p.signups.some((s) => s.code.toLowerCase() === ql || s.find.includes(ql)),
   );
+  // When the search names an activity, those sign-ups are outlined so staff see which one matched.
+  const hit = (s: PersonView['signups'][number]) => ql.length > 0 && s.find.includes(ql);
 
   return (
     <>
@@ -33,6 +35,7 @@ export default function PeopleList({ people, lang, htmlLang }: { people: PersonV
         <input id="pq" type="search" className="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t.people.search} autoComplete="off" />
       </div>
 
+      {ql && shown.length ? <p className="muted" role="status" style={{ margin: '10px 4px 0', fontSize: 15.5 }}>{t.people.found(shown.length)}</p> : null}
       <div className="roster" role="list" style={{ marginTop: 16 }}>
         {shown.map((p) => (
           <div key={p.id} role="listitem" className="rrow" style={{ alignItems: 'flex-start' }}>
@@ -43,7 +46,7 @@ export default function PeopleList({ people, lang, htmlLang }: { people: PersonV
             </div>
             <ul className="people-signups">
               {p.signups.map((s) => (
-                <li key={s.id}>
+                <li key={s.id} data-hit={hit(s) || undefined}>
                   <Link href={s.roster}>
                     <span className="people-when">{s.when}</span>
                     <span className={s.zh ? 'zhname' : undefined} lang={s.zh ? htmlLang : 'en'} style={{ fontWeight: 600 }}>{nameRuns(s.activity)}</span>
