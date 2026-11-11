@@ -21,6 +21,8 @@ export default function PeopleList({ people, lang, htmlLang, title, summary }: {
   const counts = [...new Set(people.map((p) => p.signups.length))].sort((a, b) => a - b);
   const ql = q.trim().toLowerCase();
   const shown = people.filter((p) => matchSignups(p, q, count) !== null);
+  // The number on each count button follows the search (but not the count filter itself).
+  const searched = ql ? people.filter((p) => matchSignups(p, q, null) !== null) : people;
   // When the search names an activity, those sign-ups are outlined so staff see which one matched.
   const hit = (s: PersonView['signups'][number]) => activityHit(s, q);
   // The CSV holds what's on screen: the same search and filter, applied on the server.
@@ -53,7 +55,7 @@ export default function PeopleList({ people, lang, htmlLang, title, summary }: {
           {/* No "everyone" button: tapping the chosen one again clears the filter. */}
           {counts.map((n) => (
             <button key={n} type="button" aria-pressed={count === n} onClick={() => setCount(count === n ? null : n)}>
-              {t.people.count(n)} <span>{people.filter((p) => p.signups.length === n).length}</span>
+              {t.people.count(n)} <span>{searched.filter((p) => p.signups.length === n).length}</span>
             </button>
           ))}
         </div>
