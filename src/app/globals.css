@@ -441,6 +441,8 @@ select.input { padding: 0 14px; }
 .countfilter { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 14px; font-size: 15.5px; }
 .countfilter .muted { margin-right: 4px; }
 .countfilter button { min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line-strong); background: var(--paper); font: inherit; font-weight: 600; cursor: pointer; }
+.countfilter button span { margin-left: 4px; font-weight: 500; color: var(--muted); font-variant-numeric: tabular-nums; }
+.countfilter button[aria-pressed='true'] span { color: var(--on-dark); opacity: 0.8; }
 .countfilter button[aria-pressed='true'] { background: var(--forest); border-color: var(--forest); color: var(--on-dark); }
 .people-signups li[data-hit] a { border: 2px solid var(--moss); background: var(--sage-pale); padding: 9px 13px; }
 .people-signups .people-when { font-weight: 700; color: var(--moss); font-variant-numeric: tabular-nums; }

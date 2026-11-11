@@ -49,7 +49,7 @@ export default function PeopleList({ people, lang, htmlLang, title }: { people: 
           {/* No "everyone" button: tapping the chosen one again clears the filter. */}
           {counts.map((n) => (
             <button key={n} type="button" aria-pressed={count === n} onClick={() => setCount(count === n ? null : n)}>
-              {t.people.count(n)}
+              {t.people.count(n)} <span>{people.filter((p) => p.signups.length === n).length}</span>
             </button>
           ))}
         </div>
