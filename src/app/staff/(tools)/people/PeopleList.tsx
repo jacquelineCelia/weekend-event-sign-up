@@ -15,12 +15,15 @@ export type PersonView = {
 export default function PeopleList({ people, lang, htmlLang }: { people: PersonView[]; lang: Lang; htmlLang: string }) {
   const t = sdict(lang);
   const [q, setQ] = useState('');
+  // Filter by how many activities a person signed up for (null = everyone).
+  const [count, setCount] = useState<number | null>(null);
+  const counts = [...new Set(people.map((p) => p.signups.length))].sort((a, b) => a - b);
   const ql = q.trim().toLowerCase();
   const digits = ql.replace(/\D/g, '');
   const shown = people.filter((p) =>
-    !ql || p.name.toLowerCase().includes(ql) || p.email.toLowerCase().includes(ql)
+    (count === null || p.signups.length === count) && (!ql || p.name.toLowerCase().includes(ql) || p.email.toLowerCase().includes(ql)
     || (digits.length >= 3 && p.phone.replace(/\D/g, '').includes(digits))
-    || p.signups.some((s) => s.code.toLowerCase() === ql || s.find.includes(ql)),
+    || p.signups.some((s) => s.code.toLowerCase() === ql || s.find.includes(ql))),
   );
   // When the search names an activity, those sign-ups are outlined so staff see which one matched.
   const hit = (s: PersonView['signups'][number]) => ql.length > 0 && s.find.includes(ql);
@@ -35,7 +38,18 @@ export default function PeopleList({ people, lang, htmlLang }: { people: PersonV
         <input id="pq" type="search" className="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t.people.search} autoComplete="off" />
       </div>
 
-      {ql && shown.length ? <p className="muted" role="status" style={{ margin: '10px 4px 0', fontSize: 15.5 }}>{t.people.found(shown.length)}</p> : null}
+      {counts.length > 1 ? (
+        <div className="countfilter" role="group" aria-label={t.people.byCount}>
+          <span className="muted">{t.people.byCount}</span>
+          <button type="button" aria-pressed={count === null} onClick={() => setCount(null)}>{t.people.all} <span>{people.length}</span></button>
+          {counts.map((n) => (
+            <button key={n} type="button" aria-pressed={count === n} onClick={() => setCount(count === n ? null : n)}>
+              {t.people.count(n)} <span>{people.filter((p) => p.signups.length === n).length}</span>
+            </button>
+          ))}
+        </div>
+      ) : null}
+      {(ql || count !== null) && shown.length ? <p className="muted" role="status" style={{ margin: '10px 4px 0', fontSize: 15.5 }}>{t.people.found(shown.length)}</p> : null}
       <div className="roster" role="list" style={{ marginTop: 16 }}>
         {shown.map((p) => (
           <div key={p.id} role="listitem" className="rrow" style={{ alignItems: 'flex-start' }}>
