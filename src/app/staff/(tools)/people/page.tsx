@@ -2,6 +2,7 @@ import { attendees } from '@/lib/staff';
 import { addMinutes, dayOf, dayText, fmtTimeL, requestTime } from '@/lib/event';
 import { localText } from '@/lib/hans';
 import { displayPhone } from '@/lib/contact';
+import { activityFind } from '@/lib/people-filter';
 import { staffLang } from '@/lib/staff-lang';
 import { sdict, staffHtmlLang } from '@/lib/staff-i18n';
 import AutoRefresh from '../AutoRefresh';
@@ -25,7 +26,7 @@ export default async function People() {
         when: `${d ? dayText(d, 'short', lang) : ''}${lang === 'en' ? ' · ' : ' '}${fmtTimeL(s.startsAt, lang)}`,
         activity: localText(s.activityName, s.activityNameZh, lang),
         // Searchable in every language the staff might type (English, Traditional, Simplified).
-        find: [s.activityName, s.activityNameZh, localText(s.activityName, s.activityNameZh, 'zhs')].join(' ').toLowerCase(),
+        find: activityFind([s.activityName, s.activityNameZh, localText(s.activityName, s.activityNameZh, 'zhs')]),
         zh: lang !== 'en' && !!s.activityNameZh,
         place: localText(s.place, s.placeZh, lang),
         party: s.partySize, checkedIn: s.checkedIn, code: s.code, walkIn: s.walkIn,
@@ -39,11 +40,7 @@ export default async function People() {
     <div className="staffbody" style={{ display: 'block' }}>
       <AutoRefresh seconds={30} />
       <main className="staffmain" style={{ maxWidth: 980, margin: '0 auto' }}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-          <h1 className="h1" style={{ fontSize: 34 }}>{t.people.title}</h1>
-          {list.length ? <a className="btn ghost" href="/staff/people/csv" style={{ minHeight: 48, fontSize: 16 }}>{t.people.download}</a> : null}
-        </div>
-        <PeopleList people={people} lang={lang} htmlLang={staffHtmlLang(lang)} />
+        <PeopleList people={people} lang={lang} htmlLang={staffHtmlLang(lang)} title={t.people.title} />
       </main>
     </div>
   );

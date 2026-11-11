@@ -5,31 +5,36 @@ import { useState } from 'react';
 import { nameRuns } from '@/components/ActivityName';
 import type { Lang } from '@/lib/event';
 import { sdict } from '@/lib/staff-i18n';
+import { activityHit, matchSignups } from '@/lib/people-filter';
 
 export type PersonView = {
   id: string; name: string; email: string; phone: string;
   signups: { id: string; when: string; activity: string; find: string; zh: boolean; place: string; party: number; checkedIn: number; code: string; walkIn: boolean; seats: string; roster: string }[];
 };
 
-/** The attendee list with a search box (name, email, phone digits or sign-up code). */
-export default function PeopleList({ people, lang, htmlLang }: { people: PersonView[]; lang: Lang; htmlLang: string }) {
+/** The attendee list with a search box, a filter by number of activities, and a CSV of what's shown. */
+export default function PeopleList({ people, lang, htmlLang, title }: { people: PersonView[]; lang: Lang; htmlLang: string; title: string }) {
   const t = sdict(lang);
   const [q, setQ] = useState('');
   // Filter by how many activities a person signed up for (null = everyone).
   const [count, setCount] = useState<number | null>(null);
   const counts = [...new Set(people.map((p) => p.signups.length))].sort((a, b) => a - b);
   const ql = q.trim().toLowerCase();
-  const digits = ql.replace(/\D/g, '');
-  const shown = people.filter((p) =>
-    (count === null || p.signups.length === count) && (!ql || p.name.toLowerCase().includes(ql) || p.email.toLowerCase().includes(ql)
-    || (digits.length >= 3 && p.phone.replace(/\D/g, '').includes(digits))
-    || p.signups.some((s) => s.code.toLowerCase() === ql || s.find.includes(ql))),
-  );
+  const shown = people.filter((p) => matchSignups(p, q, count) !== null);
   // When the search names an activity, those sign-ups are outlined so staff see which one matched.
-  const hit = (s: PersonView['signups'][number]) => ql.length > 0 && s.find.includes(ql);
+  const hit = (s: PersonView['signups'][number]) => activityHit(s, q);
+  // The CSV holds what's on screen: the same search and filter, applied on the server.
+  const params = new URLSearchParams();
+  if (ql) params.set('q', q.trim());
+  if (count !== null) params.set('count', String(count));
+  const csvHref = `/staff/people/csv${params.size ? `?${params}` : ''}`;
 
   return (
     <>
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <h1 className="h1" style={{ fontSize: 34 }}>{title}</h1>
+        {shown.length ? <a className="btn ghost" href={csvHref} style={{ minHeight: 48, fontSize: 16 }}>{t.people.download}</a> : null}
+      </div>
       <div style={{ position: 'relative', marginTop: 18 }}>
         <label htmlFor="pq" className="sr-only">{t.people.search}</label>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5E6A61" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true" style={{ position: 'absolute', left: 18, top: 17 }}>

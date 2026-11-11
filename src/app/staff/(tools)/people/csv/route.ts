@@ -1,8 +1,9 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import { attendees } from '@/lib/staff';
 import { dayOf, fmtTimeL, localDate } from '@/lib/event';
 import { localText } from '@/lib/hans';
 import { displayPhone } from '@/lib/contact';
+import { activityFind, matchSignups } from '@/lib/people-filter';
 import { isStaff } from '@/lib/session';
 import { staffLang } from '@/lib/staff-lang';
 import { sdict } from '@/lib/staff-i18n';
@@ -26,14 +27,24 @@ const phoneCell = (phone: string) => {
   return shown.startsWith('+') ? `"=""${shown}"""` : `"${shown}"`;
 };
 
-/** Staff: every current sign-up as a CSV, one row per sign-up, in the staff language. Under /staff for the staff cookie. */
-export async function GET() {
+/**
+ * Staff: current sign-ups as a CSV, one row per sign-up, in the staff language. Under /staff for the staff
+ * cookie. ?q= and ?count= apply the Attendees tab's search and filter, so the file matches the screen.
+ */
+export async function GET(req: NextRequest) {
   if (!(await isStaff())) return NextResponse.json({ error: 'signed out' }, { status: 401 });
   const lang = await staffLang();
   const t = sdict(lang).people;
+  const q = req.nextUrl.searchParams.get('q') ?? '';
+  const n = Number(req.nextUrl.searchParams.get('count'));
+  const count = Number.isInteger(n) && n > 0 ? n : null;
   const lines: string[] = [t.csvHead.map(cell).join(',')];
   for (const p of await attendees()) {
-    for (const s of p.signups) {
+    const withFind = {
+      ...p,
+      signups: p.signups.map((s) => ({ ...s, find: activityFind([s.activityName, s.activityNameZh, localText(s.activityName, s.activityNameZh, 'zhs')]) })),
+    };
+    for (const s of matchSignups(withFind, q, count) ?? []) {
       lines.push([
         cell(p.name), cell(p.email), phoneCell(p.phone),
         cell(dayOf(s.startsAt)?.date ?? localDate(s.startsAt)), cell(fmtTimeL(s.startsAt, lang)),

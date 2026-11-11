@@ -30,3 +30,24 @@ describe('staff: attendees list', () => {
     ]);
   });
 });
+
+describe('Attendees search and filter (shared by the list and the CSV)', () => {
+  const mei = { name: 'Mei Lin', email: 'mei@example.com', phone: '+14125550148', signups: [
+    { code: '54D2', find: 'walk into the light 散步 散步' },
+    { code: '9R9V', find: 'savor the now 覺察・靜心茶席 觉察・静心茶席' },
+  ] };
+  it('keeps every sign-up when the person matches', async () => {
+    const { matchSignups } = await import('@/lib/people-filter');
+    expect(matchSignups(mei, 'mei', null)).toHaveLength(2);
+    expect(matchSignups(mei, '0148', null)).toHaveLength(2);
+    expect(matchSignups(mei, '9r9v', null)).toHaveLength(2);
+    expect(matchSignups(mei, '', 2)).toHaveLength(2);
+  });
+  it('keeps only the matching activity when the search names one', async () => {
+    const { matchSignups } = await import('@/lib/people-filter');
+    expect(matchSignups(mei, '散步', null)?.map((s) => s.code)).toEqual(['54D2']);
+    expect(matchSignups(mei, '静心', null)?.map((s) => s.code)).toEqual(['9R9V']);
+    expect(matchSignups(mei, 'yoga', null)).toBeNull();
+    expect(matchSignups(mei, '散步', 1)).toBeNull(); // Mei has 2 activities
+  });
+});
