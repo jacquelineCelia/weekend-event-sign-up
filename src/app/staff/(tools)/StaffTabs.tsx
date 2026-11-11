@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-const HREFS = ['/staff', '/staff/walk-in', '/staff/registration', '/staff/people', '/staff/schedule', '/staff/photos'] as const;
+const HREFS = ['/staff', '/staff/walk-in', '/staff/registration', '/staff/participants', '/staff/schedule', '/staff/photos'] as const;
 
 /** The staff tabs; labels come from the server in the staff's language (same order as HREFS). */
 export default function StaffTabs({ labels }: { labels: string[] }) {

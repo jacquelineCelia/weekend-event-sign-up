@@ -27,7 +27,7 @@ export default function PeopleList({ people, lang, htmlLang, title, summary }: {
   const params = new URLSearchParams();
   if (ql) params.set('q', q.trim());
   if (count !== null) params.set('count', String(count));
-  const csvHref = `/staff/people/csv${params.size ? `?${params}` : ''}`;
+  const csvHref = `/staff/participants/csv${params.size ? `?${params}` : ''}`;
 
   return (
     <>
