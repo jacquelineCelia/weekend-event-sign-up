@@ -34,18 +34,13 @@ export default async function People() {
       };
     }),
   }));
-  const signups = list.reduce((n, p) => n + p.signups.length, 0);
-  const spots = list.reduce((n, p) => n + p.signups.reduce((m, s) => m + s.partySize, 0), 0);
 
   return (
     <div className="staffbody" style={{ display: 'block' }}>
       <AutoRefresh seconds={30} />
       <main className="staffmain" style={{ maxWidth: 980, margin: '0 auto' }}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 }}>
-          <div className="stack" style={{ gap: 4 }}>
-            <h1 className="h1" style={{ fontSize: 34 }}>{t.people.title}</h1>
-            <span className="muted" style={{ fontSize: 16.5 }}>{t.people.summary(list.length, signups, spots)}</span>
-          </div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          <h1 className="h1" style={{ fontSize: 34 }}>{t.people.title}</h1>
           {list.length ? <a className="btn ghost" href="/staff/people/csv" style={{ minHeight: 48, fontSize: 16 }}>{t.people.download}</a> : null}
         </div>
         <PeopleList people={people} lang={lang} htmlLang={staffHtmlLang(lang)} />
