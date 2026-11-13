@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { registrationAt, startTimes } from '@/lib/staff';
 import { EVENT, addMinutes, dayOf, dayText, fmtTimeL, requestTime } from '@/lib/event';
 import AutoRefresh from '../AutoRefresh';
+import OpenOnlyToggle from './OpenOnlyToggle';
 import { localText } from '@/lib/hans';
 import { nameRuns } from '@/components/ActivityName';
 import { staffLang } from '@/lib/staff-lang';
@@ -14,15 +15,21 @@ const pct = (n: number, of: number) => (of > 0 ? Math.min(100, Math.round((n / o
 /**
  * Registration by time: pick a start time on the left, see every activity running then with how full
  * it is (booked, on hold, open, checked in, seating). Times are keyed by their start (?t=ISO).
+ * ?open=1 (the "Only activities with openings" checkbox) hides activities with no spots left.
  */
-export default async function Registration({ searchParams }: { searchParams: Promise<{ t?: string }> }) {
+export default async function Registration({ searchParams }: { searchParams: Promise<{ t?: string; open?: string }> }) {
   const sp = await searchParams;
   // The staff language (EN | 繁中 | 简中 in the staff bar) also sets activity names and places.
   const lang = await staffLang();
   const t = sdict(lang);
   const htmlLang = staffHtmlLang(lang);
   const fmtTime = (d: Date) => fmtTimeL(d, lang);
-  const href = (q: { t?: string }) => `/staff/registration${q.t ? `?t=${encodeURIComponent(q.t)}` : ''}`;
+  const openOnly = sp.open === '1';
+  // Time links keep the checkbox setting.
+  const href = (q: { t?: string }) => {
+    const qs = [q.t ? `t=${encodeURIComponent(q.t)}` : '', openOnly ? 'open=1' : ''].filter(Boolean).join('&');
+    return `/staff/registration${qs ? `?${qs}` : ''}`;
+  };
   const now = requestTime();
   const times = await startTimes();
   // Default: the time that's on now or next; after the event, the last one.
@@ -31,9 +38,12 @@ export default async function Registration({ searchParams }: { searchParams: Pro
     [...times].reverse().find((x) => x.startsAt.getTime() <= now && x.endsAt.getTime() > now) ??
     times.find((x) => x.startsAt.getTime() > now) ??
     times[times.length - 1];
-  const rows = chosen ? await registrationAt(chosen.startsAt) : [];
+  const allRows = chosen ? await registrationAt(chosen.startsAt) : [];
+  // "Openings" = spots not booked and not on hold, the same number as the Open column.
+  const rows = openOnly ? allRows.filter((r) => r.booked + r.held < r.capacity) : allRows;
+  const hiddenFull = allRows.length - rows.length;
 
-  const longest = Math.max(0, ...rows.map((r) => r.durationMin));
+  const longest = Math.max(0, ...allRows.map((r) => r.durationMin));
   // The Check-in screen lists one day at a time and hides finished sessions unless asked.
   const rosterHref = (slotId: string, durationMin: number) => {
     const d = chosen ? dayOf(chosen.startsAt) : null;
@@ -93,7 +103,16 @@ export default async function Registration({ searchParams }: { searchParams: Pro
             </h1>
           </div>
 
-          <section className="roster" aria-label={t.activitiesAtTime}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '4px 16px' }}>
+            <OpenOnlyToggle key={String(openOnly)} checked={openOnly} label={t.openOnly} />
+            {openOnly && hiddenFull && rows.length ? <span className="muted" style={{ fontSize: 17 }}>{t.hiddenFull(hiddenFull)}</span> : null}
+          </div>
+
+          {openOnly && allRows.length && !rows.length ? (
+            <p className="muted" style={{ margin: 0, fontSize: 18 }}>{t.noOpenAtTime}</p>
+          ) : null}
+
+          {rows.length || !openOnly ? <section className="roster" aria-label={t.activitiesAtTime}>
             {rows.map((r) => {
               const open = Math.max(0, r.capacity - r.booked - r.held);
               const full = r.booked + r.held >= r.capacity;
@@ -138,7 +157,7 @@ export default async function Registration({ searchParams }: { searchParams: Pro
                 </div>
               );
             })}
-          </section>
+          </section> : null}
           <p className="muted" style={{ margin: 0, fontSize: 16.5 }}>
             {t.regFootnote}
           </p>
