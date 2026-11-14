@@ -2,7 +2,7 @@ import { toSimplified } from './hans';
 import type { Lang } from './event';
 
 /**
- * Text for the multi-page feedback form (法會 questions 1–8, then the weekend activities as 9).
+ * Text for the multi-page feedback form: 法會 questions 1–7, the weekend activities as 8, a closing comment as 9.
  * Chinese is written once in Traditional; Simplified is converted. English is Claude's draft translation.
  * Built on the server and passed to the form as plain data.
  */
@@ -24,7 +24,7 @@ export const SAT = SAT_GROUPS.flat();
 export type Sat = (typeof SAT)[number];
 
 const zh = {
-  steps: ['關於你', '法會心得', '法會滿意度', '療癒活動'],
+  steps: ['關於你', '法會心得', '法會滿意度', '療癒體驗活動'],
   stepOf: (n: number, of: number) => `第 ${n} 頁，共 ${of} 頁`,
   next: '下一頁',
   back: '上一頁',
@@ -46,15 +46,15 @@ const zh = {
   } as Record<Sat, string>,
   satEnds: ['普通', '非常滿意'] as [string, string],
   scaleNote: '5 分最高，1 分為普通。',
-  q8: '學習心得與建議',
-  q9: '靜心週末的療癒活動',
-  q9lede: '最後，想聽聽你對這兩天療癒活動的感受。',
-  noActivities: '我沒有參加療癒活動',
-  noActivitiesNote: '沒關係，直接送出就可以了。',
+  q8: '療癒體驗活動',
+  q8lede: '也想聽聽你對這兩天療癒體驗活動的感受。',
+  q9: '還有什麼想對我們說的嗎？任何學習心得、建議、感受或小故事，我們都很樂意聽。',
+  noActivities: '我沒有參加療癒體驗活動',
+  noActivitiesNote: '沒關係，8-1 到 8-5 可以略過。',
 };
 
 const en: typeof zh = {
-  steps: ['About you', 'The Dharma assembly', 'Your ratings', 'Weekend activities'],
+  steps: ['About you', 'The ceremony', 'Rating the ceremony', 'Mindfulness activities'],
   stepOf: (n, of) => `Page ${n} of ${of}`,
   next: 'Next',
   back: 'Back',
@@ -62,13 +62,13 @@ const en: typeof zh = {
   ages: { u30: 'Under 30', '30s': '30–39', '40s': '40–49', '50s': '50–59', '60s': '60–69', '70s': '70–79', '80plus': '80 and over' },
   errAge: 'Please choose your age.',
   q1: 'What would you like to say to the Guru?',
-  q2: 'How much joy did the whole Dharma assembly bring you?',
+  q2: 'How much joy did the whole ceremony bring you?',
   q2ends: ['Average', 'Great joy'],
   learnStem: 'How much did you take away from…',
   learn: { talks: 'the teachings by the teachers and monastics', sangha: 'the “Merits of the Sangha” video', lay: 'the lay practitioners’ videos', chant: 'the chanting of praises' },
   learnEnds: ['Average', 'Very much'],
-  q7: 'How satisfied were you with the Remembering the Teacher’s Kindness Dharma assembly?',
-  satGroups: ['Assembly and programme', 'Stage, sound and video', 'On the day'],
+  q7: 'How satisfied were you with the Memorial Ceremony for Late Master?',
+  satGroups: ['Ceremony and programme', 'Stage, sound and video', 'On the day'],
   sat: {
     moving: 'How moving it was', timing: 'Programme timing', hosts: 'Hosts', performers: 'Performances',
     stage: 'Stage design', lighting: 'Lighting', sound: 'Sound', video: 'Videos and subtitles',
@@ -76,11 +76,11 @@ const en: typeof zh = {
   },
   satEnds: ['Average', 'Very satisfied'],
   scaleNote: '5 is the highest, 1 is average.',
-  q8: 'Your reflections and suggestions',
-  q9: 'The weekend’s mindfulness activities',
-  q9lede: 'Last of all, we’d love to hear how the weekend’s activities felt for you.',
+  q8: 'Mindfulness activities',
+  q8lede: 'We’d also love to hear how this weekend’s activities felt for you.',
+  q9: 'Is there anything else you’d like to share? Reflections on what you learned, suggestions, feelings or a small story — we’d love to hear it.',
   noActivities: 'I didn’t join any activities',
-  noActivitiesNote: 'That’s fine — you can send the form now.',
+  noActivitiesNote: 'That’s fine — you can skip 8-1 to 8-5.',
 };
 
 export type FeedbackText = typeof zh;

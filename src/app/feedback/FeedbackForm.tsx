@@ -48,7 +48,7 @@ function QHead({ num, children }: { num: string; children: ReactNode }) {
 
 /**
  * Feedback form in four pages: about you (name, email, age) · the 法會 (questions 1–6) · satisfaction
- * with the 憶師恩法會 (7-1 … 7-11, then 8) · the weekend's activities (9, the earlier five questions).
+ * with the 憶師恩法會 (7-1 … 7-11) · the weekend's activities (8, the earlier five questions) and a closing comment (9).
  * Everything stays in this one component, so going back and forth never loses an answer.
  */
 export default function FeedbackForm({ lang, event, activities, prefill, text: f }: { lang: Lang; event: string; activities: Activity[]; prefill: Prefill; text: FeedbackStrings }) {
@@ -89,10 +89,12 @@ export default function FeedbackForm({ lang, event, activities, prefill, text: f
       for (const k of ['joy', ...LEARN]) if (!rates[k]) m.push(k);
     } else if (s === 2) {
       for (const k of SAT) if (!rates[k]) m.push(k);
+    } else {
+      if (!none) {
+        if (!picked.length) m.push('activities');
+        for (const k of SCALES) if (!rates[k] && !OPTIONAL.includes(k)) m.push(k);
+      }
       if (reflection.length > MAX_TEXT) m.push('reflection');
-    } else if (!none) {
-      if (!picked.length) m.push('activities');
-      for (const k of SCALES) if (!rates[k] && !OPTIONAL.includes(k)) m.push(k);
     }
     return m;
   }
@@ -238,22 +240,16 @@ export default function FeedbackForm({ lang, event, activities, prefill, text: f
               </div>
             ))}
 
-            <div className="field fb-card" data-invalid={has('reflection')}>
-              <label htmlFor="fb-reflection" className="fb-comment-label"><QHead num="8">{f.q8} <span className="fb-note">{t.optional}</span></QHead></label>
-              <textarea id="fb-reflection" className="input fb-comment" rows={5} value={reflection} maxLength={MAX_TEXT}
-                aria-invalid={has('reflection')} onChange={(e) => { setReflection(e.target.value); fix('reflection'); }} />
-              {has('reflection') && <span className="error">{t.errComment}</span>}
-            </div>
           </>
         ) : null}
 
         {step === 3 ? (
           <>
             <div className="fb-q fb-stem7">
-              <span className="fb-qnum">9</span>
+              <span className="fb-qnum">8</span>
               <span className="stack" style={{ gap: 4 }}>
-                <span>{f.q9}</span>
-                <span className="fb-note">{f.q9lede}</span>
+                <span>{f.q8}</span>
+                <span className="fb-note">{f.q8lede}</span>
               </span>
             </div>
             <fieldset className="photo-topics" data-invalid={has('activities')}>
@@ -270,7 +266,7 @@ export default function FeedbackForm({ lang, event, activities, prefill, text: f
                 );
               })}
               <label className="photo-topic fb-none" data-on={none}>
-                <input type="checkbox" checked={none} onChange={() => { setNone(!none); setShown([]); }} />
+                <input type="checkbox" checked={none} onChange={() => { setNone(!none); setShown((x) => x.filter((y) => y === 'reflection')); }} />
                 <span className="photo-topic-name">{f.noActivities}</span>
               </label>
               {has('activities') && <span className="error">{t.errActivities}</span>}
@@ -281,13 +277,19 @@ export default function FeedbackForm({ lang, event, activities, prefill, text: f
               return (
                 <div key={s} className="fb-card" data-invalid={has(s)}>
                   <fieldset className="fb-scale">
-                    <legend className="legend"><QHead num={`9-${i + 1}`}>{q.q}{OPTIONAL.includes(s) ? <span className="fb-note"> {t.transitionHint}</span> : null}</QHead></legend>
+                    <legend className="legend"><QHead num={`8-${i + 1}`}>{q.q}{OPTIONAL.includes(s) ? <span className="fb-note"> {t.transitionHint}</span> : null}</QHead></legend>
                     <Pills name={s} value={rates[s]} onPick={rate(s)} ariaLabel={t.scoreAria} ends={[q.low, q.high]} />
                     {has(s) && <span className="error">{t.errScore}</span>}
                   </fieldset>
                 </div>
               );
             })}
+            <div className="field fb-card" data-invalid={has('reflection')}>
+              <label htmlFor="fb-reflection" className="fb-comment-label"><QHead num="9">{f.q9} <span className="fb-note">{t.optional}</span></QHead></label>
+              <textarea id="fb-reflection" className="input fb-comment" rows={5} value={reflection} maxLength={MAX_TEXT}
+                aria-invalid={has('reflection')} onChange={(e) => { setReflection(e.target.value); fix('reflection'); }} />
+              {has('reflection') && <span className="error">{t.errComment}</span>}
+            </div>
             <p className="hint photo-notice">{t.notice} <Link href="/privacy">{t.privacy}</Link></p>
           </>
         ) : null}

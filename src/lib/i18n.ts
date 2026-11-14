@@ -66,7 +66,7 @@ const en = {
     errFailed: 'The upload didn’t go through. Please check your connection and try again.',
   },
   feedback: {
-    title: 'Share your feedback',
+    title: 'Ceremony & activities feedback',
     cardText: 'Tell us how the weekend felt for you. It takes about two minutes.',
     lede: (event: string) => `Thank you for spending the weekend with us at ${event}. We’d love to hear how it felt for you. It takes about two minutes, and it helps make our next gathering even better.`,
     name: 'Your name',
@@ -366,7 +366,7 @@ const zh: Dict = {
     errFailed: '上傳沒有成功，請檢查網路連線後再試一次。',
   },
   feedback: {
-    title: '活動回饋',
+    title: '法會與活動回饋',
     cardText: '告訴我們你這個週末的感受，大約兩分鐘。',
     lede: (event: string) => `謝謝你來參加${event}。想邀請你花兩分鐘，和我們分享這個週末的感受，讓下一次的相聚更美好。`,
     name: '姓名',
@@ -652,7 +652,7 @@ const zhs: Dict = {
     errFailed: '上传没有成功，请检查网络连接后再试一次。',
   },
   feedback: {
-    title: '活动反馈',
+    title: '法会与活动反馈',
     cardText: '告诉我们你这个周末的感受，大约两分钟。',
     lede: (event: string) => `谢谢你来参加${event}。想邀请你花两分钟，和我们分享这个周末的感受，让下一次的相聚更美好。`,
     name: '姓名',
