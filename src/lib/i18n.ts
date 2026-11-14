@@ -68,7 +68,7 @@ const en = {
   feedback: {
     title: 'Ceremony & activities feedback',
     cardText: 'Tell us how the weekend felt for you. It takes about two minutes.',
-    lede: 'Thank you for joining the Memorial Ceremony for Late Master and the mindfulness activities. We’d love you to take a few minutes to share how the weekend felt for you, to help make our next gathering even better.',
+    lede: 'Thank you for joining the Memorial Ceremony for Late Master and the mindfulness activities. We warmly invite you to take a few minutes to share how the weekend felt for you, to make our next gathering even better.',
     name: 'Your name',
     email: 'Email',
     activities: 'Which activities did you take part in?',
@@ -368,7 +368,7 @@ const zh: Dict = {
   feedback: {
     title: '法會與活動回饋',
     cardText: '告訴我們你這個週末的感受，大約兩分鐘。',
-    lede: '謝謝你參加憶師恩法會及靜心療癒活動。想邀請你花幾分鐘，和我們分享這個週末的感受，讓下一次的相聚更美好。',
+    lede: '謝謝你參加憶師恩法會與靜心療癒活動。誠摯邀請你花幾分鐘，與我們分享這個週末的感受，讓下一次的相聚更加美好。',
     name: '姓名',
     email: '電子郵件',
     activities: '你參加了哪些活動？',
@@ -654,7 +654,7 @@ const zhs: Dict = {
   feedback: {
     title: '法会与活动反馈',
     cardText: '告诉我们你这个周末的感受，大约两分钟。',
-    lede: '谢谢你参加忆师恩法会及静心疗愈活动。想邀请你花几分钟，和我们分享这个周末的感受，让下一次的相聚更美好。',
+    lede: '谢谢你参加忆师恩法会与静心疗愈活动。诚挚邀请你花几分钟，与我们分享这个周末的感受，让下一次的相聚更加美好。',
     name: '姓名',
     email: '邮箱',
     activities: '你参加了哪些活动？',
