@@ -3,7 +3,8 @@
 import { headers } from 'next/headers';
 import { getPool } from '@/lib/db';
 import { normalizeEmail } from '@/lib/contact';
-import { checkFeedback, saveFeedback, SCALES, type FeedbackError, type FeedbackInput } from '@/lib/feedback';
+import { checkFeedback, saveFeedback, type FeedbackError, type FeedbackInput } from '@/lib/feedback';
+import { CEREMONY, SCALES } from '@/lib/feedback-questions';
 import { hashIp } from '@/lib/photos';
 import { activitiesAllDays } from '@/lib/queries';
 import { getLang } from '@/lib/lang';
@@ -13,15 +14,18 @@ export type FeedbackState = { errors?: FeedbackError[]; done?: boolean } | null;
 
 export async function sendFeedbackAction(_prev: FeedbackState, form: FormData): Promise<FeedbackState> {
   const scores: FeedbackInput['scores'] = {};
-  for (const s of SCALES) {
-    const v = form.get(s);
-    if (v !== null && v !== '') scores[s] = Number(v);
+  for (const k of [...CEREMONY, ...SCALES]) {
+    const v = form.get(k);
+    if (v !== null && v !== '') scores[k] = Number(v);
   }
   const input: FeedbackInput = {
     name: String(form.get('name') ?? ''),
     email: String(form.get('email') ?? ''),
-    activityIds: form.getAll('activity').map(String),
+    age: String(form.get('age') ?? ''),
+    toGuru: String(form.get('toGuru') ?? ''),
     scores,
+    noActivities: form.get('noActivities') === '1',
+    activityIds: form.getAll('activity').map(String),
     comment: String(form.get('comment') ?? ''),
   };
   const listed = (await activitiesAllDays()).filter((a) => a.slots.length > 0).map((a) => a.id);

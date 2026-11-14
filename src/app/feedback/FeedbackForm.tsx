@@ -5,18 +5,23 @@ import { useEffect, useState, useTransition, type FormEvent, type ReactNode } fr
 import { Sprout } from '@/components/icons';
 import { nameRuns } from '@/components/ActivityName';
 import { dict, zhBold, type Lang } from '@/lib/i18n';
-import { AGES, LEARN, SAT, SAT_GROUPS, type Age, type FeedbackStrings } from '@/lib/feedback-text';
+import type { FeedbackStrings } from '@/lib/feedback-text';
+import { AGES, LEARN, MAX_TEXT, OPTIONAL_SCALES, SAT, SAT_GROUPS, SCALES, type Age } from '@/lib/feedback-questions';
 import { sendFeedbackAction } from './actions';
 
-// Kept in step with SCALES in src/lib/feedback.ts (that file talks to the database, so it isn't imported here).
-const SCALES = ['relax', 'venue', 'guidance', 'transition', 'again'] as const;
-type Scale = (typeof SCALES)[number];
-const OPTIONAL: Scale[] = ['transition'];
-const MAX_TEXT = 2000;
+const OPTIONAL = OPTIONAL_SCALES;
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const STEPS = 4;
 
 type Activity = { id: string; name: string; number: number };
+
+/** Which page (0–3) asks for a field, so a problem found by the server can be shown where it is. */
+function pageOf(k: string) {
+  if (k === 'name' || k === 'email' || k === 'age') return 0;
+  if (k === 'toGuru' || k === 'joy' || (LEARN as readonly string[]).includes(k)) return 1;
+  if ((SAT as readonly string[]).includes(k)) return 2;
+  return k === 'busy' ? -1 : 3;
+}
 type Prefill = { name: string; email: string; activityIds: string[] };
 
 /** One 1–5 row: five large pills, optionally with the end labels under them. */
@@ -59,7 +64,7 @@ export default function FeedbackForm({ lang, activities, prefill, text: f }: { l
   const [age, setAge] = useState<Age | null>(null);
   const [toGuru, setToGuru] = useState('');
   const [rates, setRates] = useState<Record<string, number>>({});
-  const [reflection, setReflection] = useState('');
+  const [comment, setComment] = useState('');
   const [picked, setPicked] = useState<string[]>(prefill.activityIds);
   const [none, setNone] = useState(false);
   const [shown, setShown] = useState<string[]>([]);
@@ -94,7 +99,7 @@ export default function FeedbackForm({ lang, activities, prefill, text: f }: { l
         if (!picked.length) m.push('activities');
         for (const k of SCALES) if (!rates[k] && !OPTIONAL.includes(k)) m.push(k);
       }
-      if (reflection.length > MAX_TEXT) m.push('reflection');
+      if (comment.length > MAX_TEXT) m.push('comment');
     }
     return m;
   }
@@ -111,7 +116,7 @@ export default function FeedbackForm({ lang, activities, prefill, text: f }: { l
     data.set('email', email);
     data.set('age', age ?? '');
     data.set('toGuru', toGuru);
-    data.set('reflection', reflection);
+    data.set('comment', comment);
     for (const [k, v] of Object.entries(rates)) data.set(k, String(v));
     if (!none) for (const id of picked) data.append('activity', id);
     data.set('noActivities', none ? '1' : '');
@@ -120,7 +125,13 @@ export default function FeedbackForm({ lang, activities, prefill, text: f }: { l
       try {
         const res = await sendFeedbackAction(null, data);
         if (res?.done) setDone(true);
-        else setShown(res?.errors ?? []);
+        else {
+          // Problems found by the server replace the ones found here; go to the first page that has one.
+          const errs = res?.errors ?? [];
+          const first = [0, 1, 2, 3].find((p) => errs.some((k) => pageOf(k) === p));
+          if (first !== undefined) setStep(first);
+          setShown(errs);
+        }
       } catch {
         setFailed(true);
       }
@@ -266,7 +277,7 @@ export default function FeedbackForm({ lang, activities, prefill, text: f }: { l
                 );
               })}
               <label className="photo-topic fb-none" data-on={none}>
-                <input type="checkbox" checked={none} onChange={() => { setNone(!none); setShown((x) => x.filter((y) => y === 'reflection')); }} />
+                <input type="checkbox" checked={none} onChange={() => { setNone(!none); setShown((x) => x.filter((y) => y === 'comment')); }} />
                 <span className="photo-topic-name">{f.noActivities}</span>
               </label>
               {has('activities') && <span className="error">{t.errActivities}</span>}
@@ -284,11 +295,11 @@ export default function FeedbackForm({ lang, activities, prefill, text: f }: { l
                 </div>
               );
             })}
-            <div className="field fb-card" data-invalid={has('reflection')}>
-              <label htmlFor="fb-reflection" className="fb-comment-label"><QHead num="9">{f.q9} <span className="fb-note">{t.optional}</span></QHead></label>
-              <textarea id="fb-reflection" className="input fb-comment" rows={5} value={reflection} maxLength={MAX_TEXT}
-                aria-invalid={has('reflection')} onChange={(e) => { setReflection(e.target.value); fix('reflection'); }} />
-              {has('reflection') && <span className="error">{t.errComment}</span>}
+            <div className="field fb-card" data-invalid={has('comment')}>
+              <label htmlFor="fb-comment" className="fb-comment-label"><QHead num="9">{f.q9} <span className="fb-note">{t.optional}</span></QHead></label>
+              <textarea id="fb-comment" className="input fb-comment" rows={5} value={comment} maxLength={MAX_TEXT}
+                aria-invalid={has('comment')} onChange={(e) => { setComment(e.target.value); fix('comment'); }} />
+              {has('comment') && <span className="error">{t.errComment}</span>}
             </div>
             <p className="hint photo-notice">{t.notice} <Link href="/privacy">{t.privacy}</Link></p>
           </>

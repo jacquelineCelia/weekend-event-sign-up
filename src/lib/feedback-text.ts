@@ -7,21 +7,7 @@ import type { Lang } from './event';
  * Built on the server and passed to the form as plain data.
  */
 
-export const AGES = ['u30', '30s', '40s', '50s', '60s', '70s', '80plus'] as const;
-export type Age = (typeof AGES)[number];
-
-/** Questions 3–6: what people took away from each part of the programme. */
-export const LEARN = ['talks', 'sangha', 'lay', 'chant'] as const;
-export type Learn = (typeof LEARN)[number];
-
-/** 7-1 … 7-11: satisfaction with the 憶師恩法會, in three groups. */
-export const SAT_GROUPS = [
-  ['moving', 'timing', 'hosts', 'performers'],
-  ['stage', 'lighting', 'sound', 'video'],
-  ['seating', 'food', 'volunteers'],
-] as const;
-export const SAT = SAT_GROUPS.flat();
-export type Sat = (typeof SAT)[number];
+import type { Age, Learn, Sat } from './feedback-questions';
 
 const zh = {
   steps: ['關於你', '法會心得', '法會滿意度', '療癒體驗活動'],
