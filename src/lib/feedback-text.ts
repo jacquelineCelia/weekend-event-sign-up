@@ -24,15 +24,15 @@ export const SAT = SAT_GROUPS.flat();
 export type Sat = (typeof SAT)[number];
 
 const zh = {
-  steps: ['關於您', '法會心得', '法會滿意度', '療癒體驗活動'],
+  steps: ['關於你', '法會心得', '法會滿意度', '療癒體驗活動'],
   stepOf: (n: number, of: number) => `第 ${n} 頁，共 ${of} 頁`,
   next: '下一頁',
   back: '上一頁',
   age: '年齡',
   ages: { u30: '30 歲以下', '30s': '30–39 歲', '40s': '40–49 歲', '50s': '50–59 歲', '60s': '60–69 歲', '70s': '70–79 歲', '80plus': '80 歲以上' } as Record<Age, string>,
-  errAge: '請選擇您的年齡。',
+  errAge: '請選擇你的年齡。',
   q1: '想對上師說的話',
-  q2: '整場法會給您的歡喜程度',
+  q2: '整場法會給你的歡喜程度',
   q2ends: ['普通', '非常歡喜'] as [string, string],
   learnStem: '學習以下內容的心得受用',
   learn: { talks: '師長及和尚開示', sangha: '【僧團功德】影片', lay: '【居士影片】', chant: '【讚頌】' } as Record<Learn, string>,
@@ -47,7 +47,7 @@ const zh = {
   satEnds: ['普通', '非常滿意'] as [string, string],
   scaleNote: '5 分最高，1 分為普通。',
   q8: '療癒體驗活動',
-  q8lede: '也想聽聽您對這兩天療癒體驗活動的感受。',
+  q8lede: '也想聽聽你對這兩天療癒體驗活動的感受。',
   q9: '還有什麼想對我們說的嗎？任何學習心得、建議、感受或小故事，我們都很樂意聽。',
   noActivities: '我沒有參加療癒體驗活動',
   noActivitiesNote: '沒關係，8-1 到 8-5 可以略過。',
