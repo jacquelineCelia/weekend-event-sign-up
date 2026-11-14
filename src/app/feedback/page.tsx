@@ -8,6 +8,7 @@ import { dict } from '@/lib/i18n';
 import { getLang } from '@/lib/lang';
 import { activitiesAllDays } from '@/lib/queries';
 import { currentOwners } from '@/lib/viewer';
+import { feedbackText } from '@/lib/feedback-text';
 import FeedbackForm from './FeedbackForm';
 
 export const dynamic = 'force-dynamic';
@@ -40,7 +41,7 @@ export default async function Feedback() {
         <Link className="back" href="/"><Back /> {t.allActivities}</Link>
         <LangToggle lang={lang} />
       </div>
-      <FeedbackForm lang={lang} event={eventName(lang)} activities={activities} prefill={prefill} />
+      <FeedbackForm lang={lang} event={eventName(lang)} activities={activities} prefill={prefill} text={feedbackText(lang)} />
     </div>
   );
 }

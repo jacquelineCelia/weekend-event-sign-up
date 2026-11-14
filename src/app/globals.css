@@ -422,7 +422,7 @@ select.input { padding: 0 14px; }
 .fb-scale .legend { padding: 0; margin-bottom: 7px; line-height: 1.45; font-size: 18px; }
 .fb-q { display: flex; align-items: flex-start; gap: 12px; }
 /* Question numbers: a serif numeral with a thin rule after it, unlike the round green activity numbers. */
-.fb-qnum { flex: none; width: 22px; box-sizing: content-box; padding-right: 10px; border-right: 1.5px solid var(--moss); font-family: var(--serif); font-size: 24px; font-weight: 400; line-height: 26px; color: var(--moss); text-align: center; font-variant-numeric: lining-nums; }
+.fb-qnum { flex: none; min-width: 22px; white-space: nowrap; box-sizing: content-box; padding-right: 10px; border-right: 1.5px solid var(--moss); font-family: var(--serif); font-size: 24px; font-weight: 400; line-height: 26px; color: var(--moss); text-align: center; font-variant-numeric: lining-nums; }
 .fb-pills { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
 .fb-pill { display: flex; align-items: center; justify-content: center; min-height: 52px; border: 1px solid var(--line-strong); border-radius: 999px; background: var(--paper); font-size: 18.5px; font-weight: 600; cursor: pointer; font-variant-numeric: tabular-nums; }
 .fb-pill[data-on='true'] { border: 2px solid var(--moss); background: var(--sage); color: var(--moss-dark); }
@@ -433,6 +433,31 @@ select.input { padding: 0 14px; }
 .fb-form .field > label, .fb-form .photo-topics > .legend { font-size: 18px; line-height: 1.45; }
 .fb-comment { min-height: 140px; padding: 14px 16px; line-height: 1.5; resize: vertical; font-family: inherit; }
 .photo-topic .card-num { margin-left: -2px; }
+
+/* Multi-page feedback: progress, age choices, grouped 1–5 rows, Back/Next. */
+.fb-progress { display: flex; flex-direction: column; gap: 8px; }
+.fb-progress-text { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-size: 18px; color: var(--moss-dark); }
+.fb-progress-text span { font-size: 15px; color: var(--muted); white-space: nowrap; }
+.fb-progress-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.fb-progress-bar span { height: 6px; border-radius: 999px; background: var(--ground-2); }
+.fb-progress-bar span[data-on='true'] { background: var(--moss); }
+.fb-agefield { border: 0; padding: 0; margin: 0; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.fb-agefield .legend { padding: 0; margin-bottom: 7px; font-size: 18px; }
+.fb-ages { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.fb-age { font-size: 17.5px; font-weight: 500; }
+.fb-agefield[data-invalid='true'] .fb-age { border-color: var(--ochre); }
+.fb-group { display: flex; flex-direction: column; gap: 0; }
+.fb-group-stem { margin: 0; font-size: 18px; font-weight: 600; color: var(--moss-dark); line-height: 1.45; }
+.fb-group-ends { margin: 4px 0 2px; }
+.fb-row { padding: 16px 0 4px; border-top: 1px solid var(--line); margin-top: 10px; }
+.fb-group-ends + .fb-row { border-top: 0; margin-top: 0; }
+.fb-row[data-invalid='true'] .fb-pill { border-color: var(--ochre); }
+.fb-stem7 { font-size: 18px; line-height: 1.45; font-weight: 600; }
+.fb-stem7 .fb-note { font-weight: 400; }
+.fb-none .photo-topic-name { font-weight: 500; }
+.fb-nav { display: flex; gap: 10px; }
+.fb-nav .btn { flex: 1; }
+.fb-nav .btn.ghost { flex: 0 1 34%; }
 
 /* Staff Attendees tab: each person's sign-ups, one link per line to that session's roster. */
 .people-signups { list-style: none; margin: 0; padding: 0; flex: 2 1 380px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
