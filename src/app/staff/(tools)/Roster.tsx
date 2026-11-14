@@ -5,7 +5,6 @@ import type { RosterRow } from '@/lib/staff';
 import { checkInAction } from '../actions';
 import { Check } from '@/components/icons';
 import PartyEditor, { type SeatType } from './PartyEditor';
-import ContactEditor from './ContactEditor';
 import CancelPanel from './CancelPanel';
 import { sdict } from '@/lib/staff-i18n';
 import type { Lang } from '@/lib/event';
@@ -17,11 +16,11 @@ export default function Roster({ rows, lang, seating, open: openSpots, started }
     cur.map((r) => (r.bookingId === u.id ? { ...r, checkedIn: u.n } : r)),
   );
   const [, start] = useTransition();
-  // One panel open at a time: the party-size editor or the contact editor, for one row.
-  const [editing, setEditing] = useState<{ id: string; kind: 'party' | 'contact' | 'cancel' } | null>(null);
+  // One panel open at a time: the party-size editor or the cancel panel, for one row.
+  // (The "Edit contact details" button was removed at the user's request; ContactEditor.tsx is kept unused.)
+  const [editing, setEditing] = useState<{ id: string; kind: 'party' | 'cancel' } | null>(null);
   // A cancelled sign-up leaves the list, so its confirmation shows above the list.
   const [cancelNote, setCancelNote] = useState<string | null>(null);
-  const [notes, setNotes] = useState<Record<string, string>>({});
   const set = (id: string, n: number) =>
     start(async () => {
       setOptimistic({ id, n });
@@ -49,7 +48,6 @@ export default function Roster({ rows, lang, seating, open: openSpots, started }
           const open = editing?.id === r.bookingId ? editing.kind : null;
           const changeButton = open ? null : (
             <>
-              <button type="button" className="btn ghost" style={{ minHeight: 48, fontSize: 15.5 }} onClick={() => setEditing({ id: r.bookingId, kind: 'contact' })}>{t.editContact}</button>
               <button type="button" className="btn ghost" style={{ minHeight: 48, fontSize: 15.5 }} onClick={() => setEditing({ id: r.bookingId, kind: 'party' })}>{t.changeParty}</button>
               <button type="button" className="btn ghost" style={{ minHeight: 48, fontSize: 15.5, color: 'var(--ochre-dark)' }} onClick={() => setEditing({ id: r.bookingId, kind: 'cancel' })}>{t.cancelSignup}</button>
             </>
@@ -80,15 +78,10 @@ export default function Roster({ rows, lang, seating, open: openSpots, started }
                 </div>
               )}
               </div>
-              {notes[r.bookingId] && !open ? (
-                <p className="hint" role="status" style={{ flex: '1 0 100%', margin: 0, fontSize: 14.5, color: 'var(--moss-dark)' }}>{notes[r.bookingId]}</p>
-              ) : null}
               {open === 'party' ? (
                 <PartyEditor row={r} lang={lang} seating={seating} open={openSpots} onClose={() => setEditing(null)} />
               ) : open === 'cancel' ? (
                 <CancelPanel row={r} lang={lang} started={started} onClose={() => setEditing(null)} onDone={(msg) => { setEditing(null); setCancelNote(msg); }} />
-              ) : open === 'contact' ? (
-                <ContactEditor row={r} lang={lang} onClose={() => setEditing(null)} onSaved={(msg) => setNotes((x) => ({ ...x, [r.bookingId]: msg }))} />
               ) : null}
             </div>
           );
