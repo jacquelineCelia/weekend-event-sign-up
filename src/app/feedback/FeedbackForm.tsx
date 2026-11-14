@@ -242,7 +242,7 @@ export default function FeedbackForm({ lang, activities, prefill, text: f }: { l
                 {g.map((k) => (
                   <div key={k} className="fb-row" data-invalid={has(k)}><fieldset className="fb-scale">
                     <legend className="legend"><QHead num={`7-${SAT.indexOf(k) + 1}`}>{f.sat[k]}</QHead></legend>
-                    <Pills name={k} value={rates[k]} onPick={rate(k)} ariaLabel={t.scoreAria} ends={f.satEnds} />
+                    <Pills name={k} value={rates[k]} onPick={rate(k)} ariaLabel={t.scoreAria} ends={k === 'moving' ? f.movingEnds : f.satEnds} />
                     {has(k) && <span className="error">{t.errScore}</span>}
                   </fieldset></div>
                 ))}

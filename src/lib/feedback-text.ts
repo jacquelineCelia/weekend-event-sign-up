@@ -31,6 +31,7 @@ const zh = {
     seating: '座位視野', food: '餐飲菜色', volunteers: '義工服務',
   } as Record<Sat, string>,
   satEnds: ['普通', '非常滿意'] as [string, string],
+  movingEnds: ['普通', '非常感動'] as [string, string], // 7-1 法會感動度 only (user's request)
   scaleNote: '5 分最高，1 分為普通。',
   q8: '療癒體驗活動',
   q8lede: '也想聽聽你對這兩天療癒體驗活動的感受。',
@@ -61,6 +62,7 @@ const en: typeof zh = {
     seating: 'Seats and view', food: 'Food', volunteers: 'Volunteer service',
   },
   satEnds: ['Average', 'Very satisfied'],
+  movingEnds: ['Average', 'Very moved'],
   scaleNote: '5 is the highest, 1 is average.',
   q8: 'Mindfulness activities',
   q8lede: 'We’d also love to hear how this weekend’s activities felt for you.',
