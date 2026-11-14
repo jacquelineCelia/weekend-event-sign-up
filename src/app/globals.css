@@ -448,9 +448,8 @@ select.input { padding: 0 14px; }
 .fb-agefield[data-invalid='true'] .fb-age { border-color: var(--ochre); }
 .fb-group { display: flex; flex-direction: column; gap: 0; }
 .fb-group-stem { margin: 0; font-size: 18px; font-weight: 600; color: var(--moss-dark); line-height: 1.45; }
-.fb-group-ends { margin: 4px 0 2px; }
 .fb-row { padding: 16px 0 4px; border-top: 1px solid var(--line); margin-top: 10px; }
-.fb-group-ends + .fb-row { border-top: 0; margin-top: 0; }
+.fb-group-stem + .fb-row { border-top: 0; margin-top: 0; padding-top: 12px; }
 .fb-row[data-invalid='true'] .fb-pill { border-color: var(--ochre); }
 .fb-stem7 { font-size: 18px; line-height: 1.45; font-weight: 600; }
 .fb-stem7 .fb-note { font-weight: 400; }

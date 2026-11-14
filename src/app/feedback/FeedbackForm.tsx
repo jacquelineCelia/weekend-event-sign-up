@@ -216,11 +216,10 @@ export default function FeedbackForm({ lang, activities, prefill, text: f }: { l
             {/* 3–6 share one stem, so they sit together on one card, one row each. */}
             <div className="fb-card fb-group" data-invalid={LEARN.some(has)}>
               <p className="fb-group-stem">{f.learnStem}</p>
-              <div className="fb-ends fb-group-ends" aria-hidden="true"><span>1 · {f.learnEnds[0]}</span><span>5 · {f.learnEnds[1]}</span></div>
               {LEARN.map((k, i) => (
                 <div key={k} className="fb-row" data-invalid={has(k)}><fieldset className="fb-scale">
                   <legend className="legend"><QHead num={String(i + 3)}>{f.learn[k]}</QHead></legend>
-                  <Pills name={k} value={rates[k]} onPick={rate(k)} ariaLabel={t.scoreAria} />
+                  <Pills name={k} value={rates[k]} onPick={rate(k)} ariaLabel={t.scoreAria} ends={f.learnEnds} />
                   {has(k) && <span className="error">{t.errScore}</span>}
                 </fieldset></div>
               ))}
@@ -240,11 +239,10 @@ export default function FeedbackForm({ lang, activities, prefill, text: f }: { l
             {SAT_GROUPS.map((g, gi) => (
               <div key={gi} className="fb-card fb-group" data-invalid={g.some(has)}>
                 <p className="fb-group-stem">{f.satGroups[gi]}</p>
-                <div className="fb-ends fb-group-ends" aria-hidden="true"><span>1 · {f.satEnds[0]}</span><span>5 · {f.satEnds[1]}</span></div>
                 {g.map((k) => (
                   <div key={k} className="fb-row" data-invalid={has(k)}><fieldset className="fb-scale">
                     <legend className="legend"><QHead num={`7-${SAT.indexOf(k) + 1}`}>{f.sat[k]}</QHead></legend>
-                    <Pills name={k} value={rates[k]} onPick={rate(k)} ariaLabel={t.scoreAria} />
+                    <Pills name={k} value={rates[k]} onPick={rate(k)} ariaLabel={t.scoreAria} ends={f.satEnds} />
                     {has(k) && <span className="error">{t.errScore}</span>}
                   </fieldset></div>
                 ))}
