@@ -3,7 +3,6 @@ import { Back } from '@/components/icons';
 import LangToggle from '@/components/LangToggle';
 import { getPool } from '@/lib/db';
 import { requestTime } from '@/lib/event';
-import { eventName } from '@/lib/hans';
 import { dict } from '@/lib/i18n';
 import { getLang } from '@/lib/lang';
 import { activitiesAllDays } from '@/lib/queries';
@@ -41,7 +40,7 @@ export default async function Feedback() {
         <Link className="back" href="/"><Back /> {t.allActivities}</Link>
         <LangToggle lang={lang} />
       </div>
-      <FeedbackForm lang={lang} event={eventName(lang)} activities={activities} prefill={prefill} text={feedbackText(lang)} />
+      <FeedbackForm lang={lang} activities={activities} prefill={prefill} text={feedbackText(lang)} />
     </div>
   );
 }

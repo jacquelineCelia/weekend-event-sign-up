@@ -51,7 +51,7 @@ function QHead({ num, children }: { num: string; children: ReactNode }) {
  * with the 憶師恩法會 (7-1 … 7-11) · the weekend's activities (8, the earlier five questions) and a closing comment (9).
  * Everything stays in this one component, so going back and forth never loses an answer.
  */
-export default function FeedbackForm({ lang, event, activities, prefill, text: f }: { lang: Lang; event: string; activities: Activity[]; prefill: Prefill; text: FeedbackStrings }) {
+export default function FeedbackForm({ lang, activities, prefill, text: f }: { lang: Lang; activities: Activity[]; prefill: Prefill; text: FeedbackStrings }) {
   const t = dict(lang).feedback;
   const [step, setStep] = useState(0);
   const [name, setName] = useState(prefill.name);
@@ -145,7 +145,7 @@ export default function FeedbackForm({ lang, event, activities, prefill, text: f
       <form className="photo-form fb-form" onSubmit={onSubmit} noValidate>
         <div className="stack" style={{ gap: 8 }}>
           <h1 className="h1">{t.title}</h1>
-          {step === 0 ? <p className="photo-lede">{t.lede(event)}</p> : null}
+          {step === 0 ? <p className="photo-lede">{t.lede}</p> : null}
         </div>
 
         {/* Progress: page n of 4 and the page's name, with four segments. */}
