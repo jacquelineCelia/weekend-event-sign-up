@@ -26,7 +26,7 @@ const zh = {
   q7: '對於憶師恩法會的滿意度',
   satGroups: ['法會與節目', '舞台與影音', '現場與服務'],
   sat: {
-    moving: '法會感動度', timing: '節目時間', hosts: '主持群', performers: '藝人表演',
+    moving: '法會感動度', timing: '節目時間', hosts: '主持群', performers: '讚頌表演',
     stage: '舞台設計', lighting: '燈光效果', sound: '音響效果', video: '影片字幕及效果',
     seating: '座位視野', food: '餐飲菜色', volunteers: '義工服務',
   } as Record<Sat, string>,
@@ -57,7 +57,7 @@ const en: typeof zh = {
   q7: 'How satisfied were you with the Memorial Ceremony for Late Master?',
   satGroups: ['Ceremony and programme', 'Stage, sound and video', 'On the day'],
   sat: {
-    moving: 'How moving it was', timing: 'Programme timing', hosts: 'Hosts', performers: 'Performances',
+    moving: 'How moving it was', timing: 'Programme timing', hosts: 'Hosts', performers: 'Chanting performances',
     stage: 'Stage design', lighting: 'Lighting', sound: 'Sound', video: 'Videos and subtitles',
     seating: 'Seats and view', food: 'Food', volunteers: 'Volunteer service',
   },
