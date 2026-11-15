@@ -385,7 +385,7 @@ const zh: Dict = {
   },
   gallery: {
     title: '照片集',
-    cardText: '看看大家這個週末分享的風景',
+    cardText: '欣賞大家這個週末分享的風景',
     lede: '大家在這個週末發現的風景。點一下照片可以放大。',
     all: '全部',
     topicsAria: '選擇主題',
@@ -688,7 +688,7 @@ const zhs: Dict = {
   },
   gallery: {
     title: '照片集',
-    cardText: '看看大家这个周末分享的风景',
+    cardText: '欣赏大家这个周末分享的风景',
     lede: '大家在这个周末发现的风景。点一下照片可以放大。',
     all: '全部',
     topicsAria: '选择主题',
