@@ -50,3 +50,7 @@ export const Camera = ({ size = 24 }: P) => (
 export const Close = ({ size = 20 }: P) => (
   <svg {...base(size)} strokeWidth={2}><path d="M6 6l12 12M18 6L6 18" /></svg>
 );
+/** Two stacked pictures with a hill and sun: the photo gallery. */
+export const Pictures = ({ size = 24 }: P) => (
+  <svg {...base(size)}><rect x="3" y="6" width="14" height="14" rx="2.5" /><path d="M7 3h11.5A2.5 2.5 0 0 1 21 5.5V17" /><circle cx="8" cy="10.5" r="1.4" /><path d="M3.5 18l4.5-4.5 3 3 2-2 3.5 3.5" /></svg>
+);

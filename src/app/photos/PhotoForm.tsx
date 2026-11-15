@@ -113,6 +113,7 @@ export default function PhotoForm({ lang, topics }: { lang: Lang; topics: { id: 
         <h1 className="h1">{t.doneTitle(name.trim())}</h1>
         <p className="photo-lede">{t.doneBody}</p>
         <button type="button" className="btn" onClick={another}>{t.another}</button>
+        <Link className="btn ghost" href="/gallery">{t.seeAll}</Link>
       </main>
     );
   }
@@ -123,6 +124,7 @@ export default function PhotoForm({ lang, topics }: { lang: Lang; topics: { id: 
         <div className="stack" style={{ gap: 8 }}>
           <h1 className="h1">{t.title}</h1>
           <p className="photo-lede">{t.lede}</p>
+          <Link className="photo-see-all" href="/gallery">{t.seeAll} ›</Link>
         </div>
 
         <div className="field">

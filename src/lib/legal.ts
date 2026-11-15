@@ -10,7 +10,7 @@ type Section = { h: string; p: (string | string[])[] };
 export type LegalDoc = { title: string; updated: string; intro: string; sections: Section[]; note?: string };
 
 const UPDATED = { en: 'Last updated October 22, 2026', zh: '最後更新：2026 年 10 月 22 日', zhs: '最后更新：2026 年 10 月 22 日' };
-const PRIVACY_UPDATED = { en: 'Last updated November 6, 2026', zh: '最後更新：2026 年 11 月 6 日', zhs: '最后更新：2026 年 11 月 6 日' };
+const PRIVACY_UPDATED = { en: 'Last updated November 14, 2026', zh: '最後更新：2026 年 11 月 14 日', zhs: '最后更新：2026 年 11 月 14 日' };
 const NOTE = { zh: '本頁為中文譯本，如與英文版本有出入，以英文版本為準。', zhs: '本页为中文译本，如与英文版本有出入，以英文版本为准。' };
 
 export function terms(lang: Lang, event: string): LegalDoc {
@@ -132,7 +132,7 @@ export function privacy(lang: Lang, event: string): LegalDoc {
           'Text messaging originator opt-in data and consent will not be shared with any third parties.',
         ],
       ] },
-      { h: 'Photos you share', p: ['If you upload a photo, we keep the photo, the name you enter and the topic you choose, and show them on a big screen at the event, where everyone there can see them. Your browser removes location data from the photo before sending it. To have a photo taken down, ask a staff member or email ' + mail + '.'] },
+      { h: 'Photos you share', p: ['If you upload a photo, we keep the photo, the name you enter and the topic you choose, and show them on a big screen at the event and in the public photo gallery on this website, where anyone can see them. Your browser removes location data from the photo before sending it. To have a photo taken down, ask a staff member or email ' + mail + '.'] },
       { h: 'Who else sees it', p: ['We never sell or rent your information. Apart from the text-messaging data above, which is never shared, we share information only with the service providers that host this site and deliver our emails and texts on our behalf, and only as needed for them to do that.'] },
       { h: 'How long we keep it', p: [`We keep sign-up information only as long as we need it for the event and any follow-up, then delete it. To see or delete your information sooner, email ${mail}.`] },
       { h: 'Changes and contact', p: [`We may update this policy; the date above shows the latest version. Questions? Email ${mail}.`] },
@@ -153,7 +153,7 @@ export function privacy(lang: Lang, event: string): LegalDoc {
           '簡訊接收同意資料及同意紀錄不會提供給任何第三方。',
         ],
       ] },
-      { h: '你分享的照片', p: ['如果你上傳照片，我們會保存照片、你輸入的姓名和你選擇的主題，並在活動現場的大螢幕上播放，現場所有人都看得到。你的瀏覽器會在傳送前移除照片中的位置資料。如需撤下照片，請告知工作人員或寫信至 ' + mail + '。'] },
+      { h: '你分享的照片', p: ['如果你上傳照片，我們會保存照片、你輸入的姓名和你選擇的主題，並在活動現場的大螢幕上播放，也放在本網站公開的照片集，所有人都看得到。你的瀏覽器會在傳送前移除照片中的位置資料。如需撤下照片，請告知工作人員或寫信至 ' + mail + '。'] },
       { h: '資料分享', p: ['我們絕不出售或出租你的資料。除上述絕不分享的簡訊資料外，我們只會在必要範圍內，將資料提供給代我們架設本網站及寄送電子郵件與簡訊的服務供應商。'] },
       { h: '保存期限', p: [`報名資料僅保存至活動及後續聯繫所需，之後即刪除。如需提前查看或刪除你的資料，請寫信至 ${mail}。`] },
       { h: '政策變更與聯絡方式', p: [`我們可能更新本政策，上方日期為最新版本。如有疑問，請寫信至 ${mail}。`] },
@@ -174,7 +174,7 @@ export function privacy(lang: Lang, event: string): LegalDoc {
           '短信接收同意数据及同意记录不会提供给任何第三方。',
         ],
       ] },
-      { h: '你分享的照片', p: ['如果你上传照片，我们会保存照片、你输入的姓名和你选择的主题，并在活动现场的大屏幕上播放，现场所有人都能看到。你的浏览器会在发送前移除照片中的位置信息。如需撤下照片，请告知工作人员或发邮件至 ' + mail + '。'] },
+      { h: '你分享的照片', p: ['如果你上传照片，我们会保存照片、你输入的姓名和你选择的主题，并在活动现场的大屏幕上播放，也放在本网站公开的照片集，所有人都能看到。你的浏览器会在发送前移除照片中的位置信息。如需撤下照片，请告知工作人员或发邮件至 ' + mail + '。'] },
       { h: '信息共享', p: ['我们绝不出售或出租你的信息。除上述绝不共享的短信数据外，我们只会在必要范围内，将信息提供给代我们托管本网站及发送邮件和短信的服务提供商。'] },
       { h: '保存期限', p: [`报名信息仅保存至活动及后续联系所需，之后即删除。如需提前查看或删除你的信息，请发邮件至 ${mail}。`] },
       { h: '政策变更与联系方式', p: [`我们可能更新本政策，上方日期为最新版本。如有疑问，请发邮件至 ${mail}。`] },

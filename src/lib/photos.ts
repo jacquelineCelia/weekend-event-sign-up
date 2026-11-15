@@ -91,3 +91,15 @@ export async function removePhoto(id: string) {
   if (!uuid.safeParse(id).success) return;
   await getPool().query('delete from photos where id = $1', [id]);
 }
+
+/** One photo on the public gallery (`/gallery`), newest first. */
+export type GalleryPhoto = { id: string; name: string; topicId: string; topic: string };
+
+/** Every photo for the public gallery, newest first, without the image data. */
+export async function galleryPhotos(lang: Lang): Promise<GalleryPhoto[]> {
+  const { rows } = await getPool().query<{ id: string; name: string; topic_id: string; topic: string; topic_zh: string }>(
+    `select p.id, p.name, p.topic_id, t.name as topic, t.name_zh as topic_zh
+       from photos p join photo_topics t on t.id = p.topic_id order by p.created_at desc, p.id`,
+  );
+  return rows.map((r) => ({ id: r.id, name: r.name, topicId: r.topic_id, topic: localText(r.topic, r.topic_zh, lang) }));
+}
