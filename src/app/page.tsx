@@ -12,9 +12,6 @@ import { nameRuns } from '@/components/ActivityName';
 
 export const dynamic = 'force-dynamic';
 
-/** The link to photo sharing is hidden for now; the page itself still works at /photos. */
-const SHOW_PHOTO_CARD = false;
-
 export default async function Browse({ searchParams }: { searchParams: Promise<{ open?: string }> }) {
   const sp = await searchParams;
   const onlyOpen = sp.open === '1';
@@ -122,6 +119,13 @@ export default async function Browse({ searchParams }: { searchParams: Promise<{
             </span>
           </Link>
         ) : null}
+        <Link className="card photo-card" href="/photos">
+          <span className="photo-card-icon"><Camera /></span>
+          <span className="stack" style={{ gap: 4, minWidth: 0 }}>
+            <span className={`card-title${zhBold(t.photos.title)}`}>{t.photos.title}</span>
+            <span className="photo-card-text">{t.photos.cardText}</span>
+          </span>
+        </Link>
         <Link className="card photo-card" href="/gallery">
           <span className="photo-card-icon"><Pictures /></span>
           <span className="stack" style={{ gap: 4, minWidth: 0 }}>
@@ -129,15 +133,6 @@ export default async function Browse({ searchParams }: { searchParams: Promise<{
             <span className="photo-card-text">{t.gallery.cardText}</span>
           </span>
         </Link>
-        {SHOW_PHOTO_CARD ? (
-          <Link className="card photo-card" href="/photos">
-            <span className="photo-card-icon"><Camera /></span>
-            <span className="stack" style={{ gap: 4, minWidth: 0 }}>
-              <span className={`card-title${zhBold(t.photos.title)}`}>{t.photos.title}</span>
-              <span className="photo-card-text">{t.photos.cardText}</span>
-            </span>
-          </Link>
-        ) : null}
       </main>
       <LegalFoot lang={lang} />
     </div>
