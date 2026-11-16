@@ -64,7 +64,7 @@ export async function removeSkip(email: string) {
 }
 
 const ZH = {
-  subject: '誠摯邀請您分享這個週末的心得與回饋',
+  subject: '邀請您分享這個週末的心得與回饋',
   title: '分享您的心得與回饋',
   hello: (names: string[]) => `${names.join('、')}，您好：`,
   lines: [
