@@ -46,7 +46,7 @@ export default async function FeedbackEmail() {
           <div><b>{s.listed.length}</b><span>你名單上的（略過）</span></div>
         </div>
         <p className="muted" style={{ margin: 0 }}>
-          收件人：11/14–11/15 有報名（未取消）的所有 email，同一個 email 只寄一封，信中稱呼所有用這個 email 報名的人。語言依報名時使用的語言。
+          收件人：11/14–11/15 有報名的所有 email（包括取消報名的人），同一個 email 只寄一封，信中稱呼所有用這個 email 報名的人。語言依報名時使用的語言。
           {s.noEmail ? ` 另有 ${s.noEmail} 位現場報名者沒有留 email，無法寄送。` : ''}
         </p>
 

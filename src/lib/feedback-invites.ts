@@ -6,7 +6,8 @@ import { sendEmail } from './messaging';
 
 /**
  * One-time feedback invitation by email (staff page /staff/feedback-email).
- * Goes to every email address with a confirmed sign-up on the event days, one email per address
+ * Goes to every email address with a sign-up on the event days, cancelled ones included (user's choice),
+ * one email per address
  * (people sharing an address are greeted together), in the language of whoever signed up first.
  * Skipped: addresses already on a feedback form, addresses staff pasted as "already gave feedback",
  * and addresses already sent to (table feedback_invites).
@@ -21,7 +22,7 @@ export async function inviteSummary() {
     `with signed as (
        select lower(p.email) as email, p.name, coalesce(p.lang, 'zh') as lang, min(b.created_at) as first_at
          from bookings b join slots s on s.id = b.slot_id join people p on p.id = b.person_id
-        where b.status = 'confirmed' and coalesce(p.email, '') <> ''
+        where b.status in ('confirmed', 'cancelled') and coalesce(p.email, '') <> ''
           and (s.starts_at at time zone $1)::date = any ($2::date[])
         group by lower(p.email), p.name, p.lang
      ), byemail as (
@@ -39,7 +40,7 @@ export async function inviteSummary() {
   );
   const noEmail = await pool.query<{ n: number }>(
     `select count(distinct p.id)::int as n from bookings b join slots s on s.id = b.slot_id join people p on p.id = b.person_id
-      where b.status = 'confirmed' and coalesce(p.email, '') = '' and (s.starts_at at time zone $1)::date = any ($2::date[])`,
+      where b.status in ('confirmed', 'cancelled') and coalesce(p.email, '') = '' and (s.starts_at at time zone $1)::date = any ($2::date[])`,
     [EVENT.timeZone, DAYS()],
   );
   const by = (st: string) => rows.filter((r) => r.state === st).map((r) => ({ email: r.email, names: r.names, lang: (r.lang as Lang) }));

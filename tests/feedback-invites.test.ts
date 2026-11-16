@@ -27,7 +27,7 @@ beforeEach(async () => {
 afterAll(() => pool.end());
 
 describe('feedback invitation emails', () => {
-  it('one email per address, skipping cancelled, other days, no email, filled forms and pasted addresses', async () => {
+  it('one email per address, cancelled sign-ups included, skipping other days, no email, filled forms and pasted addresses', async () => {
     await signed('王小明', 'wang@example.com', '2026-11-14T14:50:00-05:00');
     await signed('王小美', 'Wang@Example.com', '2026-11-15T09:50:00-05:00');
     await signed('Mei Lin', 'mei@example.com', '2026-11-14T16:00:00-05:00', { lang: 'en' });
@@ -41,6 +41,7 @@ describe('feedback invitation emails', () => {
 
     const s = await inviteSummary();
     expect(s.todo).toEqual([
+      { email: 'gone@example.com', names: ['Gone'], lang: 'zh' },
       { email: 'mei@example.com', names: ['Mei Lin'], lang: 'en' },
       { email: 'wang@example.com', names: ['王小明', '王小美'], lang: 'zh' },
     ]);
@@ -49,7 +50,7 @@ describe('feedback invitation emails', () => {
     expect(s.noEmail).toBe(1);
 
     await removeSkip('listed@example.com');
-    expect((await inviteSummary()).todo).toHaveLength(3);
+    expect((await inviteSummary()).todo).toHaveLength(4);
   });
 
   it('sends each address once, in its language, and never again', async () => {
