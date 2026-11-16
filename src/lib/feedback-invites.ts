@@ -95,7 +95,9 @@ export function inviteEmail(lang: Lang, names: string[]) {
   const lines = [t.hello(names), ...t.lines].map(z);
   const subject = z(t.subject);
   const text = [...lines, `${z(t.cta)}: ${url}`, z(t.thanks)].join('\n\n');
-  const html = emailHtml(lang, z(t.title), lines, null, { href: url, label: z(t.cta) }).replace(
+  // Top line: 療癒週末 (user's wording for this email), not the site's event name.
+  const header = lang === 'en' ? 'Mindfulness Weekend' : z('療癒週末');
+  const html = emailHtml(lang, z(t.title), lines, null, { href: url, label: z(t.cta) }, header).replace(
     '</div></div></body>',
     `<p style="margin:14px 0 0">${z(t.thanks)}</p></div></div></body>`,
   );

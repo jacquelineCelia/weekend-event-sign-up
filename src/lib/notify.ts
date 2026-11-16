@@ -47,7 +47,7 @@ export const appUrl = () =>
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 const eventName = eventNameFor;
 
-export function emailHtml(lang: Lang, title: string, lines: string[], code: string | null, cta?: { href: string; label: string }) {
+export function emailHtml(lang: Lang, title: string, lines: string[], code: string | null, cta?: { href: string; label: string }, header?: string) {
   const font =
     lang === 'zh' ? "'PingFang TC','Noto Sans TC','Microsoft JhengHei',Helvetica,Arial,sans-serif"
     : lang === 'zhs' ? "'PingFang SC','Noto Sans SC','Microsoft YaHei',Helvetica,Arial,sans-serif"
@@ -55,7 +55,7 @@ export function emailHtml(lang: Lang, title: string, lines: string[], code: stri
   return `<!doctype html><html lang="${dict(lang).htmlLang}"><body style="margin:0;background:#eeefe7;font-family:${font};color:#22302a">
 <div style="max-width:480px;margin:0 auto;padding:24px 16px">
 <div style="background:#2a3d31;color:#fbfbf7;border-radius:20px;padding:20px">
-<div style="font-size:13px;color:#d5decf">${esc(eventName(lang))}</div>
+<div style="font-size:13px;color:#d5decf">${esc(header ?? eventName(lang))}</div>
 <div style="font-family:Georgia,serif;font-size:22px;margin-top:6px">${esc(title)}</div>
 ${code ? `<div style="display:inline-block;margin-top:12px;background:#fbfbf7;color:#22302a;border-radius:999px;padding:4px 12px;font-weight:700;letter-spacing:.14em">${esc(code)}</div>` : ''}
 </div>
