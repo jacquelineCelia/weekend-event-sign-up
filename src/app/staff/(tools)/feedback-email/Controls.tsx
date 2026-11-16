@@ -10,9 +10,17 @@ export function SkipForm() {
     <form action={action} className="stack" style={{ gap: 8 }}>
       <label htmlFor="skip-emails" style={{ fontWeight: 600 }}>貼上已填寫回饋的 email（任何格式，每行一個或用逗號分開都可以）</label>
       <textarea id="skip-emails" name="emails" className="input" rows={5} placeholder="name@example.com" />
-      <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', flexWrap: 'wrap' }}>
         <button type="submit" className="btn ghost" disabled={pending}>{pending ? '處理中…' : '從寄送名單移除'}</button>
-        {state ? <span role="status">找到 {state.found} 個 email，其中 {state.removed} 個是報名者，已從寄送名單移除（其他的不在名單上，不影響）。</span> : null}
+        {state ? (
+          <span role="status" className="stack" style={{ gap: 2 }}>
+            <span>找到 {state.found} 個 email：</span>
+            {state.removed ? <span>・{state.removed} 個已從寄送名單移除</span> : null}
+            {state.alreadyFilled ? <span>・{state.alreadyFilled} 個已在網站填寫過表單，本來就不會寄</span> : null}
+            {state.alreadySent ? <span>・{state.alreadySent} 個已經寄出過了</span> : null}
+            {state.notFound.length ? <span>・{state.notFound.length} 個找不到 11/14–11/15 的報名：{state.notFound.join('、')}</span> : null}
+          </span>
+        ) : null}
       </div>
     </form>
   );

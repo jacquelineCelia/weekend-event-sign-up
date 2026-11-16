@@ -47,7 +47,7 @@ export async function inviteSummary() {
   return { todo: by('todo'), sent: by('sent'), filled: by('filled'), listed: by('listed'), noEmail: noEmail.rows[0].n };
 }
 
-/** Marks pasted addresses as "already gave feedback". Returns how many addresses were found, and how many of them are on the sending list. */
+/** Marks pasted addresses as "already gave feedback", and reports which group each one is in. */
 export async function addSkips(text: string) {
   const emails = [...new Set((text.match(/[^\s,;，；、<>()"']+@[^\s,;，；、<>()"']+\.[^\s,;，；、<>()"']+/g) ?? []).map((e) => e.toLowerCase()))];
   if (emails.length)
@@ -55,8 +55,17 @@ export async function addSkips(text: string) {
       `insert into feedback_invites (email, status) select unnest($1::text[]), 'skipped' on conflict (email) do nothing`,
       [emails],
     );
-  const listed = new Set((await inviteSummary()).listed.map((x) => x.email));
-  return { found: emails.length, removed: emails.filter((e) => listed.has(e)).length };
+  // Say where each pasted address ended up: a participant who already filled the form on the
+  // website was never on the sending list, and must not read as "not a participant".
+  const s = await inviteSummary();
+  const has = (rows: Invitee[]) => new Set(rows.map((x) => x.email));
+  const [listed, filled, sent] = [has(s.listed), has(s.filled), has(s.sent)];
+  const count = (set: Set<string>) => emails.filter((e) => set.has(e)).length;
+  const removed = count(listed), alreadyFilled = count(filled), alreadySent = count(sent);
+  return {
+    found: emails.length, removed, alreadyFilled, alreadySent,
+    notFound: emails.filter((e) => !listed.has(e) && !filled.has(e) && !sent.has(e)),
+  };
 }
 
 /** Undo a pasted address (only if nothing was sent to it). */

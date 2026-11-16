@@ -37,7 +37,7 @@ describe('feedback invitation emails', () => {
     await signed('Filled', 'filled@example.com', '2026-11-15T11:00:00-05:00', { lang: 'zhs' });
     await signed('Listed', 'listed@example.com', '2026-11-15T11:00:00-05:00');
     await pool.query(`insert into event_feedback (name, email, lang, age, activity_ids) values ('F', 'FILLED@example.com', 'zhs', '60s', '{}')`);
-    expect(await addSkips('Listed <LISTED@example.com>, other@x.org；')).toEqual({ found: 2, removed: 1 });
+    expect(await addSkips('Listed <LISTED@example.com>, other@x.org；filled@example.com')).toEqual({ found: 3, removed: 1, alreadyFilled: 1, alreadySent: 0, notFound: ['other@x.org'] });
 
     const s = await inviteSummary();
     expect(s.todo).toEqual([
