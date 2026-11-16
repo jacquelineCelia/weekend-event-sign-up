@@ -42,12 +42,12 @@ async function trySms(phone: string, text: string) {
 // APP_URL wins (set it for production). On Vercel previews, fall back to the branch's own URL so
 // links in test emails open the preview, not localhost.
 const vercelHost = () => process.env.VERCEL_BRANCH_URL || process.env.VERCEL_URL;
-const appUrl = () =>
+export const appUrl = () =>
   (process.env.APP_URL || (vercelHost() ? `https://${vercelHost()}` : 'http://localhost:3000')).replace(/\/$/, '');
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 const eventName = eventNameFor;
 
-function emailHtml(lang: Lang, title: string, lines: string[], code: string | null, cta?: { href: string; label: string }) {
+export function emailHtml(lang: Lang, title: string, lines: string[], code: string | null, cta?: { href: string; label: string }) {
   const font =
     lang === 'zh' ? "'PingFang TC','Noto Sans TC','Microsoft JhengHei',Helvetica,Arial,sans-serif"
     : lang === 'zhs' ? "'PingFang SC','Noto Sans SC','Microsoft YaHei',Helvetica,Arial,sans-serif"
