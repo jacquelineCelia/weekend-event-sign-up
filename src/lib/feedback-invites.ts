@@ -136,7 +136,8 @@ export async function sendInviteBatch(limit = 25) {
     );
     if (!claim.rowCount) continue;
     try {
-      const m = inviteEmail(r.lang, r.names);
+      // Shared address: greet only whoever signed up first (user's request).
+      const m = inviteEmail(r.lang, r.names.slice(0, 1));
       const res = await sendEmail(r.email, m.subject, m.text, m.html);
       if (!res.delivered && process.env.MESSAGING_CAPTURE !== '1') throw new Error('Email is not set up in this environment (EMAIL_FROM / RESEND_API_KEY).');
       await pool.query(`update feedback_invites set resend_id = $2, at = now() where email = $1`, [r.email, res.id ?? null]);

@@ -63,7 +63,8 @@ describe('feedback invitation emails', () => {
     expect(await sendInviteBatch(25)).toEqual({ sent: 0, failed: [], left: 0 });
     expect(outbox).toHaveLength(3);
     const by = (to: string) => outbox.find((m) => m.to === to)!;
-    expect(by('wang@example.com').text).toContain('王小明、王小美，您好：');
+    expect(by('wang@example.com').text).toContain('王小明，您好：');
+    expect(by('wang@example.com').text).not.toContain('王小美');
     expect(by('wang@example.com').text).toContain('/zh/feedback');
     expect(by('mei@example.com').subject).toBe('Please share your feedback on the weekend');
     expect(by('mei@example.com').text).toContain('/en/feedback');
