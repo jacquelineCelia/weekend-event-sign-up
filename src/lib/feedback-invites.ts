@@ -88,7 +88,8 @@ const EN = {
 
 /** The invitation in one language: subject, plain text and HTML. */
 export function inviteEmail(lang: Lang, names: string[]) {
-  const z = (s: string) => (lang === 'zhs' ? toSimplified(s) : s);
+  // Mainland wording: 反馈 (as on the form), not the converted 回馈.
+  const z = (s: string) => (lang === 'zhs' ? toSimplified(s).replaceAll('回馈', '反馈') : s);
   const t = lang === 'en' ? EN : ZH;
   const url = `${appUrl()}/${lang === 'en' ? 'en' : lang === 'zhs' ? 'cn' : 'zh'}/feedback`;
   const lines = [t.hello(names), ...t.lines].map(z);
