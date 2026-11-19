@@ -87,7 +87,7 @@ describe('feedback invitation emails', () => {
     expect(await sendInviteBatch(25, 'reminder')).toEqual({ sent: 0, failed: [], left: 0 });
     const li = outbox.find((m) => m.to === 'li@example.com')!;
     expect(li.subject).toBe('【忆师恩法会暨疗愈活动反馈】把握最后一天机会');
-    expect(li.text).toContain('11 月 20 日（星期五）中午 12 点截止');
+    expect(li.text).toContain('11 月 20 日（星期五）中午 12 点（纽约时间）截止');
     expect(outbox.find((m) => m.to === 'late@example.com')!.subject).toBe('【憶師恩法會暨療癒活動回饋】把握最後一天機會');
     expect(inviteEmail('en', ['Ann'], 'reminder').text).toContain('closes tomorrow, Friday, November 20, at 12 noon');
     // The invitation round is unaffected.
