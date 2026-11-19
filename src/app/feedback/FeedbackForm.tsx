@@ -138,6 +138,8 @@ export default function FeedbackForm({ lang, activities, prefill, text: f }: { l
     });
   }
 
+  if (shown.includes('closed')) return <FeedbackClosed lang={lang} />;
+
   if (done) {
     return (
       <main className="pad photo-form photo-done" aria-live="polite">
@@ -311,6 +313,19 @@ export default function FeedbackForm({ lang, activities, prefill, text: f }: { l
           <button type="submit" className="btn" disabled={pending}>{last ? (pending ? t.sending : t.submit) : f.next}</button>
         </div>
       </form>
+    </main>
+  );
+}
+
+/** Shown instead of the form once feedback has closed (also when someone sends just after closing). */
+export function FeedbackClosed({ lang }: { lang: Lang }) {
+  const t = dict(lang).feedback;
+  return (
+    <main className="pad photo-form photo-done" aria-live="polite">
+      <span className="leafmark" style={{ alignSelf: 'center' }}><Sprout /></span>
+      <h1 className="h1">{t.closedTitle}</h1>
+      <p className="photo-lede">{t.closedBody}</p>
+      <Link className="btn" href="/">{t.backToList}</Link>
     </main>
   );
 }

@@ -1,6 +1,6 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { getPool } from '@/lib/db';
-import { checkFeedback, saveFeedback, type FeedbackInput } from '@/lib/feedback';
+import { checkFeedback, feedbackClosed, saveFeedback, type FeedbackInput } from '@/lib/feedback';
 import { CEREMONY } from '@/lib/feedback-questions';
 
 const pool = getPool();
@@ -53,5 +53,10 @@ describe('feedback (法會 and activities)', () => {
     await saveFeedback({ ...good(), noActivities: true }, { personId: null, lang: 'en', ipHash: '' });
     const row = (await pool.query('select no_activities, activity_ids, relax, again, sat_food from event_feedback')).rows[0];
     expect(row).toEqual({ no_activities: true, activity_ids: [], relax: null, again: null, sat_food: 5 });
+  });
+
+  it('closes at 12:00 noon New York time on 11/20', () => {
+    expect(feedbackClosed(Date.parse('2026-11-20T11:59:59-05:00'))).toBe(false);
+    expect(feedbackClosed(Date.parse('2026-11-20T12:00:00-05:00'))).toBe(true);
   });
 });

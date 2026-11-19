@@ -3,7 +3,7 @@
 import { headers } from 'next/headers';
 import { getPool } from '@/lib/db';
 import { normalizeEmail } from '@/lib/contact';
-import { checkFeedback, saveFeedback, type FeedbackError, type FeedbackInput } from '@/lib/feedback';
+import { checkFeedback, feedbackClosed, saveFeedback, type FeedbackError, type FeedbackInput } from '@/lib/feedback';
 import { CEREMONY, SCALES } from '@/lib/feedback-questions';
 import { hashIp } from '@/lib/photos';
 import { activitiesAllDays } from '@/lib/queries';
@@ -13,6 +13,7 @@ import { currentOwners } from '@/lib/viewer';
 export type FeedbackState = { errors?: FeedbackError[]; done?: boolean } | null;
 
 export async function sendFeedbackAction(_prev: FeedbackState, form: FormData): Promise<FeedbackState> {
+  if (feedbackClosed()) return { errors: ['closed'] };
   const scores: FeedbackInput['scores'] = {};
   for (const k of [...CEREMONY, ...SCALES]) {
     const v = form.get(k);

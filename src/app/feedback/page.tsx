@@ -8,13 +8,25 @@ import { getLang } from '@/lib/lang';
 import { activitiesAllDays } from '@/lib/queries';
 import { currentOwners } from '@/lib/viewer';
 import { feedbackText } from '@/lib/feedback-text';
-import FeedbackForm from './FeedbackForm';
+import { feedbackClosed } from '@/lib/feedback';
+import FeedbackForm, { FeedbackClosed } from './FeedbackForm';
 
 export const dynamic = 'force-dynamic';
 
 export default async function Feedback() {
   const lang = await getLang();
   const t = dict(lang);
+  if (feedbackClosed()) {
+    return (
+      <div className="phone">
+        <div className="topbar">
+          <Link className="back" href="/"><Back /> {t.allActivities}</Link>
+          <LangToggle lang={lang} />
+        </div>
+        <FeedbackClosed lang={lang} />
+      </div>
+    );
+  }
   const activities = (await activitiesAllDays(lang))
     .filter((a) => a.slots.length > 0)
     .map((a, i) => ({ id: a.id, name: a.name, number: i + 1 }));

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { getPool } from './db';
 import { normalizeEmail } from './contact';
+import { requestTime } from './event';
 import { AGES, CEREMONY, MAX_TEXT, OPTIONAL_SCALES, SCALES, type Age, type Rated } from './feedback-questions';
 
 /**
@@ -23,7 +24,11 @@ export type FeedbackInput = {
   activityIds: string[];
   comment: string;                 // 9
 };
-export type FeedbackError = 'name' | 'email' | 'age' | 'toGuru' | 'activities' | Rated | 'comment' | 'busy';
+export type FeedbackError = 'name' | 'email' | 'age' | 'toGuru' | 'activities' | Rated | 'comment' | 'busy' | 'closed';
+
+/** The form stops taking answers at 12:00 noon New York time on 11/20 (user's request, 2026-11-19). */
+export const FEEDBACK_CLOSES_AT = Date.parse('2026-11-20T12:00:00-05:00');
+export const feedbackClosed = (now = requestTime()) => now >= FEEDBACK_CLOSES_AT;
 
 const score = z.coerce.number().int().min(1).max(5);
 const bad = (v: number | undefined) => !score.safeParse(v).success;
