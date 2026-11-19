@@ -516,3 +516,6 @@ select.input { padding: 0 14px; }
 .fbi-table { width: 100%; border-collapse: collapse; font-size: 15px; margin-top: 6px; }
 .fbi-table td { padding: 6px 8px; border-top: 1px solid var(--line); word-break: break-all; }
 .linkbtn { background: none; border: 0; padding: 0; color: var(--moss-dark); text-decoration: underline; cursor: pointer; font: inherit; }
+.fbi-rounds { display: flex; flex-wrap: wrap; gap: 8px; }
+.fbi-rounds a { padding: 8px 14px; border: 1px solid var(--line-strong); border-radius: 999px; color: var(--ink); text-decoration: none; font-size: 16px; }
+.fbi-rounds a[aria-current='true'] { background: var(--moss); border-color: var(--moss); color: #fff; font-weight: 600; }

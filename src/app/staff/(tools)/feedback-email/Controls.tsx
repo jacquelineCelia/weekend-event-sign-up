@@ -2,12 +2,14 @@
 
 import { useActionState, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import type { Round } from '@/lib/feedback-invites';
 import { addSkipsAction, sendBatchAction, sendTestAction } from './actions';
 
-export function SkipForm() {
+export function SkipForm({ round }: { round: Round }) {
   const [state, action, pending] = useActionState(addSkipsAction, null);
   return (
     <form action={action} className="stack" style={{ gap: 8 }}>
+      <input type="hidden" name="round" value={round} />
       <label htmlFor="skip-emails" style={{ fontWeight: 600 }}>貼上已填寫回饋的 email（任何格式，每行一個或用逗號分開都可以）</label>
       <textarea id="skip-emails" name="emails" className="input" rows={5} placeholder="name@example.com" />
       <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', flexWrap: 'wrap' }}>
@@ -26,10 +28,11 @@ export function SkipForm() {
   );
 }
 
-export function TestForm() {
+export function TestForm({ round }: { round: Round }) {
   const [state, action, pending] = useActionState(sendTestAction, null);
   return (
     <form action={action} style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+      <input type="hidden" name="round" value={round} />
       <input name="to" type="email" className="input" placeholder="你的 email" style={{ flex: '1 1 220px' }} required />
       <select name="lang" className="input" style={{ flex: '0 0 auto', width: 'auto' }} defaultValue="zh">
         <option value="zh">繁中</option>
@@ -43,18 +46,18 @@ export function TestForm() {
 }
 
 /** Sends in batches of 25 until none are left, showing progress; stops on errors. */
-export function SendAll({ todo }: { todo: number }) {
+export function SendAll({ todo, round, label }: { todo: number; round: Round; label: string }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [log, setLog] = useState<string[]>([]);
   async function run() {
-    if (!window.confirm(`確定要寄出邀請信給 ${todo} 個 email 嗎？寄出後無法收回。`)) return;
+    if (!window.confirm(`確定要寄出${label}給 ${todo} 個 email 嗎？寄出後無法收回。`)) return;
     setBusy(true);
     setLog([]);
     let total = 0;
     try {
       for (;;) {
-        const r = await sendBatchAction();
+        const r = await sendBatchAction(round);
         total += r.sent;
         setLog((x) => [...x, `已寄出 ${total} 封，剩下 ${r.left} 個。`, ...r.failed.map((f) => `⚠ ${f.email}：${f.error}`)]);
         if (r.failed.length || r.left === 0 || r.sent === 0) break;
@@ -68,7 +71,7 @@ export function SendAll({ todo }: { todo: number }) {
   return (
     <div className="stack" style={{ gap: 8 }}>
       <button type="button" className="btn" onClick={run} disabled={busy || todo === 0}>
-        {busy ? '寄送中，請不要關閉這個頁面…' : todo ? `寄出邀請信給 ${todo} 個 email` : '沒有需要寄出的 email'}
+        {busy ? '寄送中，請不要關閉這個頁面…' : todo ? `寄出${label}給 ${todo} 個 email` : '沒有需要寄出的 email'}
       </button>
       {log.length ? <div role="status" className="stack" style={{ gap: 2 }}>{log.map((l, i) => <span key={i}>{l}</span>)}</div> : null}
     </div>

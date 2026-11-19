@@ -21,7 +21,7 @@ async function signed(name: string, email: string | null, startsAt: string, opts
 }
 
 beforeEach(async () => {
-  await pool.query('truncate feedback_invites, event_feedback, login_codes, bookings, people, slots, activities cascade');
+  await pool.query('truncate feedback_invites, feedback_reminders, feedback_skips, event_feedback, login_codes, bookings, people, slots, activities cascade');
   outbox.length = 0;
 });
 afterAll(() => pool.end());
@@ -71,6 +71,27 @@ describe('feedback invitation emails', () => {
     expect(by('li@example.com').text).toContain('非常感恩您这个周末');
     expect(by('li@example.com').text).toContain('/cn/feedback');
     expect((await inviteSummary()).sent).toHaveLength(3);
+  });
+
+  it('reminder round: everyone not done, whether or not they got the invitation; a paste after the invitation still counts', async () => {
+    await signed('王小明', 'wang@example.com', '2026-11-14T14:50:00-05:00');
+    await signed('Mei Lin', 'mei@example.com', '2026-11-14T16:00:00-05:00', { lang: 'en' });
+    await signed('李', 'li@example.com', '2026-11-14T16:00:00-05:00', { lang: 'zhs' });
+    await signed('Late', 'late@example.com', '2026-11-15T11:00:00-05:00');
+    await sendInviteBatch(3); // invitation to three of the four
+    expect(await addSkips('wang@example.com', 'reminder')).toMatchObject({ removed: 1 }); // pasted after being invited
+    await pool.query(`insert into event_feedback (name, email, lang, age, activity_ids) values ('M', 'mei@example.com', 'en', '60s', '{}')`);
+    outbox.length = 0;
+    expect((await inviteSummary('reminder')).todo.map((x) => x.email)).toEqual(['late@example.com', 'li@example.com']);
+    expect(await sendInviteBatch(25, 'reminder')).toEqual({ sent: 2, failed: [], left: 0 });
+    expect(await sendInviteBatch(25, 'reminder')).toEqual({ sent: 0, failed: [], left: 0 });
+    const li = outbox.find((m) => m.to === 'li@example.com')!;
+    expect(li.subject).toBe('【忆师恩法会暨疗愈活动反馈】把握最后一天机会');
+    expect(li.text).toContain('11 月 20 日（星期五）中午 12 点截止');
+    expect(outbox.find((m) => m.to === 'late@example.com')!.subject).toBe('【憶師恩法會暨療癒活動回饋】把握最後一天機會');
+    expect(inviteEmail('en', ['Ann'], 'reminder').text).toContain('closes tomorrow, Friday, November 20, at 12 noon');
+    // The invitation round is unaffected.
+    expect((await inviteSummary('invite')).sent).toHaveLength(3);
   });
 
   it('greets several English names naturally', () => {
